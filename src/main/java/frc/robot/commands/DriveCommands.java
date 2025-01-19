@@ -13,10 +13,15 @@
 
 package frc.robot.commands;
 
+import static frc.robot.subsystems.vision.VisionConstants.blueReefTagPoses;
+import static frc.robot.subsystems.vision.VisionConstants.redReefTagPoses;
+
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -149,11 +154,75 @@ public class DriveCommands {
                       isFlipped
                           ? drive.getRotation().plus(new Rotation2d(Math.PI))
                           : drive.getRotation()));
+              System.out.println("Speeds: " + speeds);
             },
             drive)
 
         // Reset PID controller when command starts
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+  }
+
+  public static Command rotateToReefTagFace(
+      Drive drive,
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      Supplier<Pose3d> tagPoseSupplier) {
+    return joystickDriveAtAngle(
+        drive,
+        xSupplier,
+        ySupplier,
+        () ->
+            tagPoseSupplier
+                .get()
+                .getRotation()
+                .toRotation2d()
+                .rotateBy(
+                    (MathUtil.isNear(
+                            tagPoseSupplier.get().getRotation().toRotation2d().getRadians(),
+                            drive.getRotation().getRadians(),
+                            0.01))
+                        ? Rotation2d.kZero
+                        : Rotation2d.k180deg));
+  }
+
+  public static Command driveToReefTag(Drive drive, Supplier<Pose3d> tagPoseSupplier) {
+    PIDController xController = new PIDController(3.0, 0.0, 0.0);
+    PIDController yController = new PIDController(3.0, 0.0, 0.0);
+    return joystickDriveAtAngle(
+            drive,
+            () -> xController.calculate(drive.getPose().getX(), tagPoseSupplier.get().getX()),
+            () -> yController.calculate(drive.getPose().getY(), tagPoseSupplier.get().getY()),
+            () ->
+                tagPoseSupplier
+                    .get()
+                    .getRotation()
+                    .toRotation2d()
+                    .rotateBy(
+                        (MathUtil.isNear(
+                                tagPoseSupplier.get().getRotation().toRotation2d().getRadians(),
+                                drive.getRotation().getRadians(),
+                                0.01))
+                            ? Rotation2d.kZero
+                            : Rotation2d.k180deg))
+        .beforeStarting(
+            () -> {
+              xController.reset();
+              yController.reset();
+            });
+  }
+
+  public static Command driveToNearestReefTagOdo(Drive drive) {
+    return driveToReefTag(
+        drive,
+        () ->
+            new Pose3d(
+                drive
+                    .getPose()
+                    .nearest(
+                        (DriverStation.getAlliance().isPresent()
+                                && DriverStation.getAlliance().get() == Alliance.Red
+                            ? redReefTagPoses
+                            : blueReefTagPoses))));
   }
 
   /**
