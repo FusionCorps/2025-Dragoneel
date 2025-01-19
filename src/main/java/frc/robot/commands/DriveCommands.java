@@ -13,6 +13,8 @@
 
 package frc.robot.commands;
 
+import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -154,6 +156,24 @@ public class DriveCommands {
 
         // Reset PID controller when command starts
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+  }
+
+  public static Command rotateToReefTagFace(
+      Drive drive,
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      Supplier<Integer> tagIdSupplier) {
+    return joystickDriveAtAngle(
+        drive,
+        xSupplier,
+        ySupplier,
+        () ->
+            aprilTagLayout
+                .getTagPose(tagIdSupplier.get())
+                .get()
+                .getRotation()
+                .toRotation2d()
+                .rotateBy(Rotation2d.k180deg));
   }
 
   /**
