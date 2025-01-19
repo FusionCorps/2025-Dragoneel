@@ -13,6 +13,9 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Rotations;
+
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -33,5 +36,20 @@ public final class Constants {
 
     /** Replaying from a log file. */
     REPLAY
+  }
+
+  public static enum ElevatorState {
+    STOW(Rotations.of(0.0)),
+    L1(Rotations.of(3.0)),
+    L2(Rotations.of(6.0)),
+    L3(Rotations.of(9.0)),
+    L4(Rotations.of(12.0)),
+    NET(Rotations.of(15.0));
+
+    public final Angle height;
+
+    private ElevatorState(Angle height) {
+      this.height = height;
+    }
   }
 }
