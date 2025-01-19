@@ -13,12 +13,12 @@
 
 package frc.robot.commands;
 
-import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
-
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -151,6 +151,7 @@ public class DriveCommands {
                       isFlipped
                           ? drive.getRotation().plus(new Rotation2d(Math.PI))
                           : drive.getRotation()));
+              System.out.println("Speeds: " + speeds);
             },
             drive)
 
@@ -162,18 +163,49 @@ public class DriveCommands {
       Drive drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
-      Supplier<Integer> tagIdSupplier) {
+      Supplier<Pose3d> tagPoseSupplier) {
     return joystickDriveAtAngle(
         drive,
         xSupplier,
         ySupplier,
         () ->
-            aprilTagLayout
-                .getTagPose(tagIdSupplier.get())
+            tagPoseSupplier
                 .get()
                 .getRotation()
                 .toRotation2d()
-                .rotateBy(Rotation2d.k180deg));
+                .rotateBy(
+                    (MathUtil.isNear(
+                            tagPoseSupplier.get().getRotation().toRotation2d().getRadians(),
+                            drive.getRotation().getRadians(),
+                            0.01))
+                        ? Rotation2d.kZero
+                        : Rotation2d.k180deg));
+  }
+
+  public static Command driveToReefTag(Drive drive, Supplier<Pose3d> tagPoseSupplier) {
+    PIDController xController = new PIDController(3.0, 0.0, 0.0);
+    PIDController yController = new PIDController(3.0, 0.0, 0.0);
+    return joystickDriveAtAngle(
+            drive,
+            () -> xController.calculate(drive.getPose().getX(), tagPoseSupplier.get().getX()),
+            () -> yController.calculate(drive.getPose().getY(), tagPoseSupplier.get().getY()),
+            () ->
+                tagPoseSupplier
+                    .get()
+                    .getRotation()
+                    .toRotation2d()
+                    .rotateBy(
+                        (MathUtil.isNear(
+                                tagPoseSupplier.get().getRotation().toRotation2d().getRadians(),
+                                drive.getRotation().getRadians(),
+                                0.01))
+                            ? Rotation2d.kZero
+                            : Rotation2d.k180deg))
+        .beforeStarting(
+            () -> {
+              xController.reset();
+              yController.reset();
+            });
   }
 
   /**

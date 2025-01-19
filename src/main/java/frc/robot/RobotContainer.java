@@ -13,11 +13,13 @@
 
 package frc.robot;
 
+import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
 import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
 import static frc.robot.subsystems.vision.VisionConstants.robotToCamera0;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -144,10 +146,20 @@ public class RobotContainer {
                 drive,
                 () -> -controller.getLeftY(),
                 () -> -controller.getLeftX(),
-                () -> vision.getTargetId(0)));
+                () ->
+                    aprilTagLayout
+                        .getTagPose(vision.getTargetId(0))
+                        .orElse(new Pose3d(drive.getPose()))));
 
-    // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    controller
+        .x()
+        .whileTrue(
+            DriveCommands.driveToReefTag(
+                drive,
+                () ->
+                    aprilTagLayout
+                        .getTagPose(vision.getTargetId(0))
+                        .orElse(new Pose3d(drive.getPose()))));
 
     // Reset gyro to 0° when B button is pressed
     controller
