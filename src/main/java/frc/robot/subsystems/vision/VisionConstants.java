@@ -15,13 +15,33 @@ package frc.robot.subsystems.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import java.util.List;
 
 public class VisionConstants {
   // AprilTag layout
   public static AprilTagFieldLayout aprilTagLayout =
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+
+  public static List<Pose2d> blueReefTagPoses =
+      List.of(
+          aprilTagLayout.getTagPose(17).get().toPose2d(),
+          aprilTagLayout.getTagPose(18).get().toPose2d(),
+          aprilTagLayout.getTagPose(19).get().toPose2d(),
+          aprilTagLayout.getTagPose(20).get().toPose2d(),
+          aprilTagLayout.getTagPose(21).get().toPose2d(),
+          aprilTagLayout.getTagPose(22).get().toPose2d());
+
+  public static List<Pose2d> redReefTagPoses =
+      List.of(
+          aprilTagLayout.getTagPose(6).get().toPose2d(),
+          aprilTagLayout.getTagPose(7).get().toPose2d(),
+          aprilTagLayout.getTagPose(8).get().toPose2d(),
+          aprilTagLayout.getTagPose(9).get().toPose2d(),
+          aprilTagLayout.getTagPose(10).get().toPose2d(),
+          aprilTagLayout.getTagPose(11).get().toPose2d());
 
   // Camera names, must match names configured on coprocessor
   public static String camera0Name = "camera_0";

@@ -13,6 +13,9 @@
 
 package frc.robot.commands;
 
+import static frc.robot.subsystems.vision.VisionConstants.blueReefTagPoses;
+import static frc.robot.subsystems.vision.VisionConstants.redReefTagPoses;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -206,6 +209,20 @@ public class DriveCommands {
               xController.reset();
               yController.reset();
             });
+  }
+
+  public static Command driveToNearestReefTagOdo(Drive drive) {
+    return driveToReefTag(
+        drive,
+        () ->
+            new Pose3d(
+                drive
+                    .getPose()
+                    .nearest(
+                        (DriverStation.getAlliance().isPresent()
+                                && DriverStation.getAlliance().get() == Alliance.Red
+                            ? redReefTagPoses
+                            : blueReefTagPoses))));
   }
 
   /**

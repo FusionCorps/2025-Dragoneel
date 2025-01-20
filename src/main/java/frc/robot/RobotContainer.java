@@ -139,17 +139,17 @@ public class RobotContainer {
             () -> -controller.getRightX()));
 
     // Lock to seen apriltag heading when A button is held
-    controller
-        .a()
-        .whileTrue(
-            DriveCommands.rotateToReefTagFace(
-                drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () ->
-                    aprilTagLayout
-                        .getTagPose(vision.getTargetId(0))
-                        .orElse(new Pose3d(drive.getPose()))));
+    // controller
+    //     .a()
+    //     .whileTrue(
+    //         DriveCommands.rotateToReefTagFace(
+    //             drive,
+    //             () -> -controller.getLeftY(),
+    //             () -> -controller.getLeftX(),
+    //             () ->
+    //                 aprilTagLayout
+    //                     .getTagPose(vision.getTargetId(0))
+    //                     .orElse(new Pose3d(drive.getPose()))));
 
     controller
         .x()
@@ -160,6 +160,8 @@ public class RobotContainer {
                     aprilTagLayout
                         .getTagPose(vision.getTargetId(0))
                         .orElse(new Pose3d(drive.getPose()))));
+
+    controller.a().whileTrue(DriveCommands.driveToNearestReefTagOdo(drive));
 
     // Reset gyro to 0° when B button is pressed
     controller

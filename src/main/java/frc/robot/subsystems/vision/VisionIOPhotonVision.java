@@ -18,6 +18,8 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,13 +50,21 @@ public class VisionIOPhotonVision implements VisionIO {
     Set<Short> tagIds = new HashSet<>();
     List<PoseObservation> poseObservations = new LinkedList<>();
     for (var result : camera.getAllUnreadResults()) {
-      inputs.bestTagId = result.hasTargets() ? result.getBestTarget().getFiducialId() : 0;
+      inputs.bestReefTagId = result.hasTargets() ? result.getBestTarget().getFiducialId() : 0;
       // Update latest target observation
       if (result.hasTargets()) {
         inputs.latestTargetObservation =
             new TargetObservation(
                 Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
                 Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
+        int bestTagId = result.getBestTarget().getFiducialId();
+        if (DriverStation.getAlliance().isPresent()) {
+          if (DriverStation.getAlliance().get() == Alliance.Blue) {
+            if (17 <= bestTagId && bestTagId <= 22) inputs.bestReefTagId = bestTagId;
+          } else if (DriverStation.getAlliance().get() == Alliance.Red) {
+            if (6 <= bestTagId && bestTagId <= 11) inputs.bestReefTagId = bestTagId;
+          }
+        }
       } else {
         inputs.latestTargetObservation = new TargetObservation(new Rotation2d(), new Rotation2d());
       }

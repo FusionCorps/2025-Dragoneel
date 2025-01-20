@@ -22,6 +22,8 @@ import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -66,7 +68,16 @@ public class VisionIOLimelight implements VisionIO {
     inputs.connected =
         ((RobotController.getFPGATime() - latencySubscriber.getLastChange()) / 1000) < 250;
 
-    inputs.bestTagId = (int) tidSubscriber.get();
+    // Update target ID
+    int bestTagId = (int) tidSubscriber.get();
+    if (DriverStation.getAlliance().isPresent()) {
+      if (DriverStation.getAlliance().get() == Alliance.Blue) {
+        if (17 <= bestTagId && bestTagId <= 22) inputs.bestReefTagId = bestTagId;
+      } else if (DriverStation.getAlliance().get() == Alliance.Red) {
+        if (6 <= bestTagId && bestTagId <= 11) inputs.bestReefTagId = bestTagId;
+      }
+    }
+
     // Update target observation
     inputs.latestTargetObservation =
         new TargetObservation(
