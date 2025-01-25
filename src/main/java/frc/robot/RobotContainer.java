@@ -70,7 +70,7 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
-        vision = new Vision(drive, new VisionIOPhotonVision(camera0Name, robotToCamera0));
+        vision = null; // TODO: this will later be a Limelight
         break;
 
       case SIM:
@@ -158,7 +158,7 @@ public class RobotContainer {
                 drive,
                 () ->
                     aprilTagLayout
-                        .getTagPose(vision.getTargetId(0))
+                        .getTagPose(vision.getReefTargetId(0))
                         .orElse(new Pose3d(drive.getPose()))));
 
     controller.a().whileTrue(DriveCommands.driveToNearestReefTagOdo(drive));

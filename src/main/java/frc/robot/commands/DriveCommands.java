@@ -162,6 +162,10 @@ public class DriveCommands {
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
   }
 
+  /**
+   * Field relative drive command using joystick for linear control and PID for angular control.
+   * Targets the currently seen reef apriltag.
+   */
   public static Command rotateToReefTagFace(
       Drive drive,
       DoubleSupplier xSupplier,
@@ -185,6 +189,9 @@ public class DriveCommands {
                         : Rotation2d.k180deg));
   }
 
+  /**
+   * Field relative drive command using PID for full control, targeting the currently seen reef tag.
+   */
   public static Command driveToReefTag(Drive drive, Supplier<Pose3d> tagPoseSupplier) {
     PIDController xController = new PIDController(3.0, 0.0, 0.0);
     PIDController yController = new PIDController(3.0, 0.0, 0.0);
@@ -211,6 +218,10 @@ public class DriveCommands {
             });
   }
 
+  /**
+   * Field relative drive command using PID for full control, targeting the nearest reef tag
+   * (doesn't have to be seen).
+   */
   public static Command driveToNearestReefTagOdo(Drive drive) {
     return driveToReefTag(
         drive,

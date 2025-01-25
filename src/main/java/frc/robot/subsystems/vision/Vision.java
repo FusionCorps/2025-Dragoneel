@@ -64,7 +64,7 @@ public class Vision extends SubsystemBase {
     return inputs[cameraIndex].latestTargetObservation.tx();
   }
 
-  public int getTargetId(int cameraIndex) {
+  public int getReefTargetId(int cameraIndex) {
     return inputs[cameraIndex].bestReefTagId;
   }
 
