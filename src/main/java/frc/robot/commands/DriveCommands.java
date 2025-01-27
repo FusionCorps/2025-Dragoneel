@@ -23,7 +23,9 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -40,6 +42,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
@@ -154,12 +157,62 @@ public class DriveCommands {
                       isFlipped
                           ? drive.getRotation().plus(new Rotation2d(Math.PI))
                           : drive.getRotation()));
-              System.out.println("Speeds: " + speeds);
             },
             drive)
 
         // Reset PID controller when command starts
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+  }
+
+  private static Command driveToPose(Drive drive, Supplier<Pose2d> poseSupplier) {
+    // Create PID controller
+    ProfiledPIDController angleController =
+        new ProfiledPIDController(
+            ANGLE_KP,
+            0.0,
+            ANGLE_KD,
+            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+    angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+    PIDController xController = new PIDController(3.0, 0.0, 0.0);
+    PIDController yController = new PIDController(3.0, 0.0, 0.0);
+
+    // Construct command
+    return Commands.run(
+            () -> {
+              double xVel =
+                  xController.calculate(drive.getPose().getX(), poseSupplier.get().getX());
+              double yVel =
+                  yController.calculate(drive.getPose().getY(), poseSupplier.get().getY());
+
+              // Calculate angular speed
+              double omega =
+                  angleController.calculate(
+                      drive.getRotation().getRadians(),
+                      poseSupplier.get().getRotation().getRadians());
+
+              // Convert to field relative speeds & send command
+              ChassisSpeeds speeds =
+                  new ChassisSpeeds(
+                      xVel * drive.getMaxLinearSpeedMetersPerSec(),
+                      yVel * drive.getMaxLinearSpeedMetersPerSec(),
+                      omega);
+              drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
+            },
+            drive)
+
+        // Reset PID controllerS when command starts
+        .beforeStarting(
+            () -> {
+              angleController.reset(drive.getRotation().getRadians());
+              xController.reset();
+              yController.reset();
+            })
+        .finallyDo(
+            () -> {
+              xController.close();
+              yController.close();
+            });
   }
 
   /**
@@ -175,47 +228,41 @@ public class DriveCommands {
         drive,
         xSupplier,
         ySupplier,
-        () ->
-            tagPoseSupplier
-                .get()
-                .getRotation()
-                .toRotation2d()
-                .rotateBy(
-                    (MathUtil.isNear(
-                            tagPoseSupplier.get().getRotation().toRotation2d().getRadians(),
-                            drive.getRotation().getRadians(),
-                            0.01))
-                        ? Rotation2d.kZero
-                        : Rotation2d.k180deg));
+        () -> {
+          if (tagPoseSupplier.get() == null) {
+            return drive.getRotation(); // if no tag, maintain current robot rotation
+          } else {
+            return tagPoseSupplier.get().toPose2d().getRotation().rotateBy(Rotation2d.kPi);
+          }
+        });
   }
 
   /**
    * Field relative drive command using PID for full control, targeting the currently seen reef tag.
+   * This will drive to ??? m in front of the tag.
+   *
+   * @param drive The drive subsystem
+   * @param tagPoseSupplier A supplier for the tag pose - should be the actual tag pose, not the
+   *     pose of the robot relative to the tag or any offset pose.
    */
-  public static Command driveToReefTag(Drive drive, Supplier<Pose3d> tagPoseSupplier) {
-    PIDController xController = new PIDController(3.0, 0.0, 0.0);
-    PIDController yController = new PIDController(3.0, 0.0, 0.0);
-    return joystickDriveAtAngle(
-            drive,
-            () -> xController.calculate(drive.getPose().getX(), tagPoseSupplier.get().getX()),
-            () -> yController.calculate(drive.getPose().getY(), tagPoseSupplier.get().getY()),
-            () ->
-                tagPoseSupplier
-                    .get()
-                    .getRotation()
-                    .toRotation2d()
-                    .rotateBy(
-                        (MathUtil.isNear(
-                                tagPoseSupplier.get().getRotation().toRotation2d().getRadians(),
-                                drive.getRotation().getRadians(),
-                                0.01))
-                            ? Rotation2d.kZero
-                            : Rotation2d.k180deg))
-        .beforeStarting(
-            () -> {
-              xController.reset();
-              yController.reset();
-            });
+  public static Command driveToReefTag(Drive drive, Supplier<Pose3d> tagPoseSupplierNoOffset) {
+    // applies a 0.7m offset to the tag pose and discards the z (vertical) component
+    // rotate, because apriltag will always be 180° from robot
+    Supplier<Pose2d> tagPoseSupplierIn2DWOffset =
+        () -> {
+          if (tagPoseSupplierNoOffset.get() == null) {
+            return drive.getPose();
+          } else
+            return tagPoseSupplierNoOffset
+                .get()
+                .transformBy(new Transform3d(0.7, 0, 0, new Rotation3d(Rotation2d.kPi)))
+                .toPose2d();
+        };
+
+    return driveToPose(drive, tagPoseSupplierIn2DWOffset)
+        .alongWith(
+            Commands.run(
+                () -> Logger.recordOutput("reefPoseTargetPose", tagPoseSupplierIn2DWOffset.get())));
   }
 
   /**
@@ -230,10 +277,10 @@ public class DriveCommands {
                 drive
                     .getPose()
                     .nearest(
-                        (DriverStation.getAlliance().isPresent()
+                        DriverStation.getAlliance().isPresent()
                                 && DriverStation.getAlliance().get() == Alliance.Red
                             ? redReefTagPoses
-                            : blueReefTagPoses))));
+                            : blueReefTagPoses)));
   }
 
   /**
