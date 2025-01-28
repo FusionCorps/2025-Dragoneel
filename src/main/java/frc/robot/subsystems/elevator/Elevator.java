@@ -1,24 +1,40 @@
 package frc.robot.subsystems.elevator;
 
+import static frc.robot.Constants.ElevatorConstants.elevatorGearRatio;
+import static frc.robot.Constants.ElevatorConstants.elevatorShaftRadiusInches;
+
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.ElevatorState;
+import frc.robot.Constants.ElevatorConstants;
+import frc.robot.Constants.ElevatorConstants.ElevatorState;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 public class Elevator extends SubsystemBase {
   private final ElevatorIO io;
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
-  Alert mainMotorConnectedAlert = new Alert("Main Elevator Motor Disconnected.", AlertType.kError);
-  Alert followerMotorConnectedAlert =
+  private final Alert mainMotorConnectedAlert =
+      new Alert("Main Elevator Motor Disconnected.", AlertType.kError);
+  private final Alert followerMotorConnectedAlert =
       new Alert("Follower Elevator Motor Disconnected.", AlertType.kError);
 
-  @AutoLogOutput ElevatorState currentElevatorState = ElevatorState.STOW;
+  @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.STOW;
+
+  @AutoLogOutput private final LoggedMechanism2d elevatorMechanism = new LoggedMechanism2d(1, 72);
+  private final LoggedMechanismRoot2d elevatorHeightIndicatorMover =
+      elevatorMechanism.getRoot("Elevator", 0, 0);
+  private final LoggedMechanismLigament2d elevatorHeightIndicator =
+      elevatorHeightIndicatorMover.append(
+          new LoggedMechanismLigament2d("elevatorIndicator", 2, 90));
 
   // driver dashboard helper variables
   boolean isElevatorStowed = true;
@@ -37,6 +53,13 @@ public class Elevator extends SubsystemBase {
     io.setPosition(currentElevatorState.height);
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
+
+    elevatorHeightIndicatorMover.setPosition(
+        0,
+        // rev * distance/rev / gear ratio
+        Units.radiansToRotations(inputs.mainElevatorPositionRad)
+            * (2.0 * Math.PI * elevatorShaftRadiusInches)
+            / (elevatorGearRatio));
 
     if (!inputs.mainElevatorMotorConnected) {
       mainMotorConnectedAlert.set(true);

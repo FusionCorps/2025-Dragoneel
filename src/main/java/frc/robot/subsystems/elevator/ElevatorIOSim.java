@@ -1,6 +1,8 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Rotations;
+import static frc.robot.Constants.ElevatorConstants.elevatorGearRatio;
+import static frc.robot.Constants.ElevatorConstants.elevatorShaftRadiusInches;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
@@ -13,16 +15,22 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 public class ElevatorIOSim implements ElevatorIO {
-  final DCMotorSim elevatorSim =
+  private final DCMotorSim elevatorSim =
       new DCMotorSim(
-          LinearSystemId.createElevatorSystem(DCMotor.getKrakenX60Foc(2), 5, 0.015, 1.0),
+          LinearSystemId.createElevatorSystem(
+              DCMotor.getKrakenX60Foc(2),
+              25,
+              Units.inchesToMeters(elevatorShaftRadiusInches),
+              elevatorGearRatio),
           DCMotor.getKrakenX60Foc(2));
 
-  final ProfiledPIDController elevatorPIDController =
+  private final ProfiledPIDController elevatorPIDController =
       new ProfiledPIDController(
-          5.0, 0, 0.1, new TrapezoidProfile.Constraints(80, 30)); // in rotations units
+          5.0, 0, 0.0, new TrapezoidProfile.Constraints(100000, 10000)); // in rotations units
 
-  final ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0.1, 4.0);
+  private final ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0.01, 4.0);
+
+  private double appliedVolts;
 
   public ElevatorIOSim() {
     elevatorSim.setAngle(0);
@@ -31,11 +39,10 @@ public class ElevatorIOSim implements ElevatorIO {
 
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
-    double appliedVolts =
+    appliedVolts =
         MathUtil.clamp(
-            elevatorPIDController.calculate(
-                elevatorSim.getAngularPositionRotations()
-                    + elevatorFeedforward.calculate(elevatorPIDController.getSetpoint().velocity)),
+            elevatorPIDController.calculate(elevatorSim.getAngularPositionRotations())
+                + elevatorFeedforward.calculate(elevatorPIDController.getSetpoint().velocity),
             -12.0,
             12.0);
 
@@ -61,5 +68,10 @@ public class ElevatorIOSim implements ElevatorIO {
   @Override
   public void setPosition(Angle motorTargetRotations) {
     elevatorPIDController.setGoal(motorTargetRotations.in(Rotations));
+  }
+
+  @Override
+  public void setPctOut(double percentOutput) {
+    appliedVolts = percentOutput * 12.0;
   }
 }

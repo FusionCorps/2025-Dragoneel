@@ -24,4 +24,6 @@ public interface ElevatorIO {
   default void updateInputs(ElevatorIOInputs inputs) {}
 
   default void setPosition(Angle motorTargetRotations) {}
+
+  default void setPctOut(double percentOutput) {}
 }
