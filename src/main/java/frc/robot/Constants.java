@@ -13,7 +13,14 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Volts;
+
+import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -36,4 +43,23 @@ public final class Constants {
   }
 
   public static final int CLIMB_MOTOR_ID = 16;
+
+  public static class ScorerConstants {
+    /* Scorer motor ID */
+    public static final int ScorerMotorID = 0;
+
+    /* Scorer motor state */
+    public static enum ScorerState {
+      IDLE(Volts.of(0.0)),
+      INTAKE_CORAL(Volts.of(6.0)),
+      SHOOT_CORAL(Volts.of(-6.0)),
+      INTAKE_ALGAE(Volts.of(-6.0));
+
+      public final Voltage volts;
+
+      private ScorerState(Voltage volts) {
+        this.volts = volts; /* i hate java */
+      }
+    }
+  }
 }
