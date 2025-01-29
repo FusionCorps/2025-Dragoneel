@@ -37,6 +37,10 @@ import frc.robot.subsystems.drive.gyro.GyroIOPigeon2;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOSim;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
+import frc.robot.subsystems.scorer.Scorer;
+import frc.robot.subsystems.scorer.ScorerIO;
+import frc.robot.subsystems.scorer.ScorerIOSim;
+import frc.robot.subsystems.scorer.ScorerIOSparkFlex;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
@@ -53,6 +57,7 @@ public class RobotContainer {
   private final Drive drive;
   private final Vision vision;
   private final Climb climb;
+  private final Scorer scorer;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -74,6 +79,7 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackRight));
         vision = null; // TODO: this will later be a Limelight
         climb = new Climb(new ClimbIOTalonFX());
+        scorer = new Scorer(new ScorerIOSparkFlex());
         break;
 
       case SIM:
@@ -89,6 +95,7 @@ public class RobotContainer {
             new Vision(
                 drive, new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose));
         climb = new Climb(new ClimbIOSim());
+        scorer = new Scorer(new ScorerIOSim());
         break;
 
       default:
@@ -102,6 +109,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         vision = new Vision(drive, new VisionIO() {});
         climb = null;
+        scorer = new Scorer(new ScorerIO() {});
         break;
     }
 

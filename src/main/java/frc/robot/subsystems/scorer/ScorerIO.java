@@ -1,8 +1,6 @@
 package frc.robot.subsystems.scorer;
 
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.Constants.ScorerConstants.ScorerState;
-
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ScorerIO {
