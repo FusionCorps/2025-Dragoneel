@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.ElevatorConstants.ElevatorState;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -19,16 +18,20 @@ import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 public class Elevator extends SubsystemBase {
+  /* IO and hardware inputs */
   private final ElevatorIO io;
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
+  /* Connection Alerts */
   private final Alert mainMotorConnectedAlert =
       new Alert("Main Elevator Motor Disconnected.", AlertType.kError);
   private final Alert followerMotorConnectedAlert =
       new Alert("Follower Elevator Motor Disconnected.", AlertType.kError);
 
+  /* State tracker for current height of the elevator */
   @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.STOW;
 
+  /* Visualization mechanism for elevator */
   @AutoLogOutput private final LoggedMechanism2d elevatorMechanism = new LoggedMechanism2d(1, 72);
   private final LoggedMechanismRoot2d elevatorHeightIndicatorMover =
       elevatorMechanism.getRoot("Elevator", 0, 0);
@@ -36,18 +39,12 @@ public class Elevator extends SubsystemBase {
       elevatorHeightIndicatorMover.append(
           new LoggedMechanismLigament2d("elevatorIndicator", 2, 90));
 
-  // driver dashboard helper variables
-  boolean isElevatorStowed = true;
-  boolean isElevatorL1 = false;
-  boolean isElevatorL2 = false;
-  boolean isElevatorL3 = false;
-  boolean isElevatorL4 = false;
-  boolean isElevatorNET = false;
-
+  /* Constructor */
   public Elevator(ElevatorIO io) {
     this.io = io;
   }
 
+  /* Periodically running code */
   @Override
   public void periodic() {
     io.setPosition(currentElevatorState.height);
@@ -69,21 +66,17 @@ public class Elevator extends SubsystemBase {
       followerMotorConnectedAlert.set(true);
     }
 
-    isElevatorStowed = currentElevatorState == ElevatorState.STOW;
-    isElevatorL1 = currentElevatorState == ElevatorState.L1;
-    isElevatorL2 = currentElevatorState == ElevatorState.L2;
-    isElevatorL3 = currentElevatorState == ElevatorState.L3;
-    isElevatorL4 = currentElevatorState == ElevatorState.L4;
-    isElevatorNET = currentElevatorState == ElevatorState.NET;
-
-    SmartDashboard.putBoolean("Elevator Stowed", isElevatorStowed);
-    SmartDashboard.putBoolean("Elevator L1", isElevatorL1);
-    SmartDashboard.putBoolean("Elevator L2", isElevatorL2);
-    SmartDashboard.putBoolean("Elevator L3", isElevatorL3);
-    SmartDashboard.putBoolean("Elevator L4", isElevatorL4);
-    SmartDashboard.putBoolean("Elevator NET", isElevatorNET);
+    // driver variables to visualize the elevator state
+    SmartDashboard.putBoolean("Elevator HOMED", currentElevatorState == ElevatorState.STOW);
+    SmartDashboard.putBoolean("Elevator L1", currentElevatorState == ElevatorState.L1);
+    SmartDashboard.putBoolean("Elevator L2", currentElevatorState == ElevatorState.L2);
+    SmartDashboard.putBoolean("Elevator at STATION", currentElevatorState == ElevatorState.STATION);
+    SmartDashboard.putBoolean("Elevator L3", currentElevatorState == ElevatorState.L3);
+    SmartDashboard.putBoolean("Elevator L4", currentElevatorState == ElevatorState.L4);
+    SmartDashboard.putBoolean("Elevator NET", currentElevatorState == ElevatorState.NET);
   }
 
+  /* Command to lower the elevator to the next lowest height */
   public Command lowerElevator() {
     return Commands.runOnce(
         () -> {
@@ -96,8 +89,11 @@ public class Elevator extends SubsystemBase {
             case L2:
               currentElevatorState = ElevatorState.L1;
               break;
-            case L3:
+            case STATION:
               currentElevatorState = ElevatorState.L2;
+              break;
+            case L3:
+              currentElevatorState = ElevatorState.STATION;
               break;
             case L4:
               currentElevatorState = ElevatorState.L3;
@@ -109,6 +105,7 @@ public class Elevator extends SubsystemBase {
         });
   }
 
+  /* Command to raise the elevator to the next tallest height */
   public Command raiseElevator() {
     return Commands.runOnce(
         () -> {
@@ -120,6 +117,9 @@ public class Elevator extends SubsystemBase {
               currentElevatorState = ElevatorState.L2;
               break;
             case L2:
+              currentElevatorState = ElevatorState.STATION;
+              break;
+            case STATION:
               currentElevatorState = ElevatorState.L3;
               break;
             case L3:

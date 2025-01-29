@@ -113,7 +113,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
   }
 
   @Override
-  public void setPctOut(double percentOutput) {
-    mainElevatorMotor.setControl(voltageRequest.withOutput(percentOutput * 12.0));
+  public void setVoltage(Voltage volts) {
+    mainElevatorMotor.setControl(voltageRequest.withOutput(volts));
   }
 }

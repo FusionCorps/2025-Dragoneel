@@ -53,6 +53,7 @@ public final class Constants {
       STOW(Rotations.of(0.0)),
       L1(Rotations.of(3.0)),
       L2(Rotations.of(6.0)),
+      STATION(Rotations.of(7.5)),
       L3(Rotations.of(9.0)),
       L4(Rotations.of(12.0)),
       NET(Rotations.of(15.0));

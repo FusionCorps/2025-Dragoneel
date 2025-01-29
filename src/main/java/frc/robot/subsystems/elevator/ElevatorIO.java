@@ -1,6 +1,7 @@
 package frc.robot.subsystems.elevator;
 
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Voltage;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ElevatorIO {
@@ -25,5 +26,5 @@ public interface ElevatorIO {
 
   default void setPosition(Angle motorTargetRotations) {}
 
-  default void setPctOut(double percentOutput) {}
+  default void setVoltage(Voltage volts) {}
 }

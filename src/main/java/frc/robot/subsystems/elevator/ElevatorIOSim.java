@@ -1,6 +1,7 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ElevatorConstants.elevatorGearRatio;
 import static frc.robot.Constants.ElevatorConstants.elevatorShaftRadiusInches;
 
@@ -12,6 +13,7 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 public class ElevatorIOSim implements ElevatorIO {
@@ -71,7 +73,7 @@ public class ElevatorIOSim implements ElevatorIO {
   }
 
   @Override
-  public void setPctOut(double percentOutput) {
-    appliedVolts = percentOutput * 12.0;
+  public void setVoltage(Voltage volts) {
+    appliedVolts = volts.in(Volts);
   }
 }
