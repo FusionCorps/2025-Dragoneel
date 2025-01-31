@@ -28,6 +28,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.gyro.GyroIO;
 import frc.robot.subsystems.drive.gyro.GyroIOPigeon2;
@@ -49,6 +52,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Vision vision;
+  private final Climb climb;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -69,6 +73,7 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
         vision = null; // TODO: this will later be a Limelight
+        climb = new Climb(new ClimbIOTalonFX());
         break;
 
       case SIM:
@@ -83,6 +88,7 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive, new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose));
+        climb = new Climb(new ClimbIOSim());
         break;
 
       default:
@@ -95,6 +101,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         vision = new Vision(drive, new VisionIO() {});
+        climb = null;
         break;
     }
 
@@ -169,6 +176,8 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
+
+    controller.y().whileTrue(climb.climbCommand());
   }
 
   /**
