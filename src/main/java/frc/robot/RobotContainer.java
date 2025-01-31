@@ -13,17 +13,13 @@
 
 package frc.robot;
 
-import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
 import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
 import static frc.robot.subsystems.vision.VisionConstants.robotToCamera0;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -151,44 +147,41 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    // Lock to primary seen apriltag heading when A button is held
+    // Reset gyro to 0° when B button is pressed
+    controller.b().onTrue(drive.zeroOdometry());
+
+    // Rotate to heading when A button is held, robot can be driven still.
     controller
         .a()
         .whileTrue(
-            DriveCommands.rotateToReefTagFace(
-                drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> aprilTagLayout.getTagPose(vision.getReefTargetId(0)).orElse(null)));
+            DriveCommands.rotateToTag(
+                drive, vision, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+
+    // Lock to primary seen apriltag heading when A button is held
+    // controller
+    //     .a()
+    //     .whileTrue(
+    //         DriveCommands.rotateToReefTagFace(
+    //             drive,
+    //             () -> -controller.getLeftY(),
+    //             () -> -controller.getLeftX(),
+    //             () -> aprilTagLayout.getTagPose(vision.getReefTargetId(0)).orElse(null)));
 
     // Drive straight to primary seen apriltag when X button is held
-    controller
-        .x()
-        .whileTrue(
-            DriveCommands.driveToReefTag(
-                drive, () -> aprilTagLayout.getTagPose(vision.getReefTargetId(0)).orElse(null)));
+    // controller
+    //     .x()
+    //     .whileTrue(
+    //         DriveCommands.driveToReefTag(
+    //             drive, () -> aprilTagLayout.getTagPose(vision.getReefTargetId(0)).orElse(null)));
 
     // Drive straight to nearest apriltag when X + RB are held (works even if tag is unseen)
-    controller
-        .x()
-        .and(controller.rightBumper())
-        .whileTrue(DriveCommands.driveToNearestReefTagOdo(drive));
+    // controller
+    //     .x()
+    //     .and(controller.rightBumper())
+    //     .whileTrue(DriveCommands.driveToNearestReefTagWOdometry(drive));
 
-    // Reset gyro to 0° when B button is pressed
-    controller
-        .b()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
-
-    controller.y().whileTrue(climb.climbCommand());
-    controller.povUp().whileTrue(scorer.intakeAlgaeCmd());
-    controller.povLeft().whileTrue(scorer.intakeCoralCmd());
-    controller.povRight().whileTrue(scorer.shootCoralCmd());
+    // controller.y().whileTrue(climb.runClimbCommand());
+    // controller.a().whileTrue(scorer.shootCoralCmd());
   }
 
   /**

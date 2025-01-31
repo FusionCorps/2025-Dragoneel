@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
+import static frc.robot.Constants.ClimbConstants.CLIMB_MOTOR_ID;
 import static frc.robot.util.PhoenixUtil.tryUntilOk;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -18,7 +19,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import static frc.robot.Constants.ClimbConstants.CLIMB_MOTOR_ID;;
 
 public class ClimbIOTalonFX implements ClimbIO {
   private final TalonFX climbMotor = new TalonFX(CLIMB_MOTOR_ID);
