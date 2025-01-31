@@ -14,7 +14,7 @@ public class ScorerIOSim implements ScorerIO {
   /* Gearbox */
   private final DCMotor scorerMotorGearbox = DCMotor.getNeoVortex(1);
 
-  private Voltage appliedVolts;
+  private Voltage appliedVolts = Volts.of(0.0);
 
   public ScorerIOSim() {
     scorerMotorSim =
