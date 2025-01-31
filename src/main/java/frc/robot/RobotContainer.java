@@ -186,6 +186,9 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     controller.y().whileTrue(climb.climbCommand());
+    controller.povUp().whileTrue(scorer.intakeAlgaeCmd());
+    controller.povLeft().whileTrue(scorer.intakeCoralCmd());
+    controller.povRight().whileTrue(scorer.shootCoralCmd());
   }
 
   /**
