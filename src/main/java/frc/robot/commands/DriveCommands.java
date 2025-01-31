@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.vision.Vision;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -164,6 +165,20 @@ public class DriveCommands {
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
   }
 
+  /** Rotates in-place to center on the currently seen reef tag. */
+  public static Command rotateToTag(Drive drive, Vision vision) {
+    return joystickDriveAtAngle(
+        drive, () -> 0.0, () -> 0.0, () -> drive.getRotation().minus(vision.getTargetX(0)));
+  }
+
+  /** Rotates to center on the currently seen reef tag. Driver can still control linear velocity. */
+  public static Command rotateToTag(
+      Drive drive, Vision vision, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+    return joystickDriveAtAngle(
+        drive, xSupplier, ySupplier, () -> drive.getRotation().minus(vision.getTargetX(0)));
+  }
+
+  /** Field relative drive command using PID for full control to a specified pose. */
   private static Command driveToPose(Drive drive, Supplier<Pose2d> poseSupplier) {
     // Create PID controller
     ProfiledPIDController angleController =
@@ -217,9 +232,9 @@ public class DriveCommands {
 
   /**
    * Field relative drive command using joystick for linear control and PID for angular control.
-   * Targets the currently seen reef apriltag.
+   * Targets the currently seen reef apriltag and rotates to the wall that it's located on.
    */
-  public static Command rotateToReefTagFace(
+  public static Command rotateToReefTagWall(
       Drive drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
@@ -269,7 +284,7 @@ public class DriveCommands {
    * Field relative drive command using PID for full control, targeting the nearest reef tag
    * (doesn't have to be seen).
    */
-  public static Command driveToNearestReefTagOdo(Drive drive) {
+  public static Command driveToNearestReefTagWOdometry(Drive drive) {
     return driveToReefTag(
         drive,
         () ->

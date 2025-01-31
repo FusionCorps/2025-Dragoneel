@@ -371,4 +371,10 @@ public class Drive extends SubsystemBase implements VisionConsumer {
       new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
     };
   }
+
+  /** Sets the gyro angle to 0° and sets current gyro angle to forward. */
+  public Command zeroOdometry() {
+    return runOnce(() -> setPose(new Pose2d(getPose().getTranslation(), new Rotation2d())))
+        .ignoringDisable(true);
+  }
 }

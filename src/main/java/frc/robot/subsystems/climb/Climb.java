@@ -33,7 +33,7 @@ public class Climb extends SubsystemBase {
   }
 
   /* Run the climb motor and hold position in brake mode when stopped. */
-  public Command climbCommand() {
+  public Command runClimbCommand() {
     return runEnd(() -> io.setVoltage(CLIMB_RUN_VOLTS), () -> io.holdPosition());
   }
 }
