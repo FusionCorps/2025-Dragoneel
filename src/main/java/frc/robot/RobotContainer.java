@@ -30,7 +30,6 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIOSim;
-import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.gyro.GyroIO;
 import frc.robot.subsystems.drive.gyro.GyroIOPigeon2;
@@ -40,7 +39,6 @@ import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
 import frc.robot.subsystems.scorer.Scorer;
 import frc.robot.subsystems.scorer.ScorerIO;
 import frc.robot.subsystems.scorer.ScorerIOSim;
-import frc.robot.subsystems.scorer.ScorerIOSparkFlex;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
@@ -78,8 +76,10 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
         vision = null; // TODO: this will later be a Limelight
-        climb = new Climb(new ClimbIOTalonFX());
-        scorer = new Scorer(new ScorerIOSparkFlex());
+        climb = null;
+        // climb = new Climb(new ClimbIOTalonFX());
+        scorer = null;
+        // scorer = new Scorer(new ScorerIOSparkFlex());
         break;
 
       case SIM:

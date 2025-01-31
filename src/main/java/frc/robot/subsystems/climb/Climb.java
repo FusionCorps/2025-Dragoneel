@@ -1,6 +1,6 @@
 package frc.robot.subsystems.climb;
 
-import static edu.wpi.first.units.Units.Volts;
+import static frc.robot.Constants.ClimbConstants.CLIMB_RUN_VOLTS;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -32,7 +32,8 @@ public class Climb extends SubsystemBase {
     motorDisconnectedAlert.set(!inputs.climbMotorConnected);
   }
 
+  /* Run the climb motor and hold position in brake mode when stopped. */
   public Command climbCommand() {
-    return runEnd(() -> io.setVoltage(Volts.of(9)), () -> io.setNeutral());
+    return runEnd(() -> io.setVoltage(CLIMB_RUN_VOLTS), () -> io.holdPosition());
   }
 }

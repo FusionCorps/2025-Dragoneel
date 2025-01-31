@@ -41,8 +41,6 @@ public final class Constants {
     REPLAY
   }
 
-  public static final int CLIMB_MOTOR_ID = 16;
-
   public static class ScorerConstants {
     /* Scorer motor ID */
     public static final int SCORER_MOTOR_ID = 0;
@@ -53,7 +51,7 @@ public final class Constants {
                 .inverted(false)
                 .idleMode(IdleMode.kCoast)
                 .voltageCompensation(RobotController.getBatteryVoltage())
-                .smartCurrentLimit(20); // Amps.of(20)..?
+                .smartCurrentLimit(20);
 
     /* Scorer motor state */
     public static enum ScorerState {
@@ -65,8 +63,14 @@ public final class Constants {
       public final Voltage volts;
 
       private ScorerState(Voltage volts) {
-        this.volts = volts; /* i hate java */
+        this.volts = volts;
       }
     }
+  }
+
+  public static class ClimbConstants {
+
+    public static final int CLIMB_MOTOR_ID = 16;
+    public static final Voltage CLIMB_RUN_VOLTS = Volts.of(9.0);
   }
 }

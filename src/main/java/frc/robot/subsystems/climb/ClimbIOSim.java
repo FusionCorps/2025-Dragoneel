@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 public class ClimbIOSim implements ClimbIO {
   private final DCMotorSim climbMotorSim;
   private final DCMotor climbMotorGearbox = DCMotor.getKrakenX60(1);
-  private Voltage appliedVolts = Volts.of(0);
+  private Voltage appliedVolts = Volts.of(0.0);
 
   public ClimbIOSim() {
     climbMotorSim =
@@ -36,7 +36,7 @@ public class ClimbIOSim implements ClimbIO {
   }
 
   @Override
-  public void setNeutral() {
-    setVoltage(Volts.of(0));
+  public void holdPosition() {
+    appliedVolts = Volts.zero();
   }
 }

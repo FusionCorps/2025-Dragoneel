@@ -17,5 +17,5 @@ public interface ClimbIO {
 
   default void setVoltage(Voltage voltage) {}
 
-  default void setNeutral() {}
+  default void holdPosition() {}
 }
