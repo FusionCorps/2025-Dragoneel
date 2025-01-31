@@ -26,6 +26,7 @@ public class ScorerIOSim implements ScorerIO {
   @Override
   public void updateInputs(ScorerIOInputs inputs) {
     scorerMotorSim.setInputVoltage(appliedVolts.in(Volts));
+    scorerMotorSim.update(0.02);
 
     /* Update inputs */
     inputs.scorerMotorConnected = true;
