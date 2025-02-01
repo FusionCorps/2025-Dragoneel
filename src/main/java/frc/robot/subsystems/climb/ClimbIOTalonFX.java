@@ -51,6 +51,7 @@ public class ClimbIOTalonFX implements ClimbIO {
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         50, climbPosition, climbVelocity, climbAppliedVolts, climbCurrent);
+    climbMotor.optimizeBusUtilization();
   }
 
   @Override
