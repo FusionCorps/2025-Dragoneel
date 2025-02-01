@@ -72,7 +72,7 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackRight));
         vision =
             new Vision(
-                null,
+                (a, b, c) -> {},
                 new VisionIOPhotonVision(
                     camera0Name, robotToCamera0)); // TODO: this will later be a Limelight
         climb = null;
