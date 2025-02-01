@@ -55,8 +55,10 @@ import frc.robot.subsystems.drive.module.Module;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.vision.Vision.VisionConsumer;
 import frc.robot.util.LocalADStarAK;
+import java.io.IOException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -76,20 +78,8 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   // PathPlanner config constants
   private static final double ROBOT_MASS_KG = 74.088;
   private static final double ROBOT_MOI = 6.883;
-  private static final double WHEEL_COF = 1.2;
-  private static final RobotConfig PP_CONFIG =
-      new RobotConfig(
-          ROBOT_MASS_KG,
-          ROBOT_MOI,
-          new ModuleConfig(
-              TunerConstants.FrontLeft.WheelRadius,
-              TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
-              WHEEL_COF,
-              DCMotor.getKrakenX60Foc(1)
-                  .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
-              TunerConstants.FrontLeft.SlipCurrent,
-              1),
-          getModuleTranslations());
+  private static final double WHEEL_COF = 1.5;
+  private static RobotConfig PP_CONFIG;
 
   static final Lock odometryLock = new ReentrantLock();
   private final GyroIO gyroIO;
@@ -130,13 +120,32 @@ public class Drive extends SubsystemBase implements VisionConsumer {
     PhoenixOdometryThread.getInstance().start();
 
     // Configure AutoBuilder for PathPlanner
+    try {
+      PP_CONFIG = RobotConfig.fromGUISettings();
+    } catch (IOException | ParseException e) {
+      PP_CONFIG =
+          new RobotConfig(
+              ROBOT_MASS_KG,
+              ROBOT_MOI,
+              new ModuleConfig(
+                  TunerConstants.FrontLeft.WheelRadius,
+                  TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+                  WHEEL_COF,
+                  DCMotor.getKrakenX60Foc(1)
+                      .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
+                  TunerConstants.FrontLeft.SlipCurrent,
+                  1),
+              getModuleTranslations());
+
+      e.printStackTrace();
+    }
     AutoBuilder.configure(
         this::getPose,
         this::setPose,
         this::getChassisSpeeds,
         this::runVelocity,
         new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+            new PIDConstants(10.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);

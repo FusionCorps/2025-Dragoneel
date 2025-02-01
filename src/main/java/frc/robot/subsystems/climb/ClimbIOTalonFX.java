@@ -21,7 +21,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
 public class ClimbIOTalonFX implements ClimbIO {
-  private final TalonFX climbMotor = new TalonFX(CLIMB_MOTOR_ID);
+  private final TalonFX climbMotor;
 
   private final NeutralOut neutralRequest = new NeutralOut();
 
@@ -32,6 +32,7 @@ public class ClimbIOTalonFX implements ClimbIO {
   private final StatusSignal<Current> climbCurrent;
 
   public ClimbIOTalonFX() {
+    climbMotor = new TalonFX(CLIMB_MOTOR_ID);
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.CurrentLimits.StatorCurrentLimit = 70;
     config.CurrentLimits.StatorCurrentLimitEnable = true;

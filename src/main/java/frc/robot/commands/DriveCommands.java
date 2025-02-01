@@ -168,14 +168,14 @@ public class DriveCommands {
   /** Rotates in-place to center on the currently seen reef tag. */
   public static Command rotateToTag(Drive drive, Vision vision) {
     return joystickDriveAtAngle(
-        drive, () -> 0.0, () -> 0.0, () -> drive.getRotation().minus(vision.getTargetX(0)));
+        drive, () -> 0.0, () -> 0.0, () -> drive.getRotation().plus(vision.getTargetX(0)));
   }
 
   /** Rotates to center on the currently seen reef tag. Driver can still control linear velocity. */
   public static Command rotateToTag(
       Drive drive, Vision vision, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
     return joystickDriveAtAngle(
-        drive, xSupplier, ySupplier, () -> drive.getRotation().minus(vision.getTargetX(0)));
+        drive, xSupplier, ySupplier, () -> drive.getRotation().plus(vision.getTargetX(0)));
   }
 
   /** Field relative drive command using PID for full control to a specified pose. */

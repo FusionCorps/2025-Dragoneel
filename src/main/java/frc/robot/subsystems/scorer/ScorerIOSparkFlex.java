@@ -14,15 +14,18 @@ import java.util.function.DoubleSupplier;
 
 public class ScorerIOSparkFlex implements ScorerIO {
   /* Main scoring motor */
-  private final SparkFlex scorerMotor = new SparkFlex(SCORER_MOTOR_ID, MotorType.kBrushless);
+  private final SparkFlex scorerMotor;
 
   /* Encoder */
-  private final RelativeEncoder scorerMotorEncoder = scorerMotor.getEncoder();
+  private final RelativeEncoder scorerMotorEncoder;
 
   /* Debounce */
   private final Debouncer scorerMotorDebouncer = new Debouncer(0.5);
 
   public ScorerIOSparkFlex() {
+    scorerMotor = new SparkFlex(SCORER_MOTOR_ID, MotorType.kBrushless);
+    scorerMotorEncoder = scorerMotor.getEncoder();
+
     /* Try to apply */
     tryUntilOk(
         scorerMotor,
