@@ -29,7 +29,7 @@ public class Elevator extends SubsystemBase {
       new Alert("Follower Elevator Motor Disconnected.", AlertType.kError);
 
   /* State tracker for current height of the elevator */
-  @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.STOW;
+  @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.ZERO;
 
   /* Visualization mechanism for elevator */
   @AutoLogOutput private final LoggedMechanism2d elevatorMechanism = new LoggedMechanism2d(1, 72);
@@ -47,7 +47,7 @@ public class Elevator extends SubsystemBase {
   /* Periodically running code */
   @Override
   public void periodic() {
-    io.setPosition(currentElevatorState.height);
+    io.setTargetPosition(currentElevatorState.height);
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
@@ -77,30 +77,30 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command goToL1() {
-    return Commands.runOnce(() -> currentElevatorState = ElevatorState.L1);
+    return this.runOnce(() -> currentElevatorState = ElevatorState.L1);
   }
 
   public Command goToL2() {
-    return Commands.runOnce(() -> currentElevatorState = ElevatorState.L2);
+    return this.runOnce(() -> currentElevatorState = ElevatorState.L2);
   }
   
   public Command goToStation() {
-    return Commands.runOnce(() -> currentElevatorState = ElevatorState.STATION);
+    return this.runOnce(() -> currentElevatorState = ElevatorState.STATION);
   }
 
   public Command goToL3() {
-    return Commands.runOnce(() -> currentElevatorState = ElevatorState.L3);
+    return this.runOnce(() -> currentElevatorState = ElevatorState.L3);
   }
 
   public Command goToL4() {
-    return Commands.runOnce(() -> currentElevatorState = ElevatorState.L4);
+    return this.runOnce(() -> currentElevatorState = ElevatorState.L4);
   }
 
   public Command goToNet() {
-    return Commands.runOnce(() -> currentElevatorState = ElevatorState.NET);
+    return this.runOnce(() -> currentElevatorState = ElevatorState.NET);
   }
 
-  public Command goToStow() {
-    return Commands.runOnce(() -> currentElevatorState = ElevatorState.ZERO);
+  public Command goToZero() {
+    return this.runOnce(() -> currentElevatorState = ElevatorState.ZERO);
   }
 }

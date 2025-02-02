@@ -110,7 +110,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
   }
 
   @Override
-  public void setPosition(Angle motorTargetRotations) {
+  public void setTargetPosition(Angle motorTargetRotations) {
     mainElevatorMotor.setControl(posRequest.withPosition(motorTargetRotations.in(Rotations)));
   }
 
