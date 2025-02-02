@@ -16,6 +16,4 @@ public interface ClimbIO {
   default void updateInputs(ClimbIOInputs inputs) {}
 
   default void setVoltage(Voltage voltage) {}
-
-  default void holdPosition() {}
 }

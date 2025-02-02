@@ -67,7 +67,7 @@ public class Elevator extends SubsystemBase {
     }
 
     // driver variables to visualize the elevator state
-    SmartDashboard.putBoolean("Elevator HOMED", currentElevatorState == ElevatorState.STOW);
+    SmartDashboard.putBoolean("Elevator HOMED", currentElevatorState == ElevatorState.ZERO);
     SmartDashboard.putBoolean("Elevator L1", currentElevatorState == ElevatorState.L1);
     SmartDashboard.putBoolean("Elevator L2", currentElevatorState == ElevatorState.L2);
     SmartDashboard.putBoolean("Elevator at STATION", currentElevatorState == ElevatorState.STATION);
@@ -76,61 +76,31 @@ public class Elevator extends SubsystemBase {
     SmartDashboard.putBoolean("Elevator NET", currentElevatorState == ElevatorState.NET);
   }
 
-  /* Command to lower the elevator to the next lowest height */
-  public Command lowerElevator() {
-    return Commands.runOnce(
-        () -> {
-          switch (currentElevatorState) {
-            case STOW:
-              break;
-            case L1:
-              currentElevatorState = ElevatorState.STOW;
-              break;
-            case L2:
-              currentElevatorState = ElevatorState.L1;
-              break;
-            case STATION:
-              currentElevatorState = ElevatorState.L2;
-              break;
-            case L3:
-              currentElevatorState = ElevatorState.STATION;
-              break;
-            case L4:
-              currentElevatorState = ElevatorState.L3;
-              break;
-            case NET:
-              currentElevatorState = ElevatorState.L4;
-              break;
-          }
-        });
+  public Command goToL1() {
+    return Commands.runOnce(() -> currentElevatorState = ElevatorState.L1);
   }
 
-  /* Command to raise the elevator to the next tallest height */
-  public Command raiseElevator() {
-    return Commands.runOnce(
-        () -> {
-          switch (currentElevatorState) {
-            case STOW:
-              currentElevatorState = ElevatorState.L1;
-              break;
-            case L1:
-              currentElevatorState = ElevatorState.L2;
-              break;
-            case L2:
-              currentElevatorState = ElevatorState.STATION;
-              break;
-            case STATION:
-              currentElevatorState = ElevatorState.L3;
-              break;
-            case L3:
-              currentElevatorState = ElevatorState.L4;
-              break;
-            case L4:
-              currentElevatorState = ElevatorState.NET;
-              break;
-            case NET:
-              break;
-          }
-        });
+  public Command goToL2() {
+    return Commands.runOnce(() -> currentElevatorState = ElevatorState.L2);
+  }
+  
+  public Command goToStation() {
+    return Commands.runOnce(() -> currentElevatorState = ElevatorState.STATION);
+  }
+
+  public Command goToL3() {
+    return Commands.runOnce(() -> currentElevatorState = ElevatorState.L3);
+  }
+
+  public Command goToL4() {
+    return Commands.runOnce(() -> currentElevatorState = ElevatorState.L4);
+  }
+
+  public Command goToNet() {
+    return Commands.runOnce(() -> currentElevatorState = ElevatorState.NET);
+  }
+
+  public Command goToStow() {
+    return Commands.runOnce(() -> currentElevatorState = ElevatorState.ZERO);
   }
 }

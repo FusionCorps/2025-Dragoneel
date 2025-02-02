@@ -23,8 +23,6 @@ import edu.wpi.first.units.measure.Voltage;
 public class ClimbIOTalonFX implements ClimbIO {
   private final TalonFX climbMotor;
 
-  private final NeutralOut neutralRequest = new NeutralOut();
-
   private final Debouncer climbDebounce = new Debouncer(0.5);
   private final StatusSignal<Angle> climbPosition;
   private final StatusSignal<AngularVelocity> climbVelocity;
@@ -69,11 +67,5 @@ public class ClimbIOTalonFX implements ClimbIO {
   @Override
   public void setVoltage(Voltage voltage) {
     climbMotor.setVoltage(voltage.in(Volts));
-  }
-
-  @Override
-  public void holdPosition() {
-    setVoltage(Volts.zero());
-    climbMotor.setControl(neutralRequest);
   }
 }
