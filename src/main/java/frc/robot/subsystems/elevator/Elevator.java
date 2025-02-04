@@ -33,12 +33,11 @@ public class Elevator extends SubsystemBase {
   @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.ZERO;
 
   /* Visualization mechanism for elevator */
-  @AutoLogOutput private final LoggedMechanism2d elevatorMechanism = new LoggedMechanism2d(1, 72);
+  @AutoLogOutput private final LoggedMechanism2d elevatorMechanism = new LoggedMechanism2d(1, 10);
   private final LoggedMechanismRoot2d elevatorHeightIndicatorMover =
       elevatorMechanism.getRoot("Elevator", 0, 0);
   private final LoggedMechanismLigament2d elevatorHeightIndicator =
-      elevatorHeightIndicatorMover.append(
-          new LoggedMechanismLigament2d("elevatorIndicator", 2, 90));
+      elevatorHeightIndicatorMover.append(new LoggedMechanismLigament2d("elevatorIndicator", 1, 0));
 
   /* Constructor */
   public Elevator(ElevatorIO io) {

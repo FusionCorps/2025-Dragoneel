@@ -16,15 +16,6 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.signals.GravityTypeValue;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.units.measure.Angle;
@@ -87,13 +78,13 @@ public final class Constants {
   public static class ElevatorConstants {
 
     public static enum ElevatorState {
-      ZERO(Rotations.of(0.0)),
-      L1(Rotations.of(3.0)),
-      L2(Rotations.of(6.0)),
-      STATION(Rotations.of(7.5)),
-      L3(Rotations.of(9.0)),
-      L4(Rotations.of(12.0)),
-      NET(Rotations.of(15.0));
+      STOW(Rotations.of(0.0)),
+      L1(Rotations.of(0.5)),
+      L2(Rotations.of(0.8)),
+      STATION(Rotations.of(0.85)),
+      L3(Rotations.of(1.1)),
+      L4(Rotations.of(1.8)),
+      NET(Rotations.of(2.2));
 
       public final Angle height;
 
@@ -105,45 +96,7 @@ public final class Constants {
     public static final int mainElevatorMotorID = 13;
     public static final int followerElevatorMotorID = 14;
 
-    public static final double elevatorGearRatio = 6.0;
-    public static final double elevatorShaftRadiusInches = 0.5;
-
-    public static final TalonFXConfiguration elevatorConfig =
-        new TalonFXConfiguration()
-            .withMotorOutput(
-                new MotorOutputConfigs()
-                    .withInverted(InvertedValue.CounterClockwise_Positive)
-                    .withNeutralMode(NeutralModeValue.Brake))
-            .withCurrentLimits(
-                new CurrentLimitsConfigs()
-                    .withStatorCurrentLimitEnable(true)
-                    .withStatorCurrentLimit(80)
-                    .withSupplyCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(70)
-                    .withSupplyCurrentLowerLimit(40)
-                    .withSupplyCurrentLowerTime(1.0))
-            .withSlot0(
-                new Slot0Configs()
-                    .withGravityType(GravityTypeValue.Elevator_Static)
-                    // TODO: these need to be tuned
-                    .withKP(0)
-                    .withKI(0)
-                    .withKD(0)
-                    .withKS(0)
-                    .withKV(0)
-                    .withKA(0))
-            .withMotionMagic(
-                new MotionMagicConfigs()
-                    // TODO: these need to change
-                    .withMotionMagicCruiseVelocity(0)
-                    .withMotionMagicAcceleration(0)
-                    .withMotionMagicJerk(0))
-            .withSoftwareLimitSwitch(
-                new SoftwareLimitSwitchConfigs()
-                    // TODO: these may need to change
-                    .withForwardSoftLimitEnable(true)
-                    .withForwardSoftLimitThreshold(100)
-                    .withReverseSoftLimitEnable(true)
-                    .withReverseSoftLimitThreshold(0));
+    public static final double elevatorGearRatio = 60.0 / 14.0;
+    public static final double elevatorShaftRadiusInches = 0.5 / 2.0; // 1/2" thunderhex shaft
   }
 }
