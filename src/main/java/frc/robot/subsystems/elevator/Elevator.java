@@ -1,5 +1,6 @@
 package frc.robot.subsystems.elevator;
 
+import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ElevatorConstants.elevatorGearRatio;
 import static frc.robot.Constants.ElevatorConstants.elevatorShaftRadiusInches;
 
@@ -8,7 +9,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorConstants.ElevatorState;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -29,7 +30,7 @@ public class Elevator extends SubsystemBase {
       new Alert("Follower Elevator Motor Disconnected.", AlertType.kError);
 
   /* State tracker for current height of the elevator */
-  @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.STOW;
+  @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.ZERO;
 
   /* Visualization mechanism for elevator */
   @AutoLogOutput private final LoggedMechanism2d elevatorMechanism = new LoggedMechanism2d(1, 72);
@@ -47,7 +48,7 @@ public class Elevator extends SubsystemBase {
   /* Periodically running code */
   @Override
   public void periodic() {
-    io.setPosition(currentElevatorState.height);
+    io.setTargetPosition(currentElevatorState.height);
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
@@ -67,7 +68,7 @@ public class Elevator extends SubsystemBase {
     }
 
     // driver variables to visualize the elevator state
-    SmartDashboard.putBoolean("Elevator HOMED", currentElevatorState == ElevatorState.STOW);
+    SmartDashboard.putBoolean("Elevator HOMED", currentElevatorState == ElevatorState.ZERO);
     SmartDashboard.putBoolean("Elevator L1", currentElevatorState == ElevatorState.L1);
     SmartDashboard.putBoolean("Elevator L2", currentElevatorState == ElevatorState.L2);
     SmartDashboard.putBoolean("Elevator at STATION", currentElevatorState == ElevatorState.STATION);
@@ -76,61 +77,51 @@ public class Elevator extends SubsystemBase {
     SmartDashboard.putBoolean("Elevator NET", currentElevatorState == ElevatorState.NET);
   }
 
-  /* Command to lower the elevator to the next lowest height */
-  public Command lowerElevator() {
-    return Commands.runOnce(
-        () -> {
-          switch (currentElevatorState) {
-            case STOW:
-              break;
-            case L1:
-              currentElevatorState = ElevatorState.STOW;
-              break;
-            case L2:
-              currentElevatorState = ElevatorState.L1;
-              break;
-            case STATION:
-              currentElevatorState = ElevatorState.L2;
-              break;
-            case L3:
-              currentElevatorState = ElevatorState.STATION;
-              break;
-            case L4:
-              currentElevatorState = ElevatorState.L3;
-              break;
-            case NET:
-              currentElevatorState = ElevatorState.L4;
-              break;
-          }
-        });
+  public Command goToL1() {
+    return this.runOnce(() -> currentElevatorState = ElevatorState.L1).withName("ElevatorL1");
   }
 
-  /* Command to raise the elevator to the next tallest height */
-  public Command raiseElevator() {
-    return Commands.runOnce(
-        () -> {
-          switch (currentElevatorState) {
-            case STOW:
-              currentElevatorState = ElevatorState.L1;
-              break;
-            case L1:
-              currentElevatorState = ElevatorState.L2;
-              break;
-            case L2:
-              currentElevatorState = ElevatorState.STATION;
-              break;
-            case STATION:
-              currentElevatorState = ElevatorState.L3;
-              break;
-            case L3:
-              currentElevatorState = ElevatorState.L4;
-              break;
-            case L4:
-              currentElevatorState = ElevatorState.NET;
-              break;
-            case NET:
-              break;
-          }
-        });
+  public Command goToL2() {
+    return this.runOnce(() -> currentElevatorState = ElevatorState.L2).withName("ElevatorL2");
+  }
+
+  public Command goToStation() {
+    return this.runOnce(() -> currentElevatorState = ElevatorState.STATION)
+        .withName("ElevatorStation");
+  }
+
+  public Command goToL3() {
+    return this.runOnce(() -> currentElevatorState = ElevatorState.L3).withName("ElevatorL3");
+  }
+
+  public Command goToL4() {
+    return this.runOnce(() -> currentElevatorState = ElevatorState.L4).withName("ElevatorL4");
+  }
+
+  public Command goToNet() {
+    return this.runOnce(() -> currentElevatorState = ElevatorState.NET).withName("ElevatorNet");
+  }
+
+  public Command goToZero() {
+    return this.runOnce(() -> currentElevatorState = ElevatorState.ZERO).withName("ElevatorZero");
+  }
+
+  /**
+   * This routine should be called when robot is first enabled. It will slowly lower the elevator
+   * until a current spike is detected, then stop the motor and zero its position. This does not
+   * require any external sensors.
+   */
+  public Command runHomingRoutine() {
+    return new FunctionalCommand(
+            () -> {},
+            () -> io.setVoltage(Volts.of(0.1 * -12.0)),
+            (interrupted) -> {
+              io.setVoltage(Volts.zero());
+              currentElevatorState = ElevatorState.ZERO;
+              io.zeroPosition();
+            },
+            () -> inputs.mainElevatorCurrentAmps > 60.0,
+            this)
+        .withName("ElevatorHomingRouting");
   }
 }

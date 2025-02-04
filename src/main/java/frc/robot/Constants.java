@@ -67,9 +67,8 @@ public final class Constants {
     /* Scorer motor state */
     public static enum ScorerState {
       IDLE(Volts.of(0.0)),
-      INTAKE_CORAL(Volts.of(6.0)),
-      SHOOT_CORAL(Volts.of(-6.0)),
-      INTAKE_ALGAE(Volts.of(-6.0));
+      OUTTAKE_ALGAE(Volts.of(6.0)),
+      SHOOT_CORAL(Volts.of(-6.0));
 
       public final Voltage volts;
 
@@ -88,7 +87,7 @@ public final class Constants {
   public static class ElevatorConstants {
 
     public static enum ElevatorState {
-      STOW(Rotations.of(0.0)),
+      ZERO(Rotations.of(0.0)),
       L1(Rotations.of(3.0)),
       L2(Rotations.of(6.0)),
       STATION(Rotations.of(7.5)),

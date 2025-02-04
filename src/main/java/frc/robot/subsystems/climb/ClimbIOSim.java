@@ -34,9 +34,4 @@ public class ClimbIOSim implements ClimbIO {
   public void setVoltage(Voltage voltage) {
     appliedVolts = voltage;
   }
-
-  @Override
-  public void holdPosition() {
-    appliedVolts = Volts.zero();
-  }
 }

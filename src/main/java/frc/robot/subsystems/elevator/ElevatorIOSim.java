@@ -68,12 +68,18 @@ public class ElevatorIOSim implements ElevatorIO {
   }
 
   @Override
-  public void setPosition(Angle motorTargetRotations) {
+  public void setTargetPosition(Angle motorTargetRotations) {
     elevatorPIDController.setGoal(motorTargetRotations.in(Rotations));
   }
 
   @Override
   public void setVoltage(Voltage volts) {
     appliedVolts = volts.in(Volts);
+  }
+
+  @Override
+  public void zeroPosition() {
+    elevatorSim.setAngle(0);
+    elevatorPIDController.reset(0);
   }
 }

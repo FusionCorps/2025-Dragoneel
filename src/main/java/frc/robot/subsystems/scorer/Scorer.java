@@ -1,5 +1,7 @@
 package frc.robot.subsystems.scorer;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -40,20 +42,17 @@ public class Scorer extends SubsystemBase {
     currentScorerState = state;
   }
 
-  /** Runs the scorer to intake algae. This simultaneously shoots stored coral. */
-  // TODO: may need to be removed as irrelevant, especially since it is redundant
-  public Command intakeAlgaeCmd() {
-    return runEnd(() -> setState(ScorerState.INTAKE_ALGAE), () -> setState(ScorerState.IDLE));
-  }
-
-  /** Runs the scorer to intake coral from the passive intake. */
-  // TODO: may need to be removed as not useful
-  public Command intakeCoralCmd() {
-    return runEnd(() -> setState(ScorerState.INTAKE_CORAL), () -> setState(ScorerState.IDLE));
+  /** Runs the scorer to outtake algae. */
+  public Command outtakeAlgae() {
+    return startEnd(() -> setState(ScorerState.OUTTAKE_ALGAE), () -> setState(ScorerState.IDLE))
+        .withTimeout(Seconds.of(0.25))
+        .withName("ScorerOuttakeAlgae");
   }
 
   /** Runs the scorer to shoot stored coral. This simultaneously intakes algae. */
   public Command shootCoralCmd() {
-    return runEnd(() -> setState(ScorerState.SHOOT_CORAL), () -> setState(ScorerState.IDLE));
+    return this.startEnd(() -> setState(ScorerState.SHOOT_CORAL), () -> setState(ScorerState.IDLE))
+        .withTimeout(Seconds.of(0.25))
+        .withName("ScorerShootCoral");
   }
 }

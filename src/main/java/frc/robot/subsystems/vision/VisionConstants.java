@@ -44,8 +44,8 @@ public class VisionConstants {
           aprilTagLayout.getTagPose(11).get().toPose2d());
 
   // Camera names, must match names configured on coprocessor
-  public static String camera0Name = "camera_0";
-  public static String camera1Name = "camera_1";
+  public static String camera0Name = "ArducamMiddle";
+  public static String camera1Name = "ArducamLeft";
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)

@@ -23,8 +23,8 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
-  private final TalonFX mainElevatorMotor = new TalonFX(mainElevatorMotorID);
-  private final TalonFX followerElevatorMotor = new TalonFX(followerElevatorMotorID);
+  private final TalonFX mainElevatorMotor;
+  private final TalonFX followerElevatorMotor;
 
   private final StatusSignal<Angle> mainElevatorMotorPosition;
   private final StatusSignal<AngularVelocity> mainElevatorMotorVelocity;
@@ -43,6 +43,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
   public ElevatorIOTalonFX() {
+    mainElevatorMotor = new TalonFX(mainElevatorMotorID);
+    followerElevatorMotor = new TalonFX(followerElevatorMotorID);
     tryUntilOk(5, () -> mainElevatorMotor.getConfigurator().apply(elevatorConfig, 0.5));
     tryUntilOk(5, () -> followerElevatorMotor.getConfigurator().apply(elevatorConfig, 0.5));
 
@@ -108,12 +110,18 @@ public class ElevatorIOTalonFX implements ElevatorIO {
   }
 
   @Override
-  public void setPosition(Angle motorTargetRotations) {
+  public void setTargetPosition(Angle motorTargetRotations) {
     mainElevatorMotor.setControl(posRequest.withPosition(motorTargetRotations.in(Rotations)));
   }
 
   @Override
   public void setVoltage(Voltage volts) {
     mainElevatorMotor.setControl(voltageRequest.withOutput(volts));
+  }
+
+  @Override
+  public void zeroPosition() {
+    mainElevatorMotor.setPosition(0.0);
+    followerElevatorMotor.setPosition(0.0);
   }
 }

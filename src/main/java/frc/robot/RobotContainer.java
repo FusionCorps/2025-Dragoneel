@@ -15,11 +15,13 @@ package frc.robot;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.climb.Climb;
@@ -33,13 +35,15 @@ import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
-import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
 import frc.robot.subsystems.scorer.Scorer;
 import frc.robot.subsystems.scorer.ScorerIO;
 import frc.robot.subsystems.scorer.ScorerIOSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import java.util.Map;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -55,6 +59,8 @@ public class RobotContainer {
   private final Climb climb;
   private final Scorer scorer;
 
+  private final LoggedDashboardChooser<Command> autoChooser;
+
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -63,7 +69,6 @@ public class RobotContainer {
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
-        elevator = new Elevator(new ElevatorIOTalonFX());
         drive =
             new Drive(
                 new GyroIOPigeon2(),
@@ -71,11 +76,17 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
-        vision = null; // TODO: this will later be a Limelight
+        vision =
+            new Vision(
+                (a, b, c) -> {},
+                new VisionIOPhotonVision(
+                    camera0Name, robotToCamera0)); // TODO: this will later be a Limelight
         climb = null;
         // climb = new Climb(new ClimbIOTalonFX());
         scorer = null;
         // scorer = new Scorer(new ScorerIOSparkFlex());
+        // elevator = new Elevator(new ElevatorIOTalonFX());
+        elevator = null;
         break;
 
       case SIM:
@@ -110,6 +121,35 @@ public class RobotContainer {
         scorer = new Scorer(new ScorerIO() {});
         break;
     }
+
+    // Set up auto routines
+    // register commands for PathPlanner
+
+    NamedCommands.registerCommands(
+        Map.of(
+            "ElevatorL1", elevator.goToL1(),
+            "ElevatorL2", elevator.goToL2(),
+            "ElevatorStation", elevator.goToStation(),
+            "ElevatorL3", elevator.goToL3(),
+            "ElevatorL4", elevator.goToL4(),
+            "ElevatorNet", elevator.goToNet(),
+            "ClimbRun", climb.runClimbCommand(),
+            "ScorerShootCoral", scorer.shootCoralCmd(),
+            "ScorerShootAlgae", scorer.outtakeAlgae()));
+
+    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+
+    // Set up SysId routines
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Forward)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Reverse)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -173,6 +213,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return Commands.none();
+    return autoChooser.get();
   }
 }
