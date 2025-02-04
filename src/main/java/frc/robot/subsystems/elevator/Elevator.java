@@ -1,5 +1,6 @@
 package frc.robot.subsystems.elevator;
 
+import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ElevatorConstants.elevatorGearRatio;
 import static frc.robot.Constants.ElevatorConstants.elevatorShaftRadiusInches;
 
@@ -8,7 +9,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorConstants.ElevatorState;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -77,30 +78,50 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command goToL1() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L1);
+    return this.runOnce(() -> currentElevatorState = ElevatorState.L1).withName("ElevatorL1");
   }
 
   public Command goToL2() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L2);
+    return this.runOnce(() -> currentElevatorState = ElevatorState.L2).withName("ElevatorL2");
   }
-  
+
   public Command goToStation() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.STATION);
+    return this.runOnce(() -> currentElevatorState = ElevatorState.STATION)
+        .withName("ElevatorStation");
   }
 
   public Command goToL3() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L3);
+    return this.runOnce(() -> currentElevatorState = ElevatorState.L3).withName("ElevatorL3");
   }
 
   public Command goToL4() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L4);
+    return this.runOnce(() -> currentElevatorState = ElevatorState.L4).withName("ElevatorL4");
   }
 
   public Command goToNet() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.NET);
+    return this.runOnce(() -> currentElevatorState = ElevatorState.NET).withName("ElevatorNet");
   }
 
   public Command goToZero() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.ZERO);
+    return this.runOnce(() -> currentElevatorState = ElevatorState.ZERO).withName("ElevatorZero");
+  }
+
+  /**
+   * This routine should be called when robot is first enabled. It will slowly lower the elevator
+   * until a current spike is detected, then stop the motor and zero its position. This does not
+   * require any external sensors.
+   */
+  public Command runHomingRoutine() {
+    return new FunctionalCommand(
+            () -> {},
+            () -> io.setVoltage(Volts.of(0.1 * -12.0)),
+            (interrupted) -> {
+              io.setVoltage(Volts.zero());
+              currentElevatorState = ElevatorState.ZERO;
+              io.zeroPosition();
+            },
+            () -> inputs.mainElevatorCurrentAmps > 60.0,
+            this)
+        .withName("ElevatorHomingRouting");
   }
 }

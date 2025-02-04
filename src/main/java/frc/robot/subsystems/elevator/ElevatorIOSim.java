@@ -76,4 +76,10 @@ public class ElevatorIOSim implements ElevatorIO {
   public void setVoltage(Voltage volts) {
     appliedVolts = volts.in(Volts);
   }
+
+  @Override
+  public void zeroPosition() {
+    elevatorSim.setAngle(0);
+    elevatorPIDController.reset(0);
+  }
 }

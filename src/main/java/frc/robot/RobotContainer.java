@@ -15,21 +15,11 @@ package frc.robot;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import edu.wpi.first.math.Pair;
-
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -52,6 +42,8 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import java.util.Map;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -133,17 +125,17 @@ public class RobotContainer {
     // Set up auto routines
     // register commands for PathPlanner
 
-    NamedCommands.registerCommands(Map.of(
-      "ElevatorL1", elevator.goToL1(),
-      "ElevatorL2", elevator.goToL2(),
-      "ElevatorStation", elevator.goToStation(),
-      "ElevatorL3", elevator.goToL3(),
-      "ElevatorL4", elevator.goToL4(),
-      "ElevatorNet", elevator.goToNet(),
-      "Climb", climb.runClimbCommand(),
-      "ScorerShootCoral", scorer.shootCoralCmd(),
-      "ScorerShootAlgae", scorer.outtakeAlgae()
-    ));
+    NamedCommands.registerCommands(
+        Map.of(
+            "ElevatorL1", elevator.goToL1(),
+            "ElevatorL2", elevator.goToL2(),
+            "ElevatorStation", elevator.goToStation(),
+            "ElevatorL3", elevator.goToL3(),
+            "ElevatorL4", elevator.goToL4(),
+            "ElevatorNet", elevator.goToNet(),
+            "ClimbRun", climb.runClimbCommand(),
+            "ScorerShootCoral", scorer.shootCoralCmd(),
+            "ScorerShootAlgae", scorer.outtakeAlgae()));
 
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
