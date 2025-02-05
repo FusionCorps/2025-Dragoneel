@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.Vision;
 import java.text.DecimalFormat;
@@ -132,7 +133,9 @@ public class DriveCommands {
     angleController.enableContinuousInput(-Math.PI, Math.PI);
 
     // Construct command
-    return Commands.run(
+    return drive.startRun(
+            // Reset PID controller when command starts
+            () -> angleController.reset(drive.getRotation().getRadians()),
             () -> {
               // Get linear velocity
               Translation2d linearVelocity =
@@ -158,11 +161,8 @@ public class DriveCommands {
                       isFlipped
                           ? drive.getRotation().plus(new Rotation2d(Math.PI))
                           : drive.getRotation()));
-            },
-            drive)
-
-        // Reset PID controller when command starts
-        .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+            }
+            );
   }
 
   /** Rotates in-place to center on the currently seen reef tag. */
@@ -189,11 +189,17 @@ public class DriveCommands {
             new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
     angleController.enableContinuousInput(-Math.PI, Math.PI);
 
-    PIDController xController = new PIDController(3.0, 0.0, 0.0);
-    PIDController yController = new PIDController(3.0, 0.0, 0.0);
+    PIDController xController = new PIDController(5.0, 0.0, 0.0);
+    PIDController yController = new PIDController(5.0, 0.0, 0.0);
 
     // Construct command
-    return Commands.run(
+    return new FunctionalCommand(
+      () -> {
+        // Reset PID controllerS when command starts
+        angleController.reset(drive.getRotation().getRadians());
+        xController.reset();
+        yController.reset();
+      },
             () -> {
               double xVel =
                   xController.calculate(drive.getPose().getX(), poseSupplier.get().getX());
@@ -213,21 +219,13 @@ public class DriveCommands {
                       yVel * drive.getMaxLinearSpeedMetersPerSec(),
                       omega);
               drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
-            },
-            drive)
-
-        // Reset PID controllerS when command starts
-        .beforeStarting(
-            () -> {
-              angleController.reset(drive.getRotation().getRadians());
-              xController.reset();
-              yController.reset();
-            })
-        .finallyDo(
-            () -> {
+            }, 
+            interrupted -> {
               xController.close();
               yController.close();
-            });
+            }, 
+            () -> false, // only end on interrupt
+            drive);
   }
 
   /**
