@@ -13,17 +13,16 @@
 
 package frc.robot;
 
-import static frc.robot.subsystems.vision.VisionConstants.*;
+import static frc.robot.Constants.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.commands.DriveCommands;
-import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.drive.Drive;
@@ -42,7 +41,6 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
-import java.util.Map;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -72,10 +70,10 @@ public class RobotContainer {
         drive =
             new Drive(
                 new GyroIOPigeon2(),
-                new ModuleIOTalonFX(TunerConstants.FrontLeft),
-                new ModuleIOTalonFX(TunerConstants.FrontRight),
-                new ModuleIOTalonFX(TunerConstants.BackLeft),
-                new ModuleIOTalonFX(TunerConstants.BackRight));
+                new ModuleIOTalonFX(DriveConstants.FRONT_LEFT),
+                new ModuleIOTalonFX(DriveConstants.FRONT_RIGHT),
+                new ModuleIOTalonFX(DriveConstants.BACK_LEFT),
+                new ModuleIOTalonFX(DriveConstants.BACK_RIGHT));
         vision =
             new Vision(
                 (a, b, c) -> {},
@@ -95,10 +93,10 @@ public class RobotContainer {
         drive =
             new Drive(
                 new GyroIO() {},
-                new ModuleIOSim(TunerConstants.FrontLeft),
-                new ModuleIOSim(TunerConstants.FrontRight),
-                new ModuleIOSim(TunerConstants.BackLeft),
-                new ModuleIOSim(TunerConstants.BackRight));
+                new ModuleIOSim(DriveConstants.FRONT_LEFT),
+                new ModuleIOSim(DriveConstants.FRONT_RIGHT),
+                new ModuleIOSim(DriveConstants.BACK_LEFT),
+                new ModuleIOSim(DriveConstants.BACK_RIGHT));
         vision =
             new Vision(
                 drive, new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose));
@@ -125,19 +123,21 @@ public class RobotContainer {
     // Set up auto routines
     // register commands for PathPlanner
 
-    NamedCommands.registerCommands(
-        Map.of(
-            "ElevatorL1", elevator.goToL1(),
-            "ElevatorL2", elevator.goToL2(),
-            "ElevatorStation", elevator.goToStation(),
-            "ElevatorL3", elevator.goToL3(),
-            "ElevatorL4", elevator.goToL4(),
-            "ElevatorNet", elevator.goToNet(),
-            "ClimbRun", climb.runClimbCommand(),
-            "ScorerShootCoral", scorer.shootCoralCmd(),
-            "ScorerShootAlgae", scorer.outtakeAlgae()));
+    // NamedCommands.registerCommands(
+    //     Map.of(
+    //         "ElevatorL1", elevator.goToL1(),
+    //         "ElevatorL2", elevator.goToL2(),
+    //         "ElevatorStation", elevator.goToStation(),
+    //         "ElevatorL3", elevator.goToL3(),
+    //         "ElevatorL4", elevator.goToL4(),
+    //         "ElevatorNet", elevator.goToNet(),
+    //         "ClimbRun", climb.runClimbCommand(),
+    //         "ScorerShootCoral", scorer.shootCoralCmd(),
+    //         "ScorerShootAlgae", scorer.outtakeAlgae()));
 
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    autoChooser = new LoggedDashboardChooser<>("Auto Chooser");
+    autoChooser.addOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
 
     // Set up SysId routines
     autoChooser.addOption(
@@ -205,6 +205,14 @@ public class RobotContainer {
 
     // controller.y().whileTrue(climb.runClimbCommand());
     // controller.a().whileTrue(scorer.shootCoralCmd());
+    // controller.leftBumper().onTrue(elevator.goToStation());
+    // controller.rightBumper().onTrue(elevator.goToNet());
+    // controller.a().onTrue(elevator.goToL1());
+    // controller.b().onTrue(elevator.goToL2());
+    // controller.x().onTrue(elevator.goToL3());
+    // controller.y().onTrue(elevator.goToL4());
+
+    // controller.povUp().whileTrue(scorer.outtakeAlgae());
   }
 
   /**

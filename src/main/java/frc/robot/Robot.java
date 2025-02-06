@@ -82,8 +82,6 @@ public class Robot extends LoggedRobot {
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
 
-    CommandScheduler.getInstance()
-        .onCommandInitialize((command) -> System.out.println(command.getName() + "initialized"));
     DriverStation.silenceJoystickConnectionWarning(true);
   }
 

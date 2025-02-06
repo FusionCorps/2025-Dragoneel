@@ -2,7 +2,7 @@ package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.Constants.ElevatorConstants.elevatorGearRatio;
+import static frc.robot.Constants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
@@ -27,14 +27,15 @@ public class ElevatorIOSim implements ElevatorIO {
 
   private final DCMotorSim elevatorSim =
       new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60Foc(2), 0.01, elevatorGearRatio),
+          LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60Foc(2), 0.01, ELEVATOR_GEAR_RATIO),
           DCMotor.getKrakenX60Foc(2));
 
   private final ProfiledPIDController elevatorPIDController =
       new ProfiledPIDController(
-          0.5, 0, 0.01, new TrapezoidProfile.Constraints(5, 10)); // in rotations units
+          2.0, 0, 0.01, new TrapezoidProfile.Constraints(200, 100)); // in rotations units
 
-  private final ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0.0001, 0.5);
+  private final ElevatorFeedforward elevatorFeedforward =
+      new ElevatorFeedforward(0.0, 0.00001, 3.0);
 
   private double appliedVolts;
 

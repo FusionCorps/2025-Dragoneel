@@ -1,8 +1,9 @@
 package frc.robot.subsystems.elevator;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.Constants.ElevatorConstants.elevatorGearRatio;
-import static frc.robot.Constants.ElevatorConstants.elevatorShaftRadiusInches;
+import static frc.robot.Constants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
+import static frc.robot.Constants.ElevatorConstants.ELEVATOR_SHAFT_DIAMETER;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
@@ -47,16 +48,16 @@ public class Elevator extends SubsystemBase {
   /* Periodically running code */
   @Override
   public void periodic() {
-    io.setTargetPosition(currentElevatorState.height);
+    io.setTargetPosition(currentElevatorState.rotations);
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
     elevatorHeightIndicatorMover.setPosition(
         0,
-        // rev * distance/rev / gear ratio
+        // rev * circumference/rev / gear ratio = height in meters
         Units.radiansToRotations(inputs.mainElevatorPositionRad)
-            * (2.0 * Math.PI * elevatorShaftRadiusInches)
-            / (elevatorGearRatio));
+            * (Math.PI * ELEVATOR_SHAFT_DIAMETER.in(Meters))
+            / (ELEVATOR_GEAR_RATIO));
 
     if (!inputs.mainElevatorMotorConnected) {
       mainMotorConnectedAlert.set(true);

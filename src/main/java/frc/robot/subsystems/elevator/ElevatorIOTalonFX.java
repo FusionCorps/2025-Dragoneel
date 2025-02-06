@@ -27,8 +27,8 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
-  private final TalonFX mainElevatorMotor;
-  private final TalonFX followerElevatorMotor;
+  private final TalonFX mainElevatorMotor = new TalonFX(MAIN_ELEVATOR_MOTOR_ID);
+  private final TalonFX followerElevatorMotor = new TalonFX(FOLLOWER_ELEVATOR_MOTOR_ID);
 
   private final StatusSignal<Angle> mainElevatorMotorPosition;
   private final StatusSignal<AngularVelocity> mainElevatorMotorVelocity;
@@ -80,7 +80,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     tryUntilOk(5, () -> followerElevatorMotor.getConfigurator().apply(elevatorConfig, 0.5));
 
     // TODO: this might change
-    followerElevatorMotor.setControl(new Follower(mainElevatorMotorID, true));
+    followerElevatorMotor.setControl(new Follower(MAIN_ELEVATOR_MOTOR_ID, true));
 
     mainElevatorMotorPosition = mainElevatorMotor.getPosition();
     mainElevatorMotorVelocity = mainElevatorMotor.getVelocity();

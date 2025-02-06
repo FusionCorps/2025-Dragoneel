@@ -45,7 +45,6 @@ public class Scorer extends SubsystemBase {
   /** Runs the scorer to outtake algae. */
   public Command outtakeAlgae() {
     return startEnd(() -> setState(ScorerState.OUTTAKE_ALGAE), () -> setState(ScorerState.IDLE))
-        .withTimeout(Seconds.of(0.25))
         .withName("ScorerOuttakeAlgae");
   }
 
