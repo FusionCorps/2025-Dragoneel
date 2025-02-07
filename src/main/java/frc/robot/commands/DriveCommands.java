@@ -254,7 +254,8 @@ public class DriveCommands {
    * @param tagPoseSupplier A supplier for the tag pose - should be the actual tag pose, not the
    *     pose of the robot relative to the tag or any offset pose.
    */
-  public static Command driveToReefTag(Drive drive, Supplier<Pose3d> tagPoseSupplierNoOffset) {
+  public static Command driveToReefTag(
+      Drive drive, Supplier<Pose3d> tagPoseSupplierNoOffset, boolean alignLeft) {
     // applies a 0.7m offset to the tag pose and discards the z (vertical) component
     // rotate, because apriltag will always be 180° from robot
     Supplier<Pose2d> tagPoseSupplierIn2DWOffset =
@@ -264,7 +265,9 @@ public class DriveCommands {
           } else
             return tagPoseSupplierNoOffset
                 .get()
-                .transformBy(new Transform3d(0.7, 0, 0, new Rotation3d(Rotation2d.kPi)))
+                .transformBy(
+                    new Transform3d(
+                        0.7, (alignLeft ? 0.4 : 0.0), 0, new Rotation3d(Rotation2d.kPi)))
                 .toPose2d();
         };
 
@@ -276,9 +279,10 @@ public class DriveCommands {
 
   /**
    * Field relative drive command using PID for full control, targeting the nearest reef tag
-   * (doesn't have to be seen).
+   * (doesn't have to be seen). Separate commands should be created for aligning to left and right
+   * branches.
    */
-  public static Command driveToNearestReefTagWOdometry(Drive drive) {
+  public static Command driveToNearestReefTagWOdometryAndOffset(Drive drive, boolean alignLeft) {
     return driveToReefTag(
         drive,
         () ->
@@ -289,7 +293,8 @@ public class DriveCommands {
                         DriverStation.getAlliance().isPresent()
                                 && DriverStation.getAlliance().get() == Alliance.Red
                             ? redReefTagPoses
-                            : blueReefTagPoses)));
+                            : blueReefTagPoses)),
+        alignLeft);
   }
 
   /**

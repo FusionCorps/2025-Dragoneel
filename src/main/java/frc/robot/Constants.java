@@ -341,6 +341,7 @@ public final class Constants {
   public static class ElevatorConstants {
     public static enum ElevatorState {
       ZERO(Rotations.of(0.0)),
+      PROCESSOR(Rotations.of(10)),
       L1(Rotations.of(50)),
       L2(Rotations.of(88)),
       STATION(Rotations.of(98)),
@@ -421,7 +422,8 @@ public final class Constants {
   }
 
   public static final double ROBOT_MASS_KG = 74.088;
-  public static final double ROBOT_MOI = ROBOT_MASS_KG * Units.inchesToMeters(20.75) / 2.0 * 0.011992/(DriveConstants.driveGains.kA);
+  public static final double ROBOT_MOI =
+      ROBOT_MASS_KG * Units.inchesToMeters(20.75) / 2.0 * 0.011992 / (DriveConstants.driveGains.kA);
   public static final RobotConfig DEFAULT_PP_ROBOT_CONFIG =
       new RobotConfig(
           Constants.ROBOT_MASS_KG,

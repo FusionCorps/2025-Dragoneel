@@ -102,6 +102,11 @@ public class Elevator extends SubsystemBase {
     return this.runOnce(() -> currentElevatorState = ElevatorState.NET).withName("ElevatorNet");
   }
 
+  public Command goToProcessor() {
+    return this.runOnce(() -> currentElevatorState = ElevatorState.PROCESSOR)
+        .withName("ElevatorProcessor");
+  }
+
   public Command goToZero() {
     return this.runOnce(() -> currentElevatorState = ElevatorState.ZERO).withName("ElevatorZero");
   }

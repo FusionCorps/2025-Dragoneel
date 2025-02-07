@@ -136,9 +136,9 @@ public class RobotContainer {
               "ElevatorL3", elevator.goToL3(),
               "ElevatorL4", elevator.goToL4(),
               "ElevatorNet", elevator.goToNet(),
-              "ClimbRun", climb.runClimbCommand(),
+              "ElevatorProcessor", elevator.goToProcessor(),
               "ScorerShootCoral", scorer.shootCoralCmd(),
-              "ScorerShootAlgae", scorer.outtakeAlgae()));
+              "ScorerShootAlgae", scorer.shootAlgaeCmd()));
     }
 
     // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -169,56 +169,46 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     // Default command, normal field-relative drive
-    drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drive,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
+    if (drive != null) {
+      drive.setDefaultCommand(
+          DriveCommands.joystickDrive(
+              drive,
+              () -> -controller.getLeftY(),
+              () -> -controller.getLeftX(),
+              () -> -controller.getRightX()));
 
-    // Reset gyro to 0° when B button is pressed
-    controller.b().onTrue(drive.zeroOdometry());
+      // Reset gyro to 0° when B button is pressed
+      controller.start().onTrue(drive.zeroOdometry());
 
-    // Rotate to heading when A button is held, robot can be driven still.
-    controller
-        .a()
-        .whileTrue(
-            DriveCommands.rotateToTag(
-                drive, vision, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+      controller
+          .povRight()
+          .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, false));
 
-    // Lock to primary seen apriltag heading when A button is held
-    // controller
-    //     .a()
-    //     .whileTrue(
-    //         DriveCommands.rotateToReefTagFace(
-    //             drive,
-    //             () -> -controller.getLeftY(),
-    //             () -> -controller.getLeftX(),
-    //             () -> aprilTagLayout.getTagPose(vision.getReefTargetId(0)).orElse(null)));
+      controller
+          .povLeft()
+          .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, true));
+    }
 
-    // Drive straight to primary seen apriltag when X button is held
-    // controller
-    //     .x()
-    //     .whileTrue(
-    //         DriveCommands.driveToReefTag(
-    //             drive, () -> aprilTagLayout.getTagPose(vision.getReefTargetId(0)).orElse(null)));
+    if (elevator != null) {
+      controller.leftBumper().onTrue(elevator.goToNet());
+      controller.y().onTrue(elevator.goToL4());
+      controller.x().onTrue(elevator.goToL3());
+      controller.b().onTrue(elevator.goToL2());
+      controller.a().onTrue(elevator.goToL1());
+      controller.povDown().onTrue(elevator.goToZero());
+      controller.rightBumper().onTrue(elevator.goToStation());
 
-    // Drive straight to nearest apriltag when X + RB are held (works even if tag is unseen)
-    // controller
-    //     .x()
-    //     .and(controller.rightBumper())
-    //     .whileTrue(DriveCommands.driveToNearestReefTagWOdometry(drive));
+      controller.back().whileTrue(elevator.runHomingRoutine());
+    }
 
-    // controller.y().whileTrue(climb.runClimbCommand());
-    // controller.a().whileTrue(scorer.shootCoralCmd());
-    // controller.leftBumper().onTrue(elevator.goToStation());
-    // controller.rightBumper().onTrue(elevator.goToNet());
-    // controller.a().onTrue(elevator.goToL1());
-    // controller.b().onTrue(elevator.goToL2());
-    // controller.x().onTrue(elevator.goToL3());
-    // controller.y().onTrue(elevator.goToL4());
+    if (scorer != null) {
+      controller.rightTrigger().whileTrue(scorer.shootCoralCmd());
+      controller.leftTrigger().whileTrue(scorer.shootAlgaeCmd());
+    }
 
-    // controller.povUp().whileTrue(scorer.outtakeAlgae());
+    if (climb != null) {
+      controller.povUp().whileTrue(climb.runClimbCmd());
+    }
   }
 
   /**
