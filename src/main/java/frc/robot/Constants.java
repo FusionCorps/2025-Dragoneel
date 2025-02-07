@@ -15,8 +15,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.List;
-
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -35,7 +33,6 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -53,6 +50,7 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
+import java.util.List;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -162,8 +160,8 @@ public final class Constants {
     private static final int kPigeonId = 0;
 
     // These constants are only used for simulation
-    private static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);
-    private static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.01);
+    private static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.004);
+    private static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.025);
     // Simulated voltage necessary to overcome friction
     private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
     private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
@@ -366,64 +364,64 @@ public final class Constants {
   }
 
   public static class VisionConstants {
-  // AprilTag layout
-  public static AprilTagFieldLayout aprilTagLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+    // AprilTag layout
+    public static AprilTagFieldLayout aprilTagLayout =
+        AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 
-  public static List<Pose2d> blueReefTagPoses =
-      List.of(
-          aprilTagLayout.getTagPose(17).get().toPose2d(),
-          aprilTagLayout.getTagPose(18).get().toPose2d(),
-          aprilTagLayout.getTagPose(19).get().toPose2d(),
-          aprilTagLayout.getTagPose(20).get().toPose2d(),
-          aprilTagLayout.getTagPose(21).get().toPose2d(),
-          aprilTagLayout.getTagPose(22).get().toPose2d());
+    public static List<Pose2d> blueReefTagPoses =
+        List.of(
+            aprilTagLayout.getTagPose(17).get().toPose2d(),
+            aprilTagLayout.getTagPose(18).get().toPose2d(),
+            aprilTagLayout.getTagPose(19).get().toPose2d(),
+            aprilTagLayout.getTagPose(20).get().toPose2d(),
+            aprilTagLayout.getTagPose(21).get().toPose2d(),
+            aprilTagLayout.getTagPose(22).get().toPose2d());
 
-  public static List<Pose2d> redReefTagPoses =
-      List.of(
-          aprilTagLayout.getTagPose(6).get().toPose2d(),
-          aprilTagLayout.getTagPose(7).get().toPose2d(),
-          aprilTagLayout.getTagPose(8).get().toPose2d(),
-          aprilTagLayout.getTagPose(9).get().toPose2d(),
-          aprilTagLayout.getTagPose(10).get().toPose2d(),
-          aprilTagLayout.getTagPose(11).get().toPose2d());
+    public static List<Pose2d> redReefTagPoses =
+        List.of(
+            aprilTagLayout.getTagPose(6).get().toPose2d(),
+            aprilTagLayout.getTagPose(7).get().toPose2d(),
+            aprilTagLayout.getTagPose(8).get().toPose2d(),
+            aprilTagLayout.getTagPose(9).get().toPose2d(),
+            aprilTagLayout.getTagPose(10).get().toPose2d(),
+            aprilTagLayout.getTagPose(11).get().toPose2d());
 
-  // Camera names, must match names configured on coprocessor
-  public static String camera0Name = "ArducamMiddle";
-  public static String camera1Name = "ArducamLeft";
+    // Camera names, must match names configured on coprocessor
+    public static String camera0Name = "ArducamMiddle";
+    public static String camera1Name = "ArducamRight";
 
-  // Robot to camera transforms
-  // (Not used by Limelight, configure in web UI instead)
-  public static Transform3d robotToCamera0 =
-      new Transform3d(0.0, 0.0, 0.2, new Rotation3d(0.0, -0.4, 0.0));
-  public static Transform3d robotToCamera1 =
-      new Transform3d(-0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, Units.degreesToRadians(20)));
+    // Robot to camera transforms
+    // (Not used by Limelight, configure in web UI instead)
+    public static Transform3d robotToCamera0 =
+        new Transform3d(0.0, 0.0, 0.2, new Rotation3d(0.0, 0.0, 0.0));
+    public static Transform3d robotToCamera1 =
+        new Transform3d(0.2, 0.0, 0.2, new Rotation3d(0.0, 0.0, Units.degreesToRadians(48)));
 
-  // Basic filtering thresholds
-  public static double maxAmbiguity = 0.3;
-  public static double maxZError = 0.75;
+    // Basic filtering thresholds
+    public static double maxAmbiguity = 0.3;
+    public static double maxZError = 0.75;
 
-  // Standard deviation baselines, for 1 meter distance and 1 tag
-  // (Adjusted automatically based on distance and # of tags)
-  public static double linearStdDevBaseline = 0.02; // Meters
-  public static double angularStdDevBaseline = 0.06; // Radians
+    // Standard deviation baselines, for 1 meter distance and 1 tag
+    // (Adjusted automatically based on distance and # of tags)
+    public static double linearStdDevBaseline = 0.02; // Meters
+    public static double angularStdDevBaseline = 0.06; // Radians
 
-  // Standard deviation multipliers for each camera
-  // (Adjust to trust some cameras more than others)
-  public static double[] cameraStdDevFactors =
-      new double[] {
-        1.0, // Camera 0
-        1.0 // Camera 1
-      };
+    // Standard deviation multipliers for each camera
+    // (Adjust to trust some cameras more than others)
+    public static double[] cameraStdDevFactors =
+        new double[] {
+          1.0, // Camera 0
+          1.0 // Camera 1
+        };
 
-  // Multipliers to apply for MegaTag 2 observations
-  public static double linearStdDevMegatag2Factor = 0.5; // More stable than full 3D solve
-  public static double angularStdDevMegatag2Factor =
-      Double.POSITIVE_INFINITY; // No rotation data available
-}
+    // Multipliers to apply for MegaTag 2 observations
+    public static double linearStdDevMegatag2Factor = 0.5; // More stable than full 3D solve
+    public static double angularStdDevMegatag2Factor =
+        Double.POSITIVE_INFINITY; // No rotation data available
+  }
 
-  public static final double ROBOT_MOI = 6.883;
   public static final double ROBOT_MASS_KG = 74.088;
+  public static final double ROBOT_MOI = ROBOT_MASS_KG * Units.inchesToMeters(20.75) / 2.0 * 0.011992/(DriveConstants.driveGains.kA);
   public static final RobotConfig DEFAULT_PP_ROBOT_CONFIG =
       new RobotConfig(
           Constants.ROBOT_MASS_KG,
@@ -438,4 +436,3 @@ public final class Constants {
               1),
           DriveConstants.MODULE_TRANSLATIONS);
 }
-

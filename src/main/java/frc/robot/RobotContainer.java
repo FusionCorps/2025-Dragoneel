@@ -16,6 +16,7 @@ package frc.robot;
 import static frc.robot.Constants.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -41,6 +42,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import java.util.Map;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -74,11 +76,13 @@ public class RobotContainer {
                 new ModuleIOTalonFX(DriveConstants.FRONT_RIGHT),
                 new ModuleIOTalonFX(DriveConstants.BACK_LEFT),
                 new ModuleIOTalonFX(DriveConstants.BACK_RIGHT));
-        vision =
-            new Vision(
-                (a, b, c) -> {},
-                new VisionIOPhotonVision(
-                    camera0Name, robotToCamera0)); // TODO: this will later be a Limelight
+        // vision =
+        //     new Vision(
+        //         drive,
+        //         new VisionIOPhotonVision(camera0Name, robotToCamera0),
+        //         new VisionIOPhotonVision(camera1Name, robotToCamera1));
+        vision = new Vision((a, b, c) -> {}, new VisionIOPhotonVision(camera0Name, robotToCamera0));
+
         climb = null;
         // climb = new Climb(new ClimbIOTalonFX());
         scorer = null;
@@ -123,17 +127,19 @@ public class RobotContainer {
     // Set up auto routines
     // register commands for PathPlanner
 
-    // NamedCommands.registerCommands(
-    //     Map.of(
-    //         "ElevatorL1", elevator.goToL1(),
-    //         "ElevatorL2", elevator.goToL2(),
-    //         "ElevatorStation", elevator.goToStation(),
-    //         "ElevatorL3", elevator.goToL3(),
-    //         "ElevatorL4", elevator.goToL4(),
-    //         "ElevatorNet", elevator.goToNet(),
-    //         "ClimbRun", climb.runClimbCommand(),
-    //         "ScorerShootCoral", scorer.shootCoralCmd(),
-    //         "ScorerShootAlgae", scorer.outtakeAlgae()));
+    if (elevator != null && scorer != null && climb != null) {
+      NamedCommands.registerCommands(
+          Map.of(
+              "ElevatorL1", elevator.goToL1(),
+              "ElevatorL2", elevator.goToL2(),
+              "ElevatorStation", elevator.goToStation(),
+              "ElevatorL3", elevator.goToL3(),
+              "ElevatorL4", elevator.goToL4(),
+              "ElevatorNet", elevator.goToNet(),
+              "ClimbRun", climb.runClimbCommand(),
+              "ScorerShootCoral", scorer.shootCoralCmd(),
+              "ScorerShootAlgae", scorer.outtakeAlgae()));
+    }
 
     // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     autoChooser = new LoggedDashboardChooser<>("Auto Chooser");

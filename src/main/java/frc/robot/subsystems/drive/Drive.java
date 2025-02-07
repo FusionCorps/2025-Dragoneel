@@ -134,7 +134,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
         this::getPose,
         this::setPose,
         this::getChassisSpeeds,
-        this::runVelocity,
+        this::driveRobotCentric,
         new PPHolonomicDriveController(
             new PIDConstants(15.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
         PP_CONFIG,
@@ -164,8 +164,8 @@ public class Drive extends SubsystemBase implements VisionConsumer {
         new SysIdRoutine(
             new SysIdRoutine.Config(
                 null,
-                null,
-                Seconds.of(7),
+                Volts.of(3),
+                Seconds.of(6),
                 state -> Logger.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 voltage -> runCharacterization(voltage.in(Volts)), null, this));
@@ -233,13 +233,13 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   /**
    * Runs the drive at the desired velocity.
    *
-   * @param speeds Robot-centric speeds in meters/sec
+   * @param speeds Robot-centric speeds in m/s and rad/s.
    */
-  public void runVelocity(ChassisSpeeds speeds) {
+  public void driveRobotCentric(ChassisSpeeds speeds) {
     // Calculate module setpoints from robot-centric speeds
-    // Applies angle optimization, cosine compensation, and wheel slip reduction
+    // Applies angle optimization, cosine compensation, wheel slip reduction, and converts to
+    // field-centric
     previousSetpoint = setpointGenerator.generateSetpoint(previousSetpoint, speeds, 0.02);
-
     // Log unoptimized setpoints and setpoint speeds
     Logger.recordOutput("SwerveStates/Setpoints", previousSetpoint.moduleStates());
     Logger.recordOutput("SwerveChassisSpeeds/Setpoints", previousSetpoint.robotRelativeSpeeds());
@@ -259,7 +259,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
   /** Stops the drive. */
   public void stop() {
-    runVelocity(new ChassisSpeeds());
+    driveRobotCentric(new ChassisSpeeds());
   }
 
   /**

@@ -101,7 +101,7 @@ public class DriveCommands {
           boolean isFlipped =
               DriverStation.getAlliance().isPresent()
                   && DriverStation.getAlliance().get() == Alliance.Red;
-          drive.runVelocity(
+          drive.driveRobotCentric(
               ChassisSpeeds.fromFieldRelativeSpeeds(
                   speeds,
                   isFlipped
@@ -145,7 +145,7 @@ public class DriveCommands {
               angleController.calculate(
                   drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
 
-          // Convert to field relative speeds & send command
+          // Convert field relative speeds to internal robot relative speeds & send command
           ChassisSpeeds speeds =
               new ChassisSpeeds(
                   linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
@@ -154,7 +154,7 @@ public class DriveCommands {
           boolean isFlipped =
               DriverStation.getAlliance().isPresent()
                   && DriverStation.getAlliance().get() == Alliance.Red;
-          drive.runVelocity(
+          drive.driveRobotCentric(
               ChassisSpeeds.fromFieldRelativeSpeeds(
                   speeds,
                   isFlipped
@@ -213,7 +213,8 @@ public class DriveCommands {
                   xVel * drive.getMaxLinearSpeedMetersPerSec(),
                   yVel * drive.getMaxLinearSpeedMetersPerSec(),
                   omega);
-          drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
+          drive.driveRobotCentric(
+              ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
         },
         interrupted -> {
           xController.close();
@@ -372,7 +373,7 @@ public class DriveCommands {
             Commands.run(
                 () -> {
                   double speed = limiter.calculate(WHEEL_RADIUS_MAX_VELOCITY);
-                  drive.runVelocity(new ChassisSpeeds(0.0, 0.0, speed));
+                  drive.driveRobotCentric(new ChassisSpeeds(0.0, 0.0, speed));
                 },
                 drive)),
 
