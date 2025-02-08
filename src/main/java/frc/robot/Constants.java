@@ -308,7 +308,7 @@ public final class Constants {
 
   public static class ScorerConstants {
     /* Scorer motor ID */
-    public static final int SCORER_MOTOR_ID = 0;
+    public static final int SCORER_MOTOR_ID = 16;
 
     public static final SparkFlexConfig SCORER_CONFIG =
         (SparkFlexConfig)
@@ -334,7 +334,7 @@ public final class Constants {
 
   public static class ClimbConstants {
 
-    public static final int CLIMB_MOTOR_ID = 16;
+    public static final int CLIMB_MOTOR_ID = 17;
     public static final Voltage CLIMB_RUN_VOLTS = Volts.of(9.0);
   }
 
@@ -437,4 +437,8 @@ public final class Constants {
               DriveConstants.FRONT_LEFT.SlipCurrent,
               1),
           DriveConstants.MODULE_TRANSLATIONS);
+
+  public static class WristConstants {
+    public static final int WRIST_MOTOR_ID = 15;
+  }
 }

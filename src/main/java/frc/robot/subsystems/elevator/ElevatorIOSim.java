@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -45,12 +44,12 @@ public class ElevatorIOSim implements ElevatorIO {
 
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
-    appliedVolts =
-        MathUtil.clamp(
-            elevatorPIDController.calculate(elevatorSim.getAngularPositionRotations())
-                + elevatorFeedforward.calculate(elevatorPIDController.getSetpoint().velocity),
-            -12.0,
-            12.0);
+    // appliedVolts =
+    //     MathUtil.clamp(
+    //         elevatorPIDController.calculate(elevatorSim.getAngularPositionRotations())
+    //             + elevatorFeedforward.calculate(elevatorPIDController.getSetpoint().velocity),
+    //         -12.0,
+    //         12.0);
 
     elevatorSim.setInputVoltage(appliedVolts);
     elevatorSim.update(0.02);

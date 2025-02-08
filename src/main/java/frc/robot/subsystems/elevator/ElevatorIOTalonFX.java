@@ -48,7 +48,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
   public ElevatorIOTalonFX() {
     TalonFXConfiguration elevatorConfig = new TalonFXConfiguration();
-    elevatorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    elevatorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     elevatorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
     elevatorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
@@ -80,7 +80,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     tryUntilOk(5, () -> followerElevatorMotor.getConfigurator().apply(elevatorConfig, 0.5));
 
     // TODO: this might change
-    followerElevatorMotor.setControl(new Follower(MAIN_ELEVATOR_MOTOR_ID, true));
+    followerElevatorMotor.setControl(new Follower(MAIN_ELEVATOR_MOTOR_ID, false));
 
     mainElevatorMotorPosition = mainElevatorMotor.getPosition();
     mainElevatorMotorVelocity = mainElevatorMotor.getVelocity();

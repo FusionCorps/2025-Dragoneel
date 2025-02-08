@@ -48,7 +48,7 @@ public class Elevator extends SubsystemBase {
   /* Periodically running code */
   @Override
   public void periodic() {
-    io.setTargetPosition(currentElevatorState.rotations);
+    // io.setTargetPosition(currentElevatorState.rotations);
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
@@ -109,6 +109,16 @@ public class Elevator extends SubsystemBase {
 
   public Command goToZero() {
     return this.runOnce(() -> currentElevatorState = ElevatorState.ZERO).withName("ElevatorZero");
+  }
+
+  public Command lowerElevator() {
+    return this.runEnd(
+        () -> io.setVoltage(Volts.of(-0.3 * 12.0)), () -> io.setVoltage(Volts.zero()));
+  }
+
+  public Command raiseElevator() {
+    return this.runEnd(
+        () -> io.setVoltage(Volts.of(0.3 * 12.0)), () -> io.setVoltage(Volts.zero()));
   }
 
   /**
