@@ -1,6 +1,7 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
@@ -22,6 +23,7 @@ import frc.robot.Constants.ElevatorConstants.ElevatorState;
 import frc.robot.Robot;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class Elevator extends SubsystemBase {
   /* IO and hardware inputs */
@@ -38,6 +40,19 @@ public class Elevator extends SubsystemBase {
   @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.ZERO;
 
   private final SysIdRoutine sysIdRoutine;
+
+  /*
+   * Tunable position setpoints for the elevator state enums
+   */
+
+    LoggedNetworkNumber elevatorProcessorPosition = new LoggedNetworkNumber("Elevator/ProcessorPosition", 0.0);
+    LoggedNetworkNumber elevatorL1Position = new LoggedNetworkNumber("Elevator/L1Position", 0.0);
+    LoggedNetworkNumber elevatorL2Position = new LoggedNetworkNumber("Elevator/L2Position", 0.0);
+    LoggedNetworkNumber elevatorStationPosition = new LoggedNetworkNumber("Elevator/StationPosition", 0.0);
+    LoggedNetworkNumber elevatorL3Position = new LoggedNetworkNumber("Elevator/L3Position", 0.0);
+    LoggedNetworkNumber elevatorL4Position = new LoggedNetworkNumber("Elevator/L4Position", 0.0);
+    LoggedNetworkNumber elevatorNetPosition = new LoggedNetworkNumber("Elevator/NetPosition", 0.0);
+
   /* Constructor */
   public Elevator(ElevatorIO io) {
     this.io = io;
@@ -82,6 +97,18 @@ public class Elevator extends SubsystemBase {
     SmartDashboard.putBoolean("Elevator L3", currentElevatorState == ElevatorState.L3);
     SmartDashboard.putBoolean("Elevator L4", currentElevatorState == ElevatorState.L4);
     SmartDashboard.putBoolean("Elevator NET", currentElevatorState == ElevatorState.NET);
+
+    /*
+     * Update the setpoints for the elevator states if they have been changed
+     */
+
+    ElevatorState.PROCESSOR.rotations = Rotations.of(elevatorProcessorPosition.get());
+    ElevatorState.L1.rotations = Rotations.of(elevatorL1Position.get());
+    ElevatorState.L2.rotations = Rotations.of(elevatorL2Position.get());
+    ElevatorState.STATION.rotations = Rotations.of(elevatorStationPosition.get());
+    ElevatorState.L3.rotations = Rotations.of(elevatorL3Position.get());
+    ElevatorState.L4.rotations = Rotations.of(elevatorL4Position.get());
+    ElevatorState.NET.rotations = Rotations.of(elevatorNetPosition.get());
   }
 
   public Command goToZero() {

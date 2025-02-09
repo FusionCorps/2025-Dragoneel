@@ -320,7 +320,7 @@ public final class Constants {
       L4(Rotations.of(90)),
       NET(Rotations.of(100));
 
-      public final Angle rotations;
+      public Angle rotations;
 
       private ElevatorState(Angle rotations) {
         this.rotations = rotations;
@@ -344,7 +344,7 @@ public final class Constants {
       STATION(Rotations.of(0.15)),
       NET(Rotations.of(0.4));
 
-      public final Angle rotations;
+      public Angle rotations;
 
       private WristState(Angle rotations) {
         this.rotations = rotations;

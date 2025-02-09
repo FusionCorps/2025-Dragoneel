@@ -20,12 +20,12 @@ import java.util.function.DoubleSupplier;
 
 public class WristIOSparkFlex implements WristIO {
   /* Main scoring motor */
-  private final SparkFlex wristMotor;
+  public final SparkFlex wristMotor;
 
   /* Encoder */
   private final RelativeEncoder wristMotorEncoder;
 
-  private final SparkClosedLoopController pidController;
+  public final SparkClosedLoopController pidController;
 
   /* Debounce */
   private final Debouncer wristMotorDebouncer = new Debouncer(0.5);
@@ -41,6 +41,7 @@ public class WristIOSparkFlex implements WristIO {
         .smartCurrentLimit(60);
 
     cfg.closedLoop.pid(0, 0, 0);
+    
 
     /* Try to apply */
     tryUntilOk(

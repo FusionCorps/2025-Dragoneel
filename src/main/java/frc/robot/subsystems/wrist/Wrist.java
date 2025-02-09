@@ -1,5 +1,6 @@
 package frc.robot.subsystems.wrist;
 
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.geometry.Pose3d;
@@ -15,6 +16,13 @@ import frc.robot.Robot;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
+
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.ClosedLoopConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 
 public class Wrist extends SubsystemBase {
   private final WristIO io;
@@ -24,6 +32,17 @@ public class Wrist extends SubsystemBase {
 
   private final Alert wristMotorConnectedAlert =
       new Alert("Wrist Motor Disconnected.", AlertType.kError);
+
+  
+  LoggedNetworkNumber wristProcessorPosition = new LoggedNetworkNumber("Wrist/ProcessorPosition", 0.0);
+  LoggedNetworkNumber wristL1Position = new LoggedNetworkNumber("Wrist/L1Position", 0.0);
+  LoggedNetworkNumber wristL2_AND_L3Position = new LoggedNetworkNumber("Wrist/L2_AND_L3Position", 0.0);
+  LoggedNetworkNumber wristStationPosition = new LoggedNetworkNumber("Wrist/StationPosition", 0.0);
+  LoggedNetworkNumber wristL4Position = new LoggedNetworkNumber("Wrist/L4Position", 0.0);
+  LoggedNetworkNumber wristNetPosition = new LoggedNetworkNumber("Wrist/NetPosition", 0.0);
+
+  LoggedNetworkNumber wristkP = new LoggedNetworkNumber("Wrist/kP", 0.0);
+  LoggedNetworkNumber wristkD = new LoggedNetworkNumber("Wrist/kD", 0.0);
 
   public Wrist(WristIO io) {
     this.io = io;
@@ -42,6 +61,25 @@ public class Wrist extends SubsystemBase {
 
     Logger.processInputs("Wrist", inputs);
     wristMotorConnectedAlert.set(!inputs.wristMotorConnected);
+
+    WristState.L1.rotations = Rotations.of(wristL1Position.get());
+    WristState.L2_AND_L3.rotations = Rotations.of(wristL2_AND_L3Position.get());
+    WristState.L4.rotations = Rotations.of(wristL4Position.get());
+    WristState.NET.rotations = Rotations.of(wristNetPosition.get());
+    WristState.PROCESSOR.rotations = Rotations.of(wristProcessorPosition.get());
+    WristState.STATION.rotations = Rotations.of(wristStationPosition.get());
+
+    if (io instanceof WristIOSparkFlex) {
+      SparkFlex sparkFlex = ((WristIOSparkFlex) io).wristMotor;
+      double cachedkP = sparkFlex.configAccessor.closedLoop.getP();
+      double cachedkD = sparkFlex.configAccessor.closedLoop.getD();
+      if (cachedkP != wristkP.get()) {
+        sparkFlex.configureAsync(new SparkFlexConfig().apply(new ClosedLoopConfig().p(wristkP.get())), ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    }
+    if (cachedkD != wristkD.get()) {
+        sparkFlex.configureAsync(new SparkFlexConfig().apply(new ClosedLoopConfig().d(wristkD.get())), ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    }
+  }
   }
 
   public Command moveWristRight() {
