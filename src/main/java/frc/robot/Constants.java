@@ -306,6 +306,52 @@ public final class Constants {
     public static final double WHEEL_COF = 1.5;
   }
 
+  public static class ElevatorConstants {
+    public static final int MAIN_ELEVATOR_MOTOR_ID = 13;
+    public static final int FOLLOWER_ELEVATOR_MOTOR_ID = 14;
+
+    public static enum ElevatorState {
+      ZERO(Rotations.of(0.0)),
+      PROCESSOR(Rotations.of(5)),
+      L1(Rotations.of(20)),
+      L2(Rotations.of(40)),
+      STATION(Rotations.of(20)),
+      L3(Rotations.of(60)),
+      L4(Rotations.of(90)),
+      NET(Rotations.of(100));
+
+      public final Angle rotations;
+
+      private ElevatorState(Angle rotations) {
+        this.rotations = rotations;
+      }
+    }
+
+    public static final double ELEVATOR_GEAR_RATIO =
+        60.0 / 14.0; // 14 shaft rotations for 60 motor rotations
+    public static final Distance ELEVATOR_SHAFT_DIAMETER = Inches.of(0.5); // 1/2" thunderhex shaft
+  }
+
+  public static class WristConstants {
+    public static final int WRIST_MOTOR_ID = 15;
+
+    public static enum WristState {
+      ZERO(Rotations.zero()),
+      PROCESSOR(Rotations.of(0.1)),
+      L1(Rotations.of(0.2)),
+      L2_AND_L3(Rotations.of(0.25)),
+      L4(Rotations.of(0.2)),
+      STATION(Rotations.of(0.15)),
+      NET(Rotations.of(0.4));
+
+      public final Angle rotations;
+
+      private WristState(Angle rotations) {
+        this.rotations = rotations;
+      }
+    }
+  }
+
   public static class ScorerConstants {
     /* Scorer motor ID */
     public static final int SCORER_MOTOR_ID = 16;
@@ -321,7 +367,7 @@ public final class Constants {
     /* Scorer motor state */
     public static enum ScorerState {
       IDLE(Volts.of(0.0)),
-      OUTTAKE_ALGAE(Volts.of(12.0)),
+      SHOOT_ALGAE(Volts.of(12.0)),
       SHOOT_CORAL(Volts.of(-6.0));
 
       public final Voltage volts;
@@ -333,35 +379,8 @@ public final class Constants {
   }
 
   public static class ClimbConstants {
-
     public static final int CLIMB_MOTOR_ID = 17;
     public static final Voltage CLIMB_RUN_VOLTS = Volts.of(9.0);
-  }
-
-  public static class ElevatorConstants {
-    public static enum ElevatorState {
-      ZERO(Rotations.of(0.0)),
-      PROCESSOR(Rotations.of(10)),
-      L1(Rotations.of(50)),
-      L2(Rotations.of(88)),
-      STATION(Rotations.of(98)),
-      L3(Rotations.of(130)),
-      L4(Rotations.of(197)),
-      NET(Rotations.of(215));
-
-      public final Angle rotations;
-
-      private ElevatorState(Angle rotations) {
-        this.rotations = rotations;
-      }
-    }
-
-    public static final int MAIN_ELEVATOR_MOTOR_ID = 13;
-    public static final int FOLLOWER_ELEVATOR_MOTOR_ID = 14;
-
-    public static final double ELEVATOR_GEAR_RATIO =
-        60.0 / 14.0; // 14 shaft rotations for 60 motor rotations
-    public static final Distance ELEVATOR_SHAFT_DIAMETER = Inches.of(0.5); // 1/2" thunderhex shaft
   }
 
   public static class VisionConstants {
@@ -394,9 +413,9 @@ public final class Constants {
     // Robot to camera transforms
     // (Not used by Limelight, configure in web UI instead)
     public static Transform3d robotToCamera0 =
-        new Transform3d(0.0, 0.0, 0.2, new Rotation3d(0.0, 0.0, 0.0));
+        new Transform3d(-0.255, 0.206, 0.152, new Rotation3d(0.0, 0.0, Units.degreesToRadians(20)));
     public static Transform3d robotToCamera1 =
-        new Transform3d(0.2, 0.0, 0.2, new Rotation3d(0.0, 0.0, Units.degreesToRadians(48)));
+        new Transform3d(0.255, 0.206, 0.152, new Rotation3d(0.0, 0.0, Units.degreesToRadians(-20)));
 
     // Basic filtering thresholds
     public static double maxAmbiguity = 0.3;
@@ -437,8 +456,4 @@ public final class Constants {
               DriveConstants.FRONT_LEFT.SlipCurrent,
               1),
           DriveConstants.MODULE_TRANSLATIONS);
-
-  public static class WristConstants {
-    public static final int WRIST_MOTOR_ID = 15;
-  }
 }

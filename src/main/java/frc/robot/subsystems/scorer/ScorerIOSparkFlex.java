@@ -32,7 +32,7 @@ public class ScorerIOSparkFlex implements ScorerIO {
         5,
         () ->
             scorerMotor.configure(
-                SCORER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters));
+                SCORER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
   }
 
   @Override

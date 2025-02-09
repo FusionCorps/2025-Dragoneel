@@ -56,7 +56,7 @@ public class WristIOSparkFlex implements WristIO {
     /* Update inputs */
     sparkStickyFault = false;
     ifOk(
-        wristMotor, wristMotorEncoder::getPosition, position -> inputs.WristPositionRad = position);
+        wristMotor, wristMotorEncoder::getPosition, position -> inputs.wristPositionRad = position);
     ifOk(
         wristMotor,
         wristMotorEncoder::getVelocity,
@@ -64,10 +64,10 @@ public class WristIOSparkFlex implements WristIO {
     ifOk(
         wristMotor,
         new DoubleSupplier[] {wristMotor::getAppliedOutput, wristMotor::getBusVoltage},
-        (doubles) -> inputs.WristVoltage = doubles[0] * doubles[1]);
-    ifOk(wristMotor, wristMotor::getOutputCurrent, current -> inputs.WristAmps = current);
+        (doubles) -> inputs.wristAppliedVolts = doubles[0] * doubles[1]);
+    ifOk(wristMotor, wristMotor::getOutputCurrent, current -> inputs.wristCurrentAmps = current);
 
-    inputs.WristMotorConnected = wristMotorDebouncer.calculate(!sparkStickyFault);
+    inputs.wristMotorConnected = wristMotorDebouncer.calculate(!sparkStickyFault);
   }
 
   @Override

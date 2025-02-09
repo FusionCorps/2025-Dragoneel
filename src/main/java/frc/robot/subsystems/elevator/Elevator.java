@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_SHAFT_DIAMETER;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -13,11 +15,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorConstants.ElevatorState;
+import frc.robot.Robot;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
-import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
-import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 public class Elevator extends SubsystemBase {
   /* IO and hardware inputs */
@@ -33,13 +33,6 @@ public class Elevator extends SubsystemBase {
   /* State tracker for current height of the elevator */
   @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.ZERO;
 
-  /* Visualization mechanism for elevator */
-  @AutoLogOutput private final LoggedMechanism2d elevatorMechanism = new LoggedMechanism2d(1, 10);
-  private final LoggedMechanismRoot2d elevatorHeightIndicatorMover =
-      elevatorMechanism.getRoot("Elevator", 0, 0);
-  private final LoggedMechanismLigament2d elevatorHeightIndicator =
-      elevatorHeightIndicatorMover.append(new LoggedMechanismLigament2d("elevatorIndicator", 1, 0));
-
   /* Constructor */
   public Elevator(ElevatorIO io) {
     this.io = io;
@@ -52,12 +45,16 @@ public class Elevator extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
-    elevatorHeightIndicatorMover.setPosition(
-        0,
+    double elevatorStage2HeightMeters =
         // rev * circumference/rev / gear ratio = height in meters
         Units.radiansToRotations(inputs.mainElevatorPositionRad)
             * (Math.PI * ELEVATOR_SHAFT_DIAMETER.in(Meters))
-            / (ELEVATOR_GEAR_RATIO));
+            / (ELEVATOR_GEAR_RATIO);
+
+    double elevatorStage3HeightMeters = elevatorStage2HeightMeters * 2.0;
+
+    Robot.componentPoses[0] = new Pose3d(0.0, 0.0, elevatorStage2HeightMeters, Rotation3d.kZero);
+    Robot.componentPoses[1] = new Pose3d(0.0, 0.0, elevatorStage3HeightMeters, Rotation3d.kZero);
 
     if (!inputs.mainElevatorMotorConnected) {
       mainMotorConnectedAlert.set(true);
@@ -75,6 +72,15 @@ public class Elevator extends SubsystemBase {
     SmartDashboard.putBoolean("Elevator L3", currentElevatorState == ElevatorState.L3);
     SmartDashboard.putBoolean("Elevator L4", currentElevatorState == ElevatorState.L4);
     SmartDashboard.putBoolean("Elevator NET", currentElevatorState == ElevatorState.NET);
+  }
+
+  public Command goToZero() {
+    return this.runOnce(() -> currentElevatorState = ElevatorState.ZERO).withName("ElevatorZero");
+  }
+
+  public Command goToProcessor() {
+    return this.runOnce(() -> currentElevatorState = ElevatorState.PROCESSOR)
+        .withName("ElevatorProcessor");
   }
 
   public Command goToL1() {
@@ -100,15 +106,6 @@ public class Elevator extends SubsystemBase {
 
   public Command goToNet() {
     return this.runOnce(() -> currentElevatorState = ElevatorState.NET).withName("ElevatorNet");
-  }
-
-  public Command goToProcessor() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.PROCESSOR)
-        .withName("ElevatorProcessor");
-  }
-
-  public Command goToZero() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.ZERO).withName("ElevatorZero");
   }
 
   public Command lowerElevator() {

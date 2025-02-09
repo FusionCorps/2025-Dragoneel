@@ -72,14 +72,14 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     elevatorConfig.MotionMagic.MotionMagicJerk = 0;
 
     elevatorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-    elevatorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 100;
+    elevatorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
+        100; // TODO: change forward limit
     elevatorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     elevatorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0;
 
     tryUntilOk(5, () -> mainElevatorMotor.getConfigurator().apply(elevatorConfig, 0.5));
     tryUntilOk(5, () -> followerElevatorMotor.getConfigurator().apply(elevatorConfig, 0.5));
 
-    // TODO: this might change
     followerElevatorMotor.setControl(new Follower(MAIN_ELEVATOR_MOTOR_ID, false));
 
     mainElevatorMotorPosition = mainElevatorMotor.getPosition();
