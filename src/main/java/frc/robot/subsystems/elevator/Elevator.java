@@ -1,6 +1,8 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_SHAFT_DIAMETER;
@@ -14,6 +16,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ElevatorConstants.ElevatorState;
 import frc.robot.Robot;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -33,9 +37,15 @@ public class Elevator extends SubsystemBase {
   /* State tracker for current height of the elevator */
   @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.ZERO;
 
+  private final SysIdRoutine sysIdRoutine;
   /* Constructor */
   public Elevator(ElevatorIO io) {
     this.io = io;
+
+    sysIdRoutine =  new SysIdRoutine(
+      new SysIdRoutine.Config(Volts.of(0.25).per(Second), Volts.of(0.5), Seconds.of(5), state -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+      new SysIdRoutine.Mechanism((volts) -> io.setVoltage(volts), null, this)
+    );
   }
 
   /* Periodically running code */
@@ -135,5 +145,13 @@ public class Elevator extends SubsystemBase {
             () -> inputs.mainElevatorCurrentAmps > 60.0,
             this)
         .withName("ElevatorHomingRouting");
+  }
+
+  public Command sysIdQuasistatic(Direction direction) {
+    return sysIdRoutine.quasistatic(direction);
+  }
+
+  public Command sysIdDynamic(Direction direction) {
+    return sysIdRoutine.dynamic(direction);
   }
 }
