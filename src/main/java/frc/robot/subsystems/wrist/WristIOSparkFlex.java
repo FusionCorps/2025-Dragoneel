@@ -1,8 +1,9 @@
 package frc.robot.subsystems.wrist;
 
 import static edu.wpi.first.units.Units.Rotations;
-import static frc.robot.util.SparkUtil.*;
 import static frc.robot.Constants.WristConstants.*;
+import static frc.robot.util.SparkUtil.*;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -41,7 +42,6 @@ public class WristIOSparkFlex implements WristIO {
         .smartCurrentLimit(60);
 
     cfg.closedLoop.pid(0, 0, 0);
-    
 
     /* Try to apply */
     tryUntilOk(
@@ -72,7 +72,7 @@ public class WristIOSparkFlex implements WristIO {
   }
 
   @Override
-  public void setVoltage(Voltage voltage) {
+  public void setVoltageOpenLoop(Voltage voltage) {
     /* Set voltage and hope it works */
     wristMotor.setVoltage(voltage);
   }

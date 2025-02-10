@@ -312,13 +312,13 @@ public final class Constants {
 
     public static enum ElevatorState {
       ZERO(Rotations.of(0.0)),
-      PROCESSOR(Rotations.of(5)),
-      L1(Rotations.of(20)),
-      L2(Rotations.of(40)),
-      STATION(Rotations.of(20)),
-      L3(Rotations.of(60)),
-      L4(Rotations.of(90)),
-      NET(Rotations.of(100));
+      PROCESSOR(Rotations.of(0.0)),
+      L1(Rotations.of(10)),
+      L2(Rotations.of(20)),
+      STATION(Rotations.of(5)),
+      L3(Rotations.of(45)),
+      L4(Rotations.of(81)),
+      NET(Rotations.of(83));
 
       public Angle rotations;
 
@@ -337,12 +337,12 @@ public final class Constants {
 
     public static enum WristState {
       ZERO(Rotations.zero()),
-      PROCESSOR(Rotations.of(0.1)),
+      PROCESSOR(Rotations.of(0.15)),
       L1(Rotations.of(0.2)),
-      L2_AND_L3(Rotations.of(0.25)),
-      L4(Rotations.of(0.2)),
-      STATION(Rotations.of(0.15)),
-      NET(Rotations.of(0.4));
+      L2_AND_L3(Rotations.of(0.16)),
+      L4(Rotations.of(0.16)),
+      STATION(Rotations.of(0.154)),
+      NET(Rotations.of(0.2));
 
       public Angle rotations;
 

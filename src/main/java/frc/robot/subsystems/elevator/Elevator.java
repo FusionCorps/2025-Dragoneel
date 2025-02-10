@@ -1,7 +1,6 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
@@ -41,32 +40,45 @@ public class Elevator extends SubsystemBase {
 
   private final SysIdRoutine sysIdRoutine;
 
+  boolean isOpenLoop = false;
+
   /*
    * Tunable position setpoints for the elevator state enums
    */
 
-    LoggedNetworkNumber elevatorProcessorPosition = new LoggedNetworkNumber("Elevator/ProcessorPosition", 0.0);
-    LoggedNetworkNumber elevatorL1Position = new LoggedNetworkNumber("Elevator/L1Position", 0.0);
-    LoggedNetworkNumber elevatorL2Position = new LoggedNetworkNumber("Elevator/L2Position", 0.0);
-    LoggedNetworkNumber elevatorStationPosition = new LoggedNetworkNumber("Elevator/StationPosition", 0.0);
-    LoggedNetworkNumber elevatorL3Position = new LoggedNetworkNumber("Elevator/L3Position", 0.0);
-    LoggedNetworkNumber elevatorL4Position = new LoggedNetworkNumber("Elevator/L4Position", 0.0);
-    LoggedNetworkNumber elevatorNetPosition = new LoggedNetworkNumber("Elevator/NetPosition", 0.0);
+  LoggedNetworkNumber elevatorProcessorPosition =
+      new LoggedNetworkNumber("/Tuning/Elevator/ProcessorPosition", 0.0);
+  LoggedNetworkNumber elevatorL1Position =
+      new LoggedNetworkNumber("/Tuning/Elevator/L1Position", 0.0);
+  LoggedNetworkNumber elevatorL2Position =
+      new LoggedNetworkNumber("/Tuning/Elevator/L2Position", 0.0);
+  LoggedNetworkNumber elevatorStationPosition =
+      new LoggedNetworkNumber("/Tuning/Elevator/StationPosition", 0.0);
+  LoggedNetworkNumber elevatorL3Position =
+      new LoggedNetworkNumber("/Tuning/Elevator/L3Position", 0.0);
+  LoggedNetworkNumber elevatorL4Position =
+      new LoggedNetworkNumber("/Tuning/Elevator/L4Position", 0.0);
+  LoggedNetworkNumber elevatorNetPosition =
+      new LoggedNetworkNumber("/Tuning/Elevator/NetPosition", 0.0);
 
   /* Constructor */
   public Elevator(ElevatorIO io) {
     this.io = io;
 
-    sysIdRoutine =  new SysIdRoutine(
-      new SysIdRoutine.Config(Volts.of(0.25).per(Second), Volts.of(0.5), Seconds.of(5), state -> Logger.recordOutput("Drive/SysIdState", state.toString())),
-      new SysIdRoutine.Mechanism((volts) -> io.setVoltage(volts), null, this)
-    );
+    sysIdRoutine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                Volts.of(0.25).per(Second),
+                Volts.of(0.5),
+                Seconds.of(5),
+                state -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism((volts) -> io.setVoltageOpenLoop(volts), null, this));
   }
 
   /* Periodically running code */
   @Override
   public void periodic() {
-    // io.setTargetPosition(currentElevatorState.rotations);
+    if (!isOpenLoop) io.setTargetPosition(currentElevatorState.rotations);
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
@@ -102,57 +114,95 @@ public class Elevator extends SubsystemBase {
      * Update the setpoints for the elevator states if they have been changed
      */
 
-    ElevatorState.PROCESSOR.rotations = Rotations.of(elevatorProcessorPosition.get());
-    ElevatorState.L1.rotations = Rotations.of(elevatorL1Position.get());
-    ElevatorState.L2.rotations = Rotations.of(elevatorL2Position.get());
-    ElevatorState.STATION.rotations = Rotations.of(elevatorStationPosition.get());
-    ElevatorState.L3.rotations = Rotations.of(elevatorL3Position.get());
-    ElevatorState.L4.rotations = Rotations.of(elevatorL4Position.get());
-    ElevatorState.NET.rotations = Rotations.of(elevatorNetPosition.get());
+    // ElevatorState.PROCESSOR.rotations = Rotations.of(elevatorProcessorPosition.get());
+    // ElevatorState.L1.rotations = Rotations.of(elevatorL1Position.get());
+    // ElevatorState.L2.rotations = Rotations.of(elevatorL2Position.get());
+    // ElevatorState.STATION.rotations = Rotations.of(elevatorStationPosition.get());
+    // ElevatorState.L3.rotations = Rotations.of(elevatorL3Position.get());
+    // ElevatorState.L4.rotations = Rotations.of(elevatorL4Position.get());
+    // ElevatorState.NET.rotations = Rotations.of(elevatorNetPosition.get());
   }
 
   public Command goToZero() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.ZERO).withName("ElevatorZero");
+    return this.runOnce(
+        () -> {
+          currentElevatorState = ElevatorState.ZERO;
+          isOpenLoop = false;
+        });
   }
 
   public Command goToProcessor() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.PROCESSOR)
-        .withName("ElevatorProcessor");
+    return this.runOnce(
+        () -> {
+          currentElevatorState = ElevatorState.PROCESSOR;
+          isOpenLoop = false;
+        });
   }
 
   public Command goToL1() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L1).withName("ElevatorL1");
+    return this.runOnce(
+        () -> {
+          currentElevatorState = ElevatorState.L1;
+          isOpenLoop = false;
+        });
   }
 
   public Command goToL2() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L2).withName("ElevatorL2");
+    return this.runOnce(
+        () -> {
+          currentElevatorState = ElevatorState.L2;
+          isOpenLoop = false;
+        });
   }
 
   public Command goToStation() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.STATION)
-        .withName("ElevatorStation");
+    return this.runOnce(
+        () -> {
+          currentElevatorState = ElevatorState.STATION;
+          isOpenLoop = false;
+        });
   }
 
   public Command goToL3() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L3).withName("ElevatorL3");
+    return this.runOnce(
+        () -> {
+          currentElevatorState = ElevatorState.L3;
+          isOpenLoop = false;
+        });
   }
 
   public Command goToL4() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L4).withName("ElevatorL4");
+    return this.runOnce(
+        () -> {
+          currentElevatorState = ElevatorState.L4;
+          isOpenLoop = false;
+        });
   }
 
   public Command goToNet() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.NET).withName("ElevatorNet");
+    return this.runOnce(
+        () -> {
+          currentElevatorState = ElevatorState.NET;
+          isOpenLoop = false;
+        });
   }
 
   public Command lowerElevator() {
     return this.runEnd(
-        () -> io.setVoltage(Volts.of(-0.3 * 12.0)), () -> io.setVoltage(Volts.zero()));
+        () -> {
+          io.setVoltageOpenLoop(Volts.of(-0.3 * 12.0));
+          isOpenLoop = true;
+        },
+        () -> io.setVoltageOpenLoop(Volts.zero()));
   }
 
   public Command raiseElevator() {
     return this.runEnd(
-        () -> io.setVoltage(Volts.of(0.3 * 12.0)), () -> io.setVoltage(Volts.zero()));
+        () -> {
+          io.setVoltageOpenLoop(Volts.of(0.3 * 12.0));
+          isOpenLoop = true;
+        },
+        () -> io.setVoltageOpenLoop(Volts.zero()));
   }
 
   /**
@@ -163,9 +213,9 @@ public class Elevator extends SubsystemBase {
   public Command runHomingRoutine() {
     return new FunctionalCommand(
             () -> {},
-            () -> io.setVoltage(Volts.of(0.1 * -12.0)),
+            () -> io.setVoltageOpenLoop(Volts.of(0.1 * -12.0)),
             (interrupted) -> {
-              io.setVoltage(Volts.zero());
+              io.setVoltageOpenLoop(Volts.zero());
               currentElevatorState = ElevatorState.ZERO;
               io.zeroPosition();
             },

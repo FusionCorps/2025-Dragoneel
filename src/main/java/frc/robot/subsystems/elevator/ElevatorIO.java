@@ -26,7 +26,7 @@ public interface ElevatorIO {
 
   default void setTargetPosition(Angle motorTargetRotations) {}
 
-  default void setVoltage(Voltage volts) {}
+  default void setVoltageOpenLoop(Voltage volts) {}
 
   default void zeroPosition() {}
 }

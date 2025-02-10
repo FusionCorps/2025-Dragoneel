@@ -21,7 +21,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "ElevatorL4"
+                        "name": "L4"
                       }
                     }
                   ]
@@ -53,7 +53,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "ElevatorStation"
+                        "name": "Station"
                       }
                     }
                   ]
@@ -85,7 +85,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "ElevatorL4"
+                        "name": "L4"
                       }
                     }
                   ]
@@ -104,6 +104,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "TwoPiece",
   "choreoAuto": true
 }

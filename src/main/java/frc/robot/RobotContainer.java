@@ -19,10 +19,10 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.SuperstructureCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
@@ -44,6 +44,7 @@ import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
 import java.util.Map;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -60,8 +61,8 @@ public class RobotContainer {
   private final Scorer scorer;
   private final Wrist wrist;
 
-  // private final LoggedDashboardChooser<Command> autoChooser;
-
+  private final LoggedDashboardChooser<Command> autoChooser;
+  SuperstructureCommands superstructureCommands;
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -83,7 +84,8 @@ public class RobotContainer {
         //         drive,
         //         new VisionIOPhotonVision(camera0Name, robotToCamera0),
         //         new VisionIOPhotonVision(camera1Name, robotToCamera1));
-        // vision = new Vision((a, b, c) -> {}, new VisionIOPhotonVision(camera0Name, robotToCamera0));
+        // vision = new Vision((a, b, c) -> {}, new VisionIOPhotonVision(camera0Name,
+        // robotToCamera0));
         vision = null;
 
         climb = null;
@@ -109,6 +111,7 @@ public class RobotContainer {
                 new ModuleIOSim(DriveConstants.BACK_RIGHT));
         vision =
             new Vision(
+                // (a, b, c) -> {},
                 drive, new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose));
         climb = new Climb(new ClimbIOSim());
         scorer = new Scorer(new ScorerIOSim());
@@ -135,25 +138,28 @@ public class RobotContainer {
     // Set up auto routines
     // register commands for PathPlanner
 
+    if (elevator != null && wrist != null)
+      superstructureCommands = new SuperstructureCommands(elevator, wrist);
+
     if (elevator != null && scorer != null && climb != null) {
       NamedCommands.registerCommands(
           Map.of(
-              "ElevatorL1", elevator.goToL1(),
-              "ElevatorL2", elevator.goToL2(),
-              "ElevatorStation", elevator.goToStation(),
-              "ElevatorL3", elevator.goToL3(),
-              "ElevatorL4", elevator.goToL4(),
-              "ElevatorNet", elevator.goToNet(),
-              "ElevatorProcessor", elevator.goToProcessor(),
-              "ScorerShootCoral", scorer.shootCoralCmd(),
-              "ScorerShootAlgae", scorer.shootAlgaeCmd()));
+              "L1", superstructureCommands.goToL1(),
+              "L2", superstructureCommands.goToL2(),
+              "Station", superstructureCommands.goToStation(),
+              "L3", superstructureCommands.goToL3(),
+              "L4", superstructureCommands.goToL4(),
+              "Net", superstructureCommands.goToNet(),
+              "Processor", superstructureCommands.goToProcessor(),
+              "ShootCoral", scorer.shootCoralCmd(),
+              "ShootAlgae", scorer.shootAlgaeCmd()));
     }
 
     // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-    // autoChooser = new LoggedDashboardChooser<>("Auto Chooser");
-    // autoChooser.addOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
+    autoChooser = new LoggedDashboardChooser<>("Auto Chooser");
+    // autoChooser.addDefaultOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
 
-    // // Set up SysId routines
+    // Set up SysId routines
     // autoChooser.addOption(
     //     "Drive SysId (Quasistatic Forward)",
     //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
@@ -188,28 +194,40 @@ public class RobotContainer {
       // Reset gyro to 0° when B button is pressed
       controller.start().onTrue(drive.zeroOdometry());
 
-      controller
-          .povRight()
-          .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, false));
+      // controller
+      //     .povRight()
+      //     .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, false));
 
-      controller
-          .povLeft()
-          .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, true));
+      // controller
+      //     .povLeft()
+      //     .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, true));
     }
 
+    if (elevator != null && wrist != null) {
+      controller.leftBumper().onTrue(superstructureCommands.goToNet());
+      controller.y().onTrue(superstructureCommands.goToL4());
+      controller.x().onTrue(superstructureCommands.goToL3());
+      controller.b().onTrue(superstructureCommands.goToL2());
+      controller.a().onTrue(superstructureCommands.goToL1());
+      controller.povDown().onTrue(superstructureCommands.goToProcessor());
+      controller.rightBumper().onTrue(superstructureCommands.goToStation());
+    }
+
+    // TODO: eventually remove this block in favor of supersructure commands
     if (elevator != null) {
-      // controller.leftBumper().onTrue(elevator.goToNet());
-      // controller.y().onTrue(elevator.goToL4());
-      // controller.x().onTrue(elevator.goToL3());
-      // controller.b().onTrue(elevator.goToL2());
-      // controller.a().onTrue(elevator.goToL1());
-      // controller.povDown().onTrue(elevator.goToZero());
-      // controller.rightBumper().onTrue(elevator.goToStation());
+      //   controller.leftBumper().onTrue(elevator.goToNet());
+      //   controller.y().onTrue(elevator.goToL4());
+      //   controller.x().onTrue(elevator.goToL3());
+      //   controller.b().onTrue(elevator.goToL2());
+      //   controller.a().onTrue(elevator.goToL1());
+      //   controller.povDown().onTrue(elevator.goToZero());
+      //   controller.rightBumper().onTrue(elevator.goToStation());
 
       // controller.back().whileTrue(elevator.runHomingRoutine());
 
-      controller.a().whileTrue(elevator.lowerElevator());
-      controller.y().whileTrue(elevator.raiseElevator());
+      // TODO: remove after closed loop control is tuned
+      controller.rightTrigger().whileTrue(elevator.lowerElevator());
+      controller.leftTrigger().whileTrue(elevator.raiseElevator());
     }
 
     if (scorer != null) {
@@ -222,6 +240,7 @@ public class RobotContainer {
     }
 
     if (wrist != null) {
+      // TODO: remove after closed loop control is tuned
       controller.povRight().whileTrue(wrist.moveWristRight());
       controller.povLeft().whileTrue(wrist.moveWristLeft());
     }
@@ -233,7 +252,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // return autoChooser.get();
-    return Commands.none();
+    return autoChooser.get();
   }
 }
