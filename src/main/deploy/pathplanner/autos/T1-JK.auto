@@ -30,7 +30,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "ScorerShootCoral"
+                  "name": "ShootCoral"
                 }
               }
             ]
@@ -94,7 +94,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "ScorerShootCoral"
+                  "name": "ShootCoral"
                 }
               }
             ]

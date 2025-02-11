@@ -15,6 +15,7 @@ package frc.robot;
 
 import static frc.robot.Constants.VisionConstants.*;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -111,8 +112,9 @@ public class RobotContainer {
                 new ModuleIOSim(DriveConstants.BACK_RIGHT));
         vision =
             new Vision(
-                // (a, b, c) -> {},
-                drive, new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose));
+                (a, b, c) -> {},
+                // drive,
+                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose));
         climb = new Climb(new ClimbIOSim());
         scorer = new Scorer(new ScorerIOSim());
         wrist = new Wrist(new WristIOSim());
@@ -155,8 +157,8 @@ public class RobotContainer {
               "ShootAlgae", scorer.shootAlgaeCmd()));
     }
 
-    // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-    autoChooser = new LoggedDashboardChooser<>("Auto Chooser");
+    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    // autoChooser = new LoggedDashboardChooser<>("Auto Chooser");
     // autoChooser.addDefaultOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
 
     // Set up SysId routines

@@ -15,7 +15,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "T1-JKLAB.0"
+                        "pathName": "T1-J"
                       }
                     },
                     {
@@ -30,7 +30,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "ScorerShootCoral"
+                  "name": "ShootCoral"
                 }
               }
             ]
@@ -47,7 +47,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "T1-JKLAB.1"
+                        "pathName": "J-TStat"
                       }
                     },
                     {
@@ -79,7 +79,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "T1-JKLAB.2"
+                        "pathName": "TStat-K"
                       }
                     },
                     {
@@ -94,7 +94,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "ScorerShootCoral"
+                  "name": "ShootCoral"
                 }
               }
             ]
@@ -111,7 +111,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "T1-JKLAB.3"
+                        "pathName": "K-TStat"
                       }
                     },
                     {
@@ -143,7 +143,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "T1-JKLAB.4"
+                        "pathName": "TStat-L"
                       }
                     },
                     {
@@ -158,7 +158,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "ScorerShootCoral"
+                  "name": "ShootCoral"
                 }
               }
             ]
@@ -175,7 +175,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "T1-JKLAB.5"
+                        "pathName": "L-TStat"
                       }
                     },
                     {
@@ -207,7 +207,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "T1-JKLAB.6"
+                        "pathName": "TStat-A"
                       }
                     },
                     {
@@ -222,7 +222,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "ScorerShootCoral"
+                  "name": "ShootCoral"
                 }
               }
             ]
@@ -239,7 +239,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "T1-JKLAB.7"
+                        "pathName": "A-TStat"
                       }
                     },
                     {
@@ -271,7 +271,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "T1-JKLAB.8"
+                        "pathName": "TStat-B"
                       }
                     },
                     {
@@ -286,7 +286,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "ScorerShootCoral"
+                  "name": "ShootCoral"
                 }
               }
             ]
