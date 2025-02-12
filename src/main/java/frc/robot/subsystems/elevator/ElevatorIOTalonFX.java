@@ -11,11 +11,15 @@ import static frc.robot.util.PhoenixUtil.tryUntilOk;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -23,8 +27,8 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
-  private final TalonFX mainElevatorMotor;
-  private final TalonFX followerElevatorMotor;
+  private final TalonFX mainElevatorMotor = new TalonFX(MAIN_ELEVATOR_MOTOR_ID);
+  private final TalonFX followerElevatorMotor = new TalonFX(FOLLOWER_ELEVATOR_MOTOR_ID);
 
   private final StatusSignal<Angle> mainElevatorMotorPosition;
   private final StatusSignal<AngularVelocity> mainElevatorMotorVelocity;
@@ -43,13 +47,40 @@ public class ElevatorIOTalonFX implements ElevatorIO {
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
   public ElevatorIOTalonFX() {
-    mainElevatorMotor = new TalonFX(mainElevatorMotorID);
-    followerElevatorMotor = new TalonFX(followerElevatorMotorID);
+    TalonFXConfiguration elevatorConfig = new TalonFXConfiguration();
+    elevatorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    elevatorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+
+    elevatorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    elevatorConfig.CurrentLimits.StatorCurrentLimit = 80;
+    elevatorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    elevatorConfig.CurrentLimits.SupplyCurrentLimit = 70;
+    elevatorConfig.CurrentLimits.SupplyCurrentLowerLimit = 40;
+    elevatorConfig.CurrentLimits.SupplyCurrentLowerTime = 1.0;
+
+    elevatorConfig.Slot0.GravityType = GravityTypeValue.Elevator_Static;
+    elevatorConfig.Slot0.kP = 0.0;
+    elevatorConfig.Slot0.kI = 0.0;
+    elevatorConfig.Slot0.kD = 0.0;
+    elevatorConfig.Slot0.kS = 0.0;
+    elevatorConfig.Slot0.kG = 0.0;
+    elevatorConfig.Slot0.kV = 0.0;
+    elevatorConfig.Slot0.kA = 0.0;
+
+    elevatorConfig.MotionMagic.MotionMagicCruiseVelocity = 0;
+    elevatorConfig.MotionMagic.MotionMagicAcceleration = 0;
+    elevatorConfig.MotionMagic.MotionMagicJerk = 0;
+
+    elevatorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+    elevatorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
+        100; // TODO: change forward limit
+    elevatorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+    elevatorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0;
+
     tryUntilOk(5, () -> mainElevatorMotor.getConfigurator().apply(elevatorConfig, 0.5));
     tryUntilOk(5, () -> followerElevatorMotor.getConfigurator().apply(elevatorConfig, 0.5));
 
-    // TODO: this might change
-    followerElevatorMotor.setControl(new Follower(mainElevatorMotorID, true));
+    followerElevatorMotor.setControl(new Follower(MAIN_ELEVATOR_MOTOR_ID, false));
 
     mainElevatorMotorPosition = mainElevatorMotor.getPosition();
     mainElevatorMotorVelocity = mainElevatorMotor.getVelocity();

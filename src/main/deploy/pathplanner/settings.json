@@ -5,8 +5,9 @@
   "pathFolders": [],
   "autoFolders": [
     "FivePiece",
-    "Fourpiece",
-    "Two Piece",
+    "FourPiece",
+    "ThreePiece",
+    "TwoPiece",
     "ZeroOrOnePiece"
   ],
   "defaultMaxVel": 3.0,
