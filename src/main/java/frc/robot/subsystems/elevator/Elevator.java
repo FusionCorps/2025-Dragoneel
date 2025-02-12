@@ -1,17 +1,20 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
-import static frc.robot.Constants.ElevatorConstants.ELEVATOR_SHAFT_DIAMETER;
+import static frc.robot.Constants.ElevatorConstants.ELEVATOR_SPOOL_DIAMETER;
+import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kD;
+import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kG;
+import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kP;
+import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kS;
+import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kV;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfigurator;
-import com.ctre.phoenix6.hardware.TalonFX;
-
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
@@ -25,9 +28,9 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ElevatorConstants.ElevatorState;
 import frc.robot.Robot;
+import frc.robot.util.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class Elevator extends SubsystemBase {
   /* IO and hardware inputs */
@@ -51,28 +54,33 @@ public class Elevator extends SubsystemBase {
    * Tunable position setpoints for the elevator state enums
    */
 
-  LoggedNetworkNumber elevatorProcessorPosition =
-      new LoggedNetworkNumber("/Tuning/Elevator/ProcessorPosition", 0.0);
-  LoggedNetworkNumber elevatorL1Position =
-      new LoggedNetworkNumber("/Tuning/Elevator/L1Position", 0.0);
-  LoggedNetworkNumber elevatorL2Position =
-      new LoggedNetworkNumber("/Tuning/Elevator/L2Position", 0.0);
-  LoggedNetworkNumber elevatorStationPosition =
-      new LoggedNetworkNumber("/Tuning/Elevator/StationPosition", 0.0);
-  LoggedNetworkNumber elevatorL3Position =
-      new LoggedNetworkNumber("/Tuning/Elevator/L3Position", 0.0);
-  LoggedNetworkNumber elevatorL4Position =
-      new LoggedNetworkNumber("/Tuning/Elevator/L4Position", 0.0);
-  LoggedNetworkNumber elevatorNetPosition =
-      new LoggedNetworkNumber("/Tuning/Elevator/NetPosition", 0.0);
+  LoggedTunableNumber elevatorProcessorPosition =
+      new LoggedTunableNumber(
+          "/Tuning/Elevator/ProcessorPosition", ElevatorState.PROCESSOR.rotations.in(Rotations));
+  LoggedTunableNumber elevatorL1Position =
+      new LoggedTunableNumber(
+          "/Tuning/Elevator/L1Position", ElevatorState.L1.rotations.in(Rotations));
+  LoggedTunableNumber elevatorL2Position =
+      new LoggedTunableNumber(
+          "/Tuning/Elevator/L2Position", ElevatorState.L2.rotations.in(Rotations));
+  LoggedTunableNumber elevatorStationPosition =
+      new LoggedTunableNumber(
+          "/Tuning/Elevator/StationPosition", ElevatorState.STATION.rotations.in(Rotations));
+  LoggedTunableNumber elevatorL3Position =
+      new LoggedTunableNumber(
+          "/Tuning/Elevator/L3Position", ElevatorState.L3.rotations.in(Rotations));
+  LoggedTunableNumber elevatorL4Position =
+      new LoggedTunableNumber(
+          "/Tuning/Elevator/L4Position", ElevatorState.L4.rotations.in(Rotations));
+  LoggedTunableNumber elevatorNetPosition =
+      new LoggedTunableNumber(
+          "/Tuning/Elevator/NetPosition", ElevatorState.NET.rotations.in(Rotations));
 
-  LoggedNetworkNumber kP = new LoggedNetworkNumber("/TUning/Elevator/kP", 0.0);
-  LoggedNetworkNumber kI = new LoggedNetworkNumber("/TUning/Elevator/kI", 0.0);
-  LoggedNetworkNumber kD = new LoggedNetworkNumber("/TUning/Elevator/kD", 0.0);
-  LoggedNetworkNumber kV = new LoggedNetworkNumber("/TUning/Elevator/kV", 0.0);
-  LoggedNetworkNumber kA = new LoggedNetworkNumber("/TUning/Elevator/kA", 0.0);
-  LoggedNetworkNumber kS = new LoggedNetworkNumber("/TUning/Elevator/kS", 0.0);
-  LoggedNetworkNumber kG = new LoggedNetworkNumber("/TUning/Elevator/kG", 0.0);
+  LoggedTunableNumber kP = new LoggedTunableNumber("/TUning/Elevator/kP", ELEVATOR_kP);
+  LoggedTunableNumber kD = new LoggedTunableNumber("/TUning/Elevator/kD", ELEVATOR_kD);
+  LoggedTunableNumber kV = new LoggedTunableNumber("/TUning/Elevator/kV", ELEVATOR_kV);
+  LoggedTunableNumber kS = new LoggedTunableNumber("/TUning/Elevator/kS", ELEVATOR_kS);
+  LoggedTunableNumber kG = new LoggedTunableNumber("/TUning/Elevator/kG", ELEVATOR_kG);
 
   /* Constructor */
   public Elevator(ElevatorIO io) {
@@ -98,7 +106,7 @@ public class Elevator extends SubsystemBase {
     double elevatorStage2HeightMeters =
         // rev * circumference/rev / gear ratio = height in meters
         Units.radiansToRotations(inputs.mainElevatorPositionRad)
-            * (Math.PI * ELEVATOR_SHAFT_DIAMETER.in(Meters))
+            * (Math.PI * ELEVATOR_SPOOL_DIAMETER.in(Meters))
             / (ELEVATOR_GEAR_RATIO);
 
     double elevatorStage3HeightMeters = elevatorStage2HeightMeters * 2.0;
@@ -123,34 +131,42 @@ public class Elevator extends SubsystemBase {
     SmartDashboard.putBoolean("Elevator L4", currentElevatorState == ElevatorState.L4);
     SmartDashboard.putBoolean("Elevator NET", currentElevatorState == ElevatorState.NET);
 
-    /*
-     * Update the setpoints for the elevator states if they have been changed
-     */
+    LoggedTunableNumber.ifChanged(
+        hashCode(),
+        nums -> {
+          ElevatorState.PROCESSOR.rotations = Rotations.of(nums[0]);
+          ElevatorState.L1.rotations = Rotations.of(nums[1]);
+          ElevatorState.L2.rotations = Rotations.of(nums[2]);
+          ElevatorState.STATION.rotations = Rotations.of(nums[3]);
+          ElevatorState.L3.rotations = Rotations.of(nums[4]);
+          ElevatorState.L4.rotations = Rotations.of(nums[5]);
+          ElevatorState.NET.rotations = Rotations.of(nums[6]);
 
-    // ElevatorState.PROCESSOR.rotations = Rotations.of(elevatorProcessorPosition.get());
-    // ElevatorState.L1.rotations = Rotations.of(elevatorL1Position.get());
-    // ElevatorState.L2.rotations = Rotations.of(elevatorL2Position.get());
-    // ElevatorState.STATION.rotations = Rotations.of(elevatorStationPosition.get());
-    // ElevatorState.L3.rotations = Rotations.of(elevatorL3Position.get());
-    // ElevatorState.L4.rotations = Rotations.of(elevatorL4Position.get());
-    // ElevatorState.NET.rotations = Rotations.of(elevatorNetPosition.get());
+          if (io instanceof ElevatorIOTalonFX) {
+            Slot0Configs gains =
+                new Slot0Configs()
+                    .withKP(nums[7])
+                    .withKD(nums[8])
+                    .withKV(nums[9])
+                    .withKS(nums[10])
+                    .withKG(nums[11]);
+            ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator();
 
-    if (io instanceof ElevatorIOTalonFX) {
-      TalonFX mainMotor = ((ElevatorIOTalonFX) io).mainElevatorMotor;
-      TalonFXConfigurator config = mainMotor.getConfigurator();
-      Slot0Configs gains = new Slot0Configs();
-      config.refresh(gains);
-      if (gains.kP != kP.get()) gains.kP = kP.get();
-      if (gains.kI != kI.get()) gains.kI = kI.get();
-      if (gains.kD != kD.get()) gains.kD = kD.get();
-      if (gains.kV != kV.get()) gains.kV = kV.get();
-      if (gains.kA != kA.get()) gains.kA = kA.get();
-      if (gains.kS != kS.get()) gains.kS = kS.get();
-      if (gains.kG != kG.get()) gains.kG = kG.get();
-      config.apply(gains, 0.5);
-      ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(gains, 0.5);
-      Logger.recordOutput("Elevator Configs", "Changed to: " + gains.toString());
-    }
+            Logger.recordOutput("Elevator Configs", "Changed to: " + gains.toString());
+          }
+        },
+        elevatorProcessorPosition,
+        elevatorL1Position,
+        elevatorL2Position,
+        elevatorStationPosition,
+        elevatorL3Position,
+        elevatorL4Position,
+        elevatorNetPosition,
+        kP,
+        kD,
+        kV,
+        kS,
+        kG);
   }
 
   public Command goToZero() {

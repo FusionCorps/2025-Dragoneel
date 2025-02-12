@@ -27,8 +27,8 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
-   final TalonFX mainElevatorMotor = new TalonFX(MAIN_ELEVATOR_MOTOR_ID);
-   final TalonFX followerElevatorMotor = new TalonFX(FOLLOWER_ELEVATOR_MOTOR_ID);
+  final TalonFX mainElevatorMotor = new TalonFX(MAIN_ELEVATOR_MOTOR_ID);
+  final TalonFX followerElevatorMotor = new TalonFX(FOLLOWER_ELEVATOR_MOTOR_ID);
 
   private final StatusSignal<Angle> mainElevatorMotorPosition;
   private final StatusSignal<AngularVelocity> mainElevatorMotorVelocity;
@@ -51,12 +51,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     elevatorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     elevatorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-    elevatorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-    elevatorConfig.CurrentLimits.StatorCurrentLimit = 80;
-    elevatorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-    elevatorConfig.CurrentLimits.SupplyCurrentLimit = 70;
-    elevatorConfig.CurrentLimits.SupplyCurrentLowerLimit = 40;
-    elevatorConfig.CurrentLimits.SupplyCurrentLowerTime = 1.0;
+    elevatorConfig.CurrentLimits = ELEVATOR_CURRENT_LIMITS_CONFIGS;
 
     elevatorConfig.Slot0.GravityType = GravityTypeValue.Elevator_Static;
     elevatorConfig.Slot0.kP = 2.5;
@@ -67,15 +62,10 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     elevatorConfig.Slot0.kV = 0.20;
     elevatorConfig.Slot0.kA = 0.0; // unneeded
 
-    elevatorConfig.MotionMagic.MotionMagicCruiseVelocity = 200;
-    elevatorConfig.MotionMagic.MotionMagicAcceleration = 80;
-    // elevatorConfig.MotionMagic.MotionMagicJerk = 0;
+    elevatorConfig.MotionMagic.MotionMagicCruiseVelocity = ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY;
+    elevatorConfig.MotionMagic.MotionMagicAcceleration = ELEVATOR_MOTION_MAGIC_ACCELERATION;
 
-    elevatorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-    elevatorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-        26.260565610162730401865820956465;
-    elevatorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    elevatorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0;
+    elevatorConfig.SoftwareLimitSwitch = ELEVATOR_SOFT_LIMITS_CONFIGS;
 
     tryUntilOk(5, () -> mainElevatorMotor.getConfigurator().apply(elevatorConfig, 0.5));
     tryUntilOk(5, () -> followerElevatorMotor.getConfigurator().apply(elevatorConfig, 0.5));

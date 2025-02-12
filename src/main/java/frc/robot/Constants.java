@@ -20,6 +20,7 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
@@ -327,9 +328,36 @@ public final class Constants {
       }
     }
 
+    public static final double ELEVATOR_kP = 2.5;
+    public static final double ELEVATOR_kI = 0.0;
+    public static final double ELEVATOR_kD = 0.3;
+    public static final double ELEVATOR_kS = 0.0;
+    public static final double ELEVATOR_kV = 0.325;
+    public static final double ELEVATOR_kG = 0.2;
+    public static final double ELEVATOR_kA = 0.0;
+
+    public static final double ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY = 200;
+    public static final double ELEVATOR_MOTION_MAGIC_ACCELERATION = 100;
+
+    public static final CurrentLimitsConfigs ELEVATOR_CURRENT_LIMITS_CONFIGS =
+        new CurrentLimitsConfigs()
+            .withStatorCurrentLimitEnable(true)
+            .withStatorCurrentLimit(80)
+            .withSupplyCurrentLimitEnable(true)
+            .withSupplyCurrentLimit(70)
+            .withSupplyCurrentLowerLimit(40)
+            .withSupplyCurrentLowerTime(1.0);
+
+    public static final SoftwareLimitSwitchConfigs ELEVATOR_SOFT_LIMITS_CONFIGS =
+        new SoftwareLimitSwitchConfigs()
+            .withForwardSoftLimitEnable(true)
+            .withForwardSoftLimitThreshold(Rotations.of(26.260565610162730401865820956465))
+            .withReverseSoftLimitEnable(true)
+            .withReverseSoftLimitThreshold(Rotations.of(0));
+
     public static final double ELEVATOR_GEAR_RATIO =
         60.0 / 14.0; // 14 shaft rotations for 60 motor rotations
-    public static final Distance ELEVATOR_SHAFT_DIAMETER = Inches.of(0.5); // 1/2" thunderhex shaft
+    public static final Distance ELEVATOR_SPOOL_DIAMETER = Inches.of(1.0); // 1" spool
   }
 
   public static class WristConstants {

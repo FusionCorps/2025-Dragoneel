@@ -3,6 +3,8 @@ package frc.robot.subsystems.elevator;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
+import static frc.robot.Constants.ElevatorConstants.ELEVATOR_MOTION_MAGIC_ACCELERATION;
+import static frc.robot.Constants.ElevatorConstants.ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
@@ -17,12 +19,16 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 public class ElevatorIOSim implements ElevatorIO {
   private final DCMotorSim elevatorSim;
 
-  private final ProfiledPIDController elevatorPIDController =
+  ProfiledPIDController elevatorPIDController =
       new ProfiledPIDController(
-          2.0, 0, 0.01, new TrapezoidProfile.Constraints(200, 100)); // in rotations units
+          2.0,
+          0,
+          0.01,
+          new TrapezoidProfile.Constraints(
+              ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY,
+              ELEVATOR_MOTION_MAGIC_ACCELERATION)); // in rotations units
 
-  private final ElevatorFeedforward elevatorFeedforward =
-      new ElevatorFeedforward(0.0, 0.00001, 3.0);
+  ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0.00001, 3.0);
 
   private double appliedVolts = 0.0;
   private Angle targetPosition = Rotations.zero();
