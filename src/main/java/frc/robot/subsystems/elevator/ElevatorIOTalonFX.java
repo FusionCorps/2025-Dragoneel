@@ -27,8 +27,8 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
-  private final TalonFX mainElevatorMotor = new TalonFX(MAIN_ELEVATOR_MOTOR_ID);
-  private final TalonFX followerElevatorMotor = new TalonFX(FOLLOWER_ELEVATOR_MOTOR_ID);
+   final TalonFX mainElevatorMotor = new TalonFX(MAIN_ELEVATOR_MOTOR_ID);
+   final TalonFX followerElevatorMotor = new TalonFX(FOLLOWER_ELEVATOR_MOTOR_ID);
 
   private final StatusSignal<Angle> mainElevatorMotorPosition;
   private final StatusSignal<AngularVelocity> mainElevatorMotorVelocity;

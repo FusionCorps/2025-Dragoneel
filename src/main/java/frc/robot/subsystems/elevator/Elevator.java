@@ -8,6 +8,10 @@ import static frc.robot.Constants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_SHAFT_DIAMETER;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfigurator;
+import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
@@ -61,6 +65,7 @@ public class Elevator extends SubsystemBase {
       new LoggedNetworkNumber("/Tuning/Elevator/L4Position", 0.0);
   LoggedNetworkNumber elevatorNetPosition =
       new LoggedNetworkNumber("/Tuning/Elevator/NetPosition", 0.0);
+
   LoggedNetworkNumber kP = new LoggedNetworkNumber("/TUning/Elevator/kP", 0.0);
   LoggedNetworkNumber kI = new LoggedNetworkNumber("/TUning/Elevator/kI", 0.0);
   LoggedNetworkNumber kD = new LoggedNetworkNumber("/TUning/Elevator/kD", 0.0);
@@ -130,6 +135,22 @@ public class Elevator extends SubsystemBase {
     // ElevatorState.L4.rotations = Rotations.of(elevatorL4Position.get());
     // ElevatorState.NET.rotations = Rotations.of(elevatorNetPosition.get());
 
+    if (io instanceof ElevatorIOTalonFX) {
+      TalonFX mainMotor = ((ElevatorIOTalonFX) io).mainElevatorMotor;
+      TalonFXConfigurator config = mainMotor.getConfigurator();
+      Slot0Configs gains = new Slot0Configs();
+      config.refresh(gains);
+      if (gains.kP != kP.get()) gains.kP = kP.get();
+      if (gains.kI != kI.get()) gains.kI = kI.get();
+      if (gains.kD != kD.get()) gains.kD = kD.get();
+      if (gains.kV != kV.get()) gains.kV = kV.get();
+      if (gains.kA != kA.get()) gains.kA = kA.get();
+      if (gains.kS != kS.get()) gains.kS = kS.get();
+      if (gains.kG != kG.get()) gains.kG = kG.get();
+      config.apply(gains, 0.5);
+      ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(gains, 0.5);
+      Logger.recordOutput("Elevator Configs", "Changed to: " + gains.toString());
+    }
   }
 
   public Command goToZero() {
