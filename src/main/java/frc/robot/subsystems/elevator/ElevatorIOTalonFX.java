@@ -59,21 +59,21 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     elevatorConfig.CurrentLimits.SupplyCurrentLowerTime = 1.0;
 
     elevatorConfig.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-    elevatorConfig.Slot0.kP = 0.0;
-    elevatorConfig.Slot0.kI = 0.0;
-    elevatorConfig.Slot0.kD = 0.0;
-    elevatorConfig.Slot0.kS = 0.0;
-    elevatorConfig.Slot0.kG = 0.0;
-    elevatorConfig.Slot0.kV = 0.0;
-    elevatorConfig.Slot0.kA = 0.0;
+    elevatorConfig.Slot0.kP = 2.5;
+    elevatorConfig.Slot0.kI = 0.0; // unneeded
+    elevatorConfig.Slot0.kD = 0.3;
+    elevatorConfig.Slot0.kS = 0.0; // unneeded
+    elevatorConfig.Slot0.kG = 0.325;
+    elevatorConfig.Slot0.kV = 0.20;
+    elevatorConfig.Slot0.kA = 0.0; // unneeded
 
-    elevatorConfig.MotionMagic.MotionMagicCruiseVelocity = 0;
-    elevatorConfig.MotionMagic.MotionMagicAcceleration = 0;
-    elevatorConfig.MotionMagic.MotionMagicJerk = 0;
+    elevatorConfig.MotionMagic.MotionMagicCruiseVelocity = 200;
+    elevatorConfig.MotionMagic.MotionMagicAcceleration = 80;
+    // elevatorConfig.MotionMagic.MotionMagicJerk = 0;
 
     elevatorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     elevatorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-        100; // TODO: change forward limit
+        26.260565610162730401865820956465;
     elevatorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     elevatorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0;
 

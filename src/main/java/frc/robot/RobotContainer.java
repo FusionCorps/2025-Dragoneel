@@ -15,12 +15,12 @@ package frc.robot;
 
 import static frc.robot.Constants.VisionConstants.*;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.SuperstructureCommands;
@@ -29,8 +29,10 @@ import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.gyro.GyroIO;
+import frc.robot.subsystems.drive.gyro.GyroIOPigeon2;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOSim;
+import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
@@ -72,14 +74,14 @@ public class RobotContainer {
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
-        // drive =
-        //     new Drive(
-        //         new GyroIOPigeon2(),
-        //         new ModuleIOTalonFX(DriveConstants.FRONT_LEFT),
-        //         new ModuleIOTalonFX(DriveConstants.FRONT_RIGHT),
-        //         new ModuleIOTalonFX(DriveConstants.BACK_LEFT),
-        //         new ModuleIOTalonFX(DriveConstants.BACK_RIGHT));
-        drive = null;
+        drive =
+            new Drive(
+                new GyroIOPigeon2(),
+                new ModuleIOTalonFX(DriveConstants.FRONT_LEFT),
+                new ModuleIOTalonFX(DriveConstants.FRONT_RIGHT),
+                new ModuleIOTalonFX(DriveConstants.BACK_LEFT),
+                new ModuleIOTalonFX(DriveConstants.BACK_RIGHT));
+        // drive = null;
         // vision =
         //     new Vision(
         //         drive,
@@ -157,21 +159,21 @@ public class RobotContainer {
               "ShootAlgae", scorer.shootAlgaeCmd()));
     }
 
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-    // autoChooser = new LoggedDashboardChooser<>("Auto Chooser");
+    // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    autoChooser = new LoggedDashboardChooser<>("Auto Chooser");
     // autoChooser.addDefaultOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
 
     // Set up SysId routines
-    // autoChooser.addOption(
-    //     "Drive SysId (Quasistatic Forward)",
-    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Drive SysId (Quasistatic Reverse)",
-    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Forward)",
+        elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Reverse)",
+        elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Forward)", elevator.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Reverse)", elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -217,19 +219,19 @@ public class RobotContainer {
 
     // TODO: eventually remove this block in favor of supersructure commands
     if (elevator != null) {
-      //   controller.leftBumper().onTrue(elevator.goToNet());
-      //   controller.y().onTrue(elevator.goToL4());
-      //   controller.x().onTrue(elevator.goToL3());
-      //   controller.b().onTrue(elevator.goToL2());
-      //   controller.a().onTrue(elevator.goToL1());
-      //   controller.povDown().onTrue(elevator.goToZero());
-      //   controller.rightBumper().onTrue(elevator.goToStation());
+      controller.leftBumper().onTrue(elevator.goToNet());
+      controller.y().onTrue(elevator.goToL4());
+      controller.x().onTrue(elevator.goToL3());
+      controller.b().onTrue(elevator.goToL2());
+      controller.a().onTrue(elevator.goToL1());
+      controller.povDown().onTrue(elevator.goToZero());
+      controller.rightBumper().onTrue(elevator.goToStation());
 
       // controller.back().whileTrue(elevator.runHomingRoutine());
 
       // TODO: remove after closed loop control is tuned
-      controller.rightTrigger().whileTrue(elevator.lowerElevator());
-      controller.leftTrigger().whileTrue(elevator.raiseElevator());
+      // controller.rightTrigger().whileTrue(elevator.lowerElevator());
+      // controller.leftTrigger().whileTrue(elevator.raiseElevator());
     }
 
     if (scorer != null) {

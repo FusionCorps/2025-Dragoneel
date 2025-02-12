@@ -36,7 +36,7 @@ public class Robot extends LoggedRobot {
   private RobotContainer robotContainer;
 
   // Order: 2nd stage, 3rd stage, wrist
-  public static Pose3d[] componentPoses = new Pose3d[3];
+  public static Pose3d[] componentPoses = new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d()};
 
   public Robot() {
     // Record metadata

@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_SHAFT_DIAMETER;
 
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
@@ -60,6 +61,13 @@ public class Elevator extends SubsystemBase {
       new LoggedNetworkNumber("/Tuning/Elevator/L4Position", 0.0);
   LoggedNetworkNumber elevatorNetPosition =
       new LoggedNetworkNumber("/Tuning/Elevator/NetPosition", 0.0);
+  LoggedNetworkNumber kP = new LoggedNetworkNumber("/TUning/Elevator/kP", 0.0);
+  LoggedNetworkNumber kI = new LoggedNetworkNumber("/TUning/Elevator/kI", 0.0);
+  LoggedNetworkNumber kD = new LoggedNetworkNumber("/TUning/Elevator/kD", 0.0);
+  LoggedNetworkNumber kV = new LoggedNetworkNumber("/TUning/Elevator/kV", 0.0);
+  LoggedNetworkNumber kA = new LoggedNetworkNumber("/TUning/Elevator/kA", 0.0);
+  LoggedNetworkNumber kS = new LoggedNetworkNumber("/TUning/Elevator/kS", 0.0);
+  LoggedNetworkNumber kG = new LoggedNetworkNumber("/TUning/Elevator/kG", 0.0);
 
   /* Constructor */
   public Elevator(ElevatorIO io) {
@@ -70,8 +78,8 @@ public class Elevator extends SubsystemBase {
             new SysIdRoutine.Config(
                 Volts.of(0.25).per(Second),
                 Volts.of(0.5),
-                Seconds.of(5),
-                state -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+                Seconds.of(3),
+                state -> SignalLogger.writeString("Elevator/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism((volts) -> io.setVoltageOpenLoop(volts), null, this));
   }
 
@@ -121,6 +129,7 @@ public class Elevator extends SubsystemBase {
     // ElevatorState.L3.rotations = Rotations.of(elevatorL3Position.get());
     // ElevatorState.L4.rotations = Rotations.of(elevatorL4Position.get());
     // ElevatorState.NET.rotations = Rotations.of(elevatorNetPosition.get());
+
   }
 
   public Command goToZero() {
@@ -190,7 +199,7 @@ public class Elevator extends SubsystemBase {
   public Command lowerElevator() {
     return this.runEnd(
         () -> {
-          io.setVoltageOpenLoop(Volts.of(-0.3 * 12.0));
+          io.setVoltageOpenLoop(Volts.of(-0.05 * 12.0));
           isOpenLoop = true;
         },
         () -> io.setVoltageOpenLoop(Volts.zero()));
@@ -199,7 +208,7 @@ public class Elevator extends SubsystemBase {
   public Command raiseElevator() {
     return this.runEnd(
         () -> {
-          io.setVoltageOpenLoop(Volts.of(0.3 * 12.0));
+          io.setVoltageOpenLoop(Volts.of(0.05 * 12.0));
           isOpenLoop = true;
         },
         () -> io.setVoltageOpenLoop(Volts.zero()));
