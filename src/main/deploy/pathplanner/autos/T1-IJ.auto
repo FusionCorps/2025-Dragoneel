@@ -11,7 +11,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "T1-J"
+                  "pathName": "T1-I"
                 }
               },
               {
@@ -36,7 +36,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "J-TStat"
+                  "pathName": "I-TStat"
                 }
               },
               {
@@ -61,7 +61,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "TStat-K"
+                  "pathName": "TStat-J"
                 }
               },
               {
