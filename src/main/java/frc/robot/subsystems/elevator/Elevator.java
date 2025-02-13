@@ -6,6 +6,8 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
+import static frc.robot.Constants.ElevatorConstants.ELEVATOR_MOTION_MAGIC_ACCELERATION;
+import static frc.robot.Constants.ElevatorConstants.ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_SPOOL_DIAMETER;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kD;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kG;
@@ -14,6 +16,7 @@ import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kS;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kV;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -76,11 +79,17 @@ public class Elevator extends SubsystemBase {
       new LoggedTunableNumber(
           "/Tuning/Elevator/NetPosition", ElevatorState.NET.rotations.in(Rotations));
 
-  LoggedTunableNumber kP = new LoggedTunableNumber("/TUning/Elevator/kP", ELEVATOR_kP);
-  LoggedTunableNumber kD = new LoggedTunableNumber("/TUning/Elevator/kD", ELEVATOR_kD);
-  LoggedTunableNumber kV = new LoggedTunableNumber("/TUning/Elevator/kV", ELEVATOR_kV);
-  LoggedTunableNumber kS = new LoggedTunableNumber("/TUning/Elevator/kS", ELEVATOR_kS);
-  LoggedTunableNumber kG = new LoggedTunableNumber("/TUning/Elevator/kG", ELEVATOR_kG);
+  LoggedTunableNumber kP = new LoggedTunableNumber("/Tuning/Elevator/kP", ELEVATOR_kP);
+  LoggedTunableNumber kD = new LoggedTunableNumber("/Tuning/Elevator/kD", ELEVATOR_kD);
+  LoggedTunableNumber kV = new LoggedTunableNumber("/Tuning/Elevator/kV", ELEVATOR_kV);
+  LoggedTunableNumber kS = new LoggedTunableNumber("/Tuning/Elevator/kS", ELEVATOR_kS);
+  LoggedTunableNumber kG = new LoggedTunableNumber("/Tuning/Elevator/kG", ELEVATOR_kG);
+  LoggedTunableNumber kA = new LoggedTunableNumber("/Tuning/Elevator/kA", ELEVATOR_kG);
+
+  LoggedTunableNumber vel =
+      new LoggedTunableNumber("/Tuning/Elevator/vel", ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY);
+  LoggedTunableNumber accel =
+      new LoggedTunableNumber("/Tuning/Elevator/accel", ELEVATOR_MOTION_MAGIC_ACCELERATION);
 
   /* Constructor */
   public Elevator(ElevatorIO io) {
@@ -149,8 +158,18 @@ public class Elevator extends SubsystemBase {
                     .withKD(nums[8])
                     .withKV(nums[9])
                     .withKS(nums[10])
-                    .withKG(nums[11]);
-            ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator();
+                    .withKG(nums[11])
+                    .withKA(nums[14]);
+            MotionMagicConfigs motmag =
+                new MotionMagicConfigs()
+                    .withMotionMagicCruiseVelocity(nums[12])
+                    .withMotionMagicAcceleration(nums[13]);
+
+            ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(gains);
+            ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(gains);
+
+            ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(motmag);
+            ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(motmag);
 
             Logger.recordOutput("Elevator Configs", "Changed to: " + gains.toString());
           }
@@ -166,7 +185,10 @@ public class Elevator extends SubsystemBase {
         kD,
         kV,
         kS,
-        kG);
+        kG,
+        vel,
+        accel,
+        kA);
   }
 
   public Command goToZero() {

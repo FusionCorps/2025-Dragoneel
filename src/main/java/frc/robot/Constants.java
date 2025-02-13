@@ -328,16 +328,16 @@ public final class Constants {
       }
     }
 
-    public static final double ELEVATOR_kP = 2.5;
+    public static final double ELEVATOR_kP = 0.4;
     public static final double ELEVATOR_kI = 0.0;
-    public static final double ELEVATOR_kD = 0.3;
+    public static final double ELEVATOR_kD = 0.0;
     public static final double ELEVATOR_kS = 0.0;
-    public static final double ELEVATOR_kV = 0.325;
-    public static final double ELEVATOR_kG = 0.2;
+    public static final double ELEVATOR_kV = 0.125;
+    public static final double ELEVATOR_kG = 0.35;
     public static final double ELEVATOR_kA = 0.0;
 
     public static final double ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY = 200;
-    public static final double ELEVATOR_MOTION_MAGIC_ACCELERATION = 100;
+    public static final double ELEVATOR_MOTION_MAGIC_ACCELERATION = 200;
 
     public static final CurrentLimitsConfigs ELEVATOR_CURRENT_LIMITS_CONFIGS =
         new CurrentLimitsConfigs()

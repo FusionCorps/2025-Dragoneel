@@ -230,8 +230,8 @@ public class RobotContainer {
       // controller.back().whileTrue(elevator.runHomingRoutine());
 
       // TODO: remove after closed loop control is tuned
-      controller.rightTrigger().whileTrue(elevator.lowerElevator());
-      controller.leftTrigger().whileTrue(elevator.raiseElevator());
+      // controller.rightTrigger().whileTrue(elevator.lowerElevator());
+      // controller.leftTrigger().whileTrue(elevator.raiseElevator());
     }
 
     if (scorer != null) {

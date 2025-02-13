@@ -72,6 +72,9 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
     followerElevatorMotor.setControl(new Follower(MAIN_ELEVATOR_MOTOR_ID, false));
 
+    mainElevatorMotor.setPosition(0);
+    followerElevatorMotor.setPosition(0);
+
     mainElevatorMotorPosition = mainElevatorMotor.getPosition();
     mainElevatorMotorVelocity = mainElevatorMotor.getVelocity();
     mainElevatorMotorAppliedVoltage = mainElevatorMotor.getMotorVoltage();
