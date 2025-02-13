@@ -148,4 +148,9 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     mainElevatorMotor.setPosition(0.0);
     followerElevatorMotor.setPosition(0.0);
   }
+
+  @Override
+  public void holdPosition() {
+    mainElevatorMotor.setControl(posRequest.withPosition(mainElevatorMotorPosition.refresh().getValue()));
+  }
 }

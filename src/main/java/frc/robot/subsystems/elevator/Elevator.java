@@ -2,8 +2,6 @@ package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_MOTION_MAGIC_ACCELERATION;
@@ -15,7 +13,6 @@ import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kP;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kS;
 import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kV;
 
-import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -27,14 +24,54 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ElevatorConstants.ElevatorState;
 import frc.robot.Robot;
 import frc.robot.util.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
+/**
+ * The Elevator subsystem controls the elevator mechanism of the robot.
+ * This is a three-stage cascade elevator, with the first stage being fixed.
+ * The elevator can operate in both closed-loop and open-loop modes.
+ * 
+ * <p>Constructor:
+ * <ul>
+ *   <li>{@link #Elevator(ElevatorIO)}: Initializes the Elevator subsystem with the given IO interface.</li>
+ * </ul>
+ * 
+ * <p>Methods:
+ * <ul>
+ *   <li>{@link #periodic()}: Periodically updates the elevator state, processes inputs, and handles alerts and tunable values.</li>
+ *   <li>{@link #goToState(ElevatorState)}: Returns a {@link InstantCommand} to move the elevator to the specified state.</li>
+ *   <li>{@link #lowerElevatorOpenLoop()}: Returns a {@link InstantCommand} to lower the elevator in open-loop mode.</li>
+ *   <li>{@link #raiseElevatorOpenLoop()}: Returns a {@link InstantCommand} to raise the elevator in open-loop mode.</li>
+ * </ul>
+ * 
+ * <p>Alerts:
+ * <ul>
+ *   <li>{@link #mainMotorConnectedAlert}: {@link Alert} for main elevator motor disconnection.</li>
+ *   <li>{@link #followerMotorConnectedAlert}: {@link Alert} for follower elevator motor disconnection.</li>
+ * </ul>
+ * 
+ * <p>Tunable Parameters:
+ * <ul>
+ *   <li>{@link #elevatorProcessorPosition}</li>
+ *   <li>{@link #elevatorL1Position}</li>
+ *   <li>{@link #elevatorL2Position}</li>
+ *   <li>{@link #elevatorStationPosition}</li>
+ *   <li>{@link #elevatorL3Position}</li>
+ *   <li>{@link #elevatorL4Position}</li>
+ *   <li>{@link #elevatorNetPosition}</li>
+ *   <li>{@link #kP}</li>
+ *   <li>{@link #kD}</li>
+ *   <li>{@link #kV}</li>
+ *   <li>{@link #kS}</li>
+ *   <li>{@link #kG}</li>
+ *   <li>{@link #vel}</li>
+ *   <li>{@link #accel}</li>
+ * </ul>
+ */
 public class Elevator extends SubsystemBase {
   /* IO and hardware inputs */
   private final ElevatorIO io;
@@ -49,13 +86,7 @@ public class Elevator extends SubsystemBase {
   /* State tracker for current height of the elevator */
   @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.ZERO;
 
-  private final SysIdRoutine sysIdRoutine;
-
   boolean isOpenLoop = false;
-
-  /*
-   * Tunable position setpoints for the elevator state enums
-   */
 
   LoggedTunableNumber elevatorProcessorPosition =
       new LoggedTunableNumber(
@@ -84,7 +115,6 @@ public class Elevator extends SubsystemBase {
   LoggedTunableNumber kV = new LoggedTunableNumber("/Tuning/Elevator/kV", ELEVATOR_kV);
   LoggedTunableNumber kS = new LoggedTunableNumber("/Tuning/Elevator/kS", ELEVATOR_kS);
   LoggedTunableNumber kG = new LoggedTunableNumber("/Tuning/Elevator/kG", ELEVATOR_kG);
-  LoggedTunableNumber kA = new LoggedTunableNumber("/Tuning/Elevator/kA", ELEVATOR_kG);
 
   LoggedTunableNumber vel =
       new LoggedTunableNumber("/Tuning/Elevator/vel", ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY);
@@ -94,15 +124,6 @@ public class Elevator extends SubsystemBase {
   /* Constructor */
   public Elevator(ElevatorIO io) {
     this.io = io;
-
-    sysIdRoutine =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                Volts.of(0.25).per(Second),
-                Volts.of(0.5),
-                Seconds.of(3),
-                state -> SignalLogger.writeString("Elevator/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism((volts) -> io.setVoltageOpenLoop(volts), null, this));
   }
 
   /* Periodically running code */
@@ -158,8 +179,7 @@ public class Elevator extends SubsystemBase {
                     .withKD(nums[8])
                     .withKV(nums[9])
                     .withKS(nums[10])
-                    .withKG(nums[11])
-                    .withKA(nums[14]);
+                    .withKG(nums[11]);
             MotionMagicConfigs motmag =
                 new MotionMagicConfigs()
                     .withMotionMagicCruiseVelocity(nums[12])
@@ -187,116 +207,33 @@ public class Elevator extends SubsystemBase {
         kS,
         kG,
         vel,
-        accel,
-        kA);
+        accel
+        );
   }
 
-  public Command goToZero() {
+  public Command goToState(ElevatorState targetState) {
     return this.runOnce(
         () -> {
-          currentElevatorState = ElevatorState.ZERO;
           isOpenLoop = false;
+          currentElevatorState = targetState;
         });
-  }
+    }
 
-  public Command goToProcessor() {
-    return this.runOnce(
-        () -> {
-          currentElevatorState = ElevatorState.PROCESSOR;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToL1() {
-    return this.runOnce(
-        () -> {
-          currentElevatorState = ElevatorState.L1;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToL2() {
-    return this.runOnce(
-        () -> {
-          currentElevatorState = ElevatorState.L2;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToStation() {
-    return this.runOnce(
-        () -> {
-          currentElevatorState = ElevatorState.STATION;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToL3() {
-    return this.runOnce(
-        () -> {
-          currentElevatorState = ElevatorState.L3;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToL4() {
-    return this.runOnce(
-        () -> {
-          currentElevatorState = ElevatorState.L4;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToNet() {
-    return this.runOnce(
-        () -> {
-          currentElevatorState = ElevatorState.NET;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command lowerElevator() {
+  public Command lowerElevatorOpenLoop() {
     return this.runEnd(
         () -> {
+          isOpenLoop = true;
           io.setVoltageOpenLoop(Volts.of(-0.05 * 12.0));
-          isOpenLoop = true;
         },
         () -> io.setVoltageOpenLoop(Volts.zero()));
   }
 
-  public Command raiseElevator() {
+  public Command raiseElevatorOpenLoop() {
     return this.runEnd(
         () -> {
-          io.setVoltageOpenLoop(Volts.of(0.05 * 12.0));
           isOpenLoop = true;
+          io.setVoltageOpenLoop(Volts.of(0.05 * 12.0));
         },
         () -> io.setVoltageOpenLoop(Volts.zero()));
-  }
-
-  /**
-   * This routine should be called when robot is first enabled. It will slowly lower the elevator
-   * until a current spike is detected, then stop the motor and zero its position. This does not
-   * require any external sensors.
-   */
-  public Command runHomingRoutine() {
-    return new FunctionalCommand(
-            () -> {},
-            () -> io.setVoltageOpenLoop(Volts.of(0.1 * -12.0)),
-            (interrupted) -> {
-              io.setVoltageOpenLoop(Volts.zero());
-              currentElevatorState = ElevatorState.ZERO;
-              io.zeroPosition();
-            },
-            () -> inputs.mainElevatorCurrentAmps > 60.0,
-            this)
-        .withName("ElevatorHomingRouting");
-  }
-
-  public Command sysIdQuasistatic(Direction direction) {
-    return sysIdRoutine.quasistatic(direction);
-  }
-
-  public Command sysIdDynamic(Direction direction) {
-    return sysIdRoutine.dynamic(direction);
   }
 }

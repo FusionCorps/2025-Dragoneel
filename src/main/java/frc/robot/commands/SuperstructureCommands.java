@@ -1,6 +1,8 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.ElevatorConstants.ElevatorState;
+import frc.robot.Constants.WristConstants.WristState;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.wrist.Wrist;
 
@@ -15,34 +17,36 @@ public class SuperstructureCommands {
   }
 
   public Command goToZero() {
-    return elevator.goToZero().alongWith(wrist.goToZero());
+    return elevator.goToState(ElevatorState.ZERO).alongWith(wrist.goToState(WristState.ZERO));
   }
 
   public Command goToProcessor() {
-    return elevator.goToProcessor().alongWith(wrist.goToProcessor());
+    return elevator.goToState(ElevatorState.PROCESSOR)
+        .alongWith(wrist.goToState(WristState.PROCESSOR));
   }
 
   public Command goToL1() {
-    return elevator.goToL1().alongWith(wrist.goToL1());
+    return elevator.goToState(ElevatorState.L1).alongWith(wrist.goToState(WristState.L1));
   }
 
   public Command goToL2() {
-    return elevator.goToL2().alongWith(wrist.goToL2());
+    return elevator.goToState(ElevatorState.L2).alongWith(wrist.goToState(WristState.L2_AND_L3));
   }
 
   public Command goToStation() {
-    return elevator.goToStation().alongWith(wrist.goToStation());
+    return elevator.goToState(ElevatorState.STATION)
+        .alongWith(wrist.goToState(WristState.STATION));
   }
 
   public Command goToL3() {
-    return elevator.goToL3().alongWith(wrist.goToL3());
+    return elevator.goToState(ElevatorState.L3).alongWith(wrist.goToState(WristState.L2_AND_L3));
   }
 
   public Command goToL4() {
-    return elevator.goToL4().alongWith(wrist.goToL4());
+    return elevator.goToState(ElevatorState.L4).alongWith(wrist.goToState(WristState.L4));
   }
 
   public Command goToNet() {
-    return elevator.goToNet().alongWith(wrist.goToNet());
+    return elevator.goToState(ElevatorState.NET).alongWith(wrist.goToState(WristState.NET));
   }
 }

@@ -113,66 +113,10 @@ public class Wrist extends SubsystemBase {
         () -> io.setVoltageOpenLoop(Volts.zero()));
   }
 
-  public Command goToZero() {
+  public Command goToState(WristState state) {
     return this.runOnce(
         () -> {
-          currentWristState = WristState.ZERO;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToProcessor() {
-    return this.runOnce(
-        () -> {
-          currentWristState = WristState.PROCESSOR;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToL1() {
-    return this.runOnce(
-        () -> {
-          currentWristState = WristState.L1;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToL2() {
-    return this.runOnce(
-        () -> {
-          currentWristState = WristState.L2_AND_L3;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToL3() {
-    return this.runOnce(
-        () -> {
-          currentWristState = WristState.L2_AND_L3;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToStation() {
-    return this.runOnce(
-        () -> {
-          currentWristState = WristState.STATION;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToL4() {
-    return this.runOnce(
-        () -> {
-          currentWristState = WristState.L4;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToNet() {
-    return this.runOnce(
-        () -> {
-          currentWristState = WristState.NET;
+          currentWristState = state;
           isOpenLoop = false;
         });
   }

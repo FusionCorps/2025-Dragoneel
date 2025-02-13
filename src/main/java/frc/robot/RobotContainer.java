@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.ElevatorConstants.ElevatorState;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.SuperstructureCommands;
 import frc.robot.subsystems.climb.Climb;
@@ -145,7 +146,7 @@ public class RobotContainer {
     if (elevator != null && wrist != null)
       superstructureCommands = new SuperstructureCommands(elevator, wrist);
 
-    if (elevator != null && scorer != null && climb != null) {
+    if (elevator != null && scorer != null) {
       NamedCommands.registerCommands(
           Map.of(
               "L1", superstructureCommands.goToL1(),
@@ -164,16 +165,16 @@ public class RobotContainer {
     // autoChooser.addDefaultOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
 
     // Set up SysId routines
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", elevator.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Drive SysId (Quasistatic Forward)",
+    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Drive SysId (Quasistatic Reverse)",
+    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -219,13 +220,13 @@ public class RobotContainer {
 
     // TODO: eventually remove this block in favor of supersructure commands
     if (elevator != null) {
-      controller.leftBumper().onTrue(elevator.goToNet());
-      controller.y().onTrue(elevator.goToL4());
-      controller.x().onTrue(elevator.goToL3());
-      controller.b().onTrue(elevator.goToL2());
-      controller.a().onTrue(elevator.goToL1());
-      controller.povDown().onTrue(elevator.goToZero());
-      controller.rightBumper().onTrue(elevator.goToStation());
+      controller.leftBumper().onTrue(elevator.goToState(ElevatorState.NET));
+      controller.y().onTrue(elevator.goToState(ElevatorState.L4));
+      controller.x().onTrue(elevator.goToState(ElevatorState.L3));
+      controller.b().onTrue(elevator.goToState(ElevatorState.L2));
+      controller.a().onTrue(elevator.goToState(ElevatorState.L1));
+      controller.povDown().onTrue(elevator.goToState(ElevatorState.PROCESSOR));
+      controller.rightBumper().onTrue(elevator.goToState(ElevatorState.STATION));
 
       // controller.back().whileTrue(elevator.runHomingRoutine());
 
