@@ -17,7 +17,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "ElevatorL4"
+                  "name": "L4"
                 }
               }
             ]
@@ -32,7 +32,7 @@
         {
           "type": "named",
           "data": {
-            "name": "ScorerShootCoral"
+            "name": "ShootCoral"
           }
         }
       ]
