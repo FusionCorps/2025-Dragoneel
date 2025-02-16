@@ -28,7 +28,7 @@ public interface ElevatorIO {
 
   default void setVoltageOpenLoop(Voltage volts) {}
 
-  /** Only necessary in use with {@link #setVoltageOpenLoop()}*/
+  /** Only necessary in use with {@link #setVoltageOpenLoop()} */
   default void holdPosition() {}
 
   default void zeroPosition() {}

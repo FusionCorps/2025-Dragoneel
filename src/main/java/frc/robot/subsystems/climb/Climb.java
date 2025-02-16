@@ -1,7 +1,7 @@
 package frc.robot.subsystems.climb;
 
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.Constants.ClimbConstants.CLIMB_RUN_VOLTS;
+import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_RUN_VOLTS;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;

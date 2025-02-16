@@ -2,16 +2,10 @@ package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.Constants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
-import static frc.robot.Constants.ElevatorConstants.ELEVATOR_MOTION_MAGIC_ACCELERATION;
-import static frc.robot.Constants.ElevatorConstants.ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY;
-import static frc.robot.Constants.ElevatorConstants.ELEVATOR_SPOOL_DIAMETER;
-import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kD;
-import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kG;
-import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kP;
-import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kS;
-import static frc.robot.Constants.ElevatorConstants.ELEVATOR_kV;
+import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -22,54 +16,66 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.ElevatorConstants.ElevatorState;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Robot;
+import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.util.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * The Elevator subsystem controls the elevator mechanism of the robot.
- * This is a three-stage cascade elevator, with the first stage being fixed.
- * The elevator can operate in both closed-loop and open-loop modes.
- * 
+ * The Elevator subsystem controls the elevator mechanism of the robot. This is a three-stage
+ * cascade elevator, with the first stage being fixed. The elevator can operate in both closed-loop
+ * and open-loop modes.
+ *
  * <p>Constructor:
+ *
  * <ul>
- *   <li>{@link #Elevator(ElevatorIO)}: Initializes the Elevator subsystem with the given IO interface.</li>
+ *   <li>{@link #Elevator(ElevatorIO)}: Initializes the Elevator subsystem with the given IO
+ *       interface.
  * </ul>
- * 
+ *
  * <p>Methods:
+ *
  * <ul>
- *   <li>{@link #periodic()}: Periodically updates the elevator state, processes inputs, and handles alerts and tunable values.</li>
- *   <li>{@link #goToState(ElevatorState)}: Returns a {@link InstantCommand} to move the elevator to the specified state.</li>
- *   <li>{@link #lowerElevatorOpenLoop()}: Returns a {@link InstantCommand} to lower the elevator in open-loop mode.</li>
- *   <li>{@link #raiseElevatorOpenLoop()}: Returns a {@link InstantCommand} to raise the elevator in open-loop mode.</li>
+ *   <li>{@link #periodic()}: Periodically updates the elevator state, processes inputs, and handles
+ *       alerts and tunable values.
+ *   <li>{@link #goToState(ElevatorState)}: Returns a {@link InstantCommand} to move the elevator to
+ *       the specified state.
+ *   <li>{@link #lowerElevatorOpenLoop()}: Returns a {@link InstantCommand} to lower the elevator in
+ *       open-loop mode.
+ *   <li>{@link #raiseElevatorOpenLoop()}: Returns a {@link InstantCommand} to raise the elevator in
+ *       open-loop mode.
  * </ul>
- * 
+ *
  * <p>Alerts:
+ *
  * <ul>
- *   <li>{@link #mainMotorConnectedAlert}: {@link Alert} for main elevator motor disconnection.</li>
- *   <li>{@link #followerMotorConnectedAlert}: {@link Alert} for follower elevator motor disconnection.</li>
+ *   <li>{@link #mainMotorConnectedAlert}: {@link Alert} for main elevator motor disconnection.
+ *   <li>{@link #followerMotorConnectedAlert}: {@link Alert} for follower elevator motor
+ *       disconnection.
  * </ul>
- * 
+ *
  * <p>Tunable Parameters:
+ *
  * <ul>
- *   <li>{@link #elevatorProcessorPosition}</li>
- *   <li>{@link #elevatorL1Position}</li>
- *   <li>{@link #elevatorL2Position}</li>
- *   <li>{@link #elevatorStationPosition}</li>
- *   <li>{@link #elevatorL3Position}</li>
- *   <li>{@link #elevatorL4Position}</li>
- *   <li>{@link #elevatorNetPosition}</li>
- *   <li>{@link #kP}</li>
- *   <li>{@link #kD}</li>
- *   <li>{@link #kV}</li>
- *   <li>{@link #kS}</li>
- *   <li>{@link #kG}</li>
- *   <li>{@link #vel}</li>
- *   <li>{@link #accel}</li>
+ *   <li>{@link #elevatorProcessorPosition}
+ *   <li>{@link #elevatorL1Position}
+ *   <li>{@link #elevatorL2Position}
+ *   <li>{@link #elevatorStationPosition}
+ *   <li>{@link #elevatorL3Position}
+ *   <li>{@link #elevatorL4Position}
+ *   <li>{@link #elevatorNetPosition}
+ *   <li>{@link #kP}
+ *   <li>{@link #kD}
+ *   <li>{@link #kV}
+ *   <li>{@link #kS}
+ *   <li>{@link #kG}
+ *   <li>{@link #vel}
+ *   <li>{@link #accel}
  * </ul>
  */
 public class Elevator extends SubsystemBase {
@@ -121,6 +127,8 @@ public class Elevator extends SubsystemBase {
   LoggedTunableNumber accel =
       new LoggedTunableNumber("/Tuning/Elevator/accel", ELEVATOR_MOTION_MAGIC_ACCELERATION);
 
+  SysIdRoutine sysid;
+
   /* Constructor */
   public Elevator(ElevatorIO io) {
     this.io = io;
@@ -151,6 +159,15 @@ public class Elevator extends SubsystemBase {
     if (!inputs.followerElevatorMotorConnected) {
       followerMotorConnectedAlert.set(true);
     }
+
+    sysid =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                Volts.of(1).per(Second),
+                Volts.of(3),
+                Seconds.of(6),
+                state -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(volts -> io.setVoltageOpenLoop(volts), null, this));
 
     // driver variables to visualize the elevator state
     SmartDashboard.putBoolean("Elevator HOMED", currentElevatorState == ElevatorState.ZERO);
@@ -207,8 +224,7 @@ public class Elevator extends SubsystemBase {
         kS,
         kG,
         vel,
-        accel
-        );
+        accel);
   }
 
   public Command goToState(ElevatorState targetState) {
@@ -217,13 +233,13 @@ public class Elevator extends SubsystemBase {
           isOpenLoop = false;
           currentElevatorState = targetState;
         });
-    }
+  }
 
   public Command lowerElevatorOpenLoop() {
     return this.runEnd(
         () -> {
           isOpenLoop = true;
-          io.setVoltageOpenLoop(Volts.of(-0.05 * 12.0));
+          io.setVoltageOpenLoop(Volts.of(-0.1 * 12.0));
         },
         () -> io.setVoltageOpenLoop(Volts.zero()));
   }
@@ -232,8 +248,16 @@ public class Elevator extends SubsystemBase {
     return this.runEnd(
         () -> {
           isOpenLoop = true;
-          io.setVoltageOpenLoop(Volts.of(0.05 * 12.0));
+          io.setVoltageOpenLoop(Volts.of(0.1 * 12.0));
         },
         () -> io.setVoltageOpenLoop(Volts.zero()));
+  }
+
+  public Command sysIdQuasistatic(Direction direction) {
+    return sysid.quasistatic(direction);
+  }
+
+  public Command sysIdDynamic(Direction direction) {
+    return sysid.dynamic(direction);
   }
 }

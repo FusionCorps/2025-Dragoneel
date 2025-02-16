@@ -1,9 +1,10 @@
 package frc.robot.subsystems.wrist;
 
 import static edu.wpi.first.units.Units.Rotations;
-import static frc.robot.Constants.WristConstants.*;
+import static frc.robot.subsystems.wrist.WristConstants.*;
 import static frc.robot.util.SparkUtil.*;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -11,12 +12,9 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.RobotController;
 import java.util.function.DoubleSupplier;
 
 public class WristIOSparkFlex implements WristIO {
@@ -25,6 +23,7 @@ public class WristIOSparkFlex implements WristIO {
 
   /* Encoder */
   private final RelativeEncoder wristMotorEncoder;
+  private final AbsoluteEncoder wristMotorAbsoluteEncoder;
 
   public final SparkClosedLoopController pidController;
 
@@ -34,14 +33,8 @@ public class WristIOSparkFlex implements WristIO {
   public WristIOSparkFlex() {
     wristMotor = new SparkFlex(WRIST_MOTOR_ID, MotorType.kBrushless);
     wristMotorEncoder = wristMotor.getEncoder();
+    wristMotorAbsoluteEncoder = wristMotor.getAbsoluteEncoder();
     pidController = wristMotor.getClosedLoopController();
-    SparkFlexConfig cfg = new SparkFlexConfig();
-    cfg.inverted(false)
-        .idleMode(IdleMode.kBrake)
-        .voltageCompensation(RobotController.getBatteryVoltage())
-        .smartCurrentLimit(60);
-
-    cfg.closedLoop.pid(0, 0, 0);
 
     /* Try to apply */
     tryUntilOk(
@@ -49,7 +42,7 @@ public class WristIOSparkFlex implements WristIO {
         5,
         () ->
             wristMotor.configure(
-                cfg, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters));
+                WRIST_CONFIG, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
   }
 
   @Override
@@ -58,6 +51,10 @@ public class WristIOSparkFlex implements WristIO {
     sparkStickyFault = false;
     ifOk(
         wristMotor, wristMotorEncoder::getPosition, position -> inputs.wristPositionRad = position);
+    ifOk(
+        wristMotor,
+        wristMotorAbsoluteEncoder::getPosition,
+        absPosition -> inputs.wristAbsPositionRad = absPosition);
     ifOk(
         wristMotor,
         wristMotorEncoder::getVelocity,

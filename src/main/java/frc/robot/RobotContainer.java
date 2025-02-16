@@ -13,7 +13,7 @@
 
 package frc.robot;
 
-import static frc.robot.Constants.VisionConstants.*;
+import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -21,32 +21,35 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.ElevatorConstants.ElevatorState;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.SuperstructureCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.gyro.GyroIO;
 import frc.robot.subsystems.drive.gyro.GyroIOPigeon2;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOSim;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
 import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
 import frc.robot.subsystems.scorer.Scorer;
 import frc.robot.subsystems.scorer.ScorerIO;
 import frc.robot.subsystems.scorer.ScorerIOSim;
+import frc.robot.subsystems.scorer.ScorerIOSparkFlex;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
+import frc.robot.subsystems.wrist.WristIOSparkFlex;
 import java.util.Map;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -82,7 +85,6 @@ public class RobotContainer {
                 new ModuleIOTalonFX(DriveConstants.FRONT_RIGHT),
                 new ModuleIOTalonFX(DriveConstants.BACK_LEFT),
                 new ModuleIOTalonFX(DriveConstants.BACK_RIGHT));
-        // drive = null;
         // vision =
         //     new Vision(
         //         drive,
@@ -91,16 +93,10 @@ public class RobotContainer {
         // vision = new Vision((a, b, c) -> {}, new VisionIOPhotonVision(camera0Name,
         // robotToCamera0));
         vision = null;
-
-        climb = null;
-        // climb = new Climb(new ClimbIOTalonFX());
-        scorer = null;
-        // scorer = new Scorer(new ScorerIOSparkFlex());
+        climb = new Climb(new ClimbIOTalonFX());
+        scorer = new Scorer(new ScorerIOSparkFlex());
         elevator = new Elevator(new ElevatorIOTalonFX());
-        // elevator = null;
-
-        // wrist = new Wrist(new WristIOSparkFlex());
-        wrist = null;
+        wrist = new Wrist(new WristIOSparkFlex());
         break;
 
       case SIM:
@@ -117,7 +113,8 @@ public class RobotContainer {
             new Vision(
                 (a, b, c) -> {},
                 // drive,
-                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose));
+                new VisionIOPhotonVisionSim(
+                    CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getPose));
         climb = new Climb(new ClimbIOSim());
         scorer = new Scorer(new ScorerIOSim());
         wrist = new Wrist(new WristIOSim());
@@ -143,38 +140,35 @@ public class RobotContainer {
     // Set up auto routines
     // register commands for PathPlanner
 
-    if (elevator != null && wrist != null)
-      superstructureCommands = new SuperstructureCommands(elevator, wrist);
+    superstructureCommands = new SuperstructureCommands(elevator, wrist);
 
-    if (elevator != null && scorer != null) {
-      NamedCommands.registerCommands(
-          Map.of(
-              "L1", superstructureCommands.goToL1(),
-              "L2", superstructureCommands.goToL2(),
-              "Station", superstructureCommands.goToStation(),
-              "L3", superstructureCommands.goToL3(),
-              "L4", superstructureCommands.goToL4(),
-              "Net", superstructureCommands.goToNet(),
-              "Processor", superstructureCommands.goToProcessor(),
-              "ShootCoral", scorer.shootCoralCmd(),
-              "ShootAlgae", scorer.shootAlgaeCmd()));
-    }
+    NamedCommands.registerCommands(
+        Map.of(
+            "L1", superstructureCommands.goToL1(),
+            "L2", superstructureCommands.goToL2(),
+            "Station", superstructureCommands.goToStation(),
+            "L3", superstructureCommands.goToL3(),
+            "L4", superstructureCommands.goToL4(),
+            "Net", superstructureCommands.goToNet(),
+            "Processor", superstructureCommands.goToProcessor(),
+            "ShootCoral", scorer.shootCoralCmd(),
+            "ShootAlgae", scorer.shootAlgaeCmd()));
 
     // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     autoChooser = new LoggedDashboardChooser<>("Auto Chooser");
     // autoChooser.addDefaultOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
 
     // Set up SysId routines
-    // autoChooser.addOption(
-    //     "Drive SysId (Quasistatic Forward)",
-    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Drive SysId (Quasistatic Reverse)",
-    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Forward)",
+        elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Reverse)",
+        elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Forward)", elevator.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Reverse)", elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -208,47 +202,49 @@ public class RobotContainer {
       //     .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, true));
     }
 
-    if (elevator != null && wrist != null) {
-      controller.leftBumper().onTrue(superstructureCommands.goToNet());
-      controller.y().onTrue(superstructureCommands.goToL4());
-      controller.x().onTrue(superstructureCommands.goToL3());
-      controller.b().onTrue(superstructureCommands.goToL2());
-      controller.a().onTrue(superstructureCommands.goToL1());
-      controller.povDown().onTrue(superstructureCommands.goToProcessor());
-      controller.rightBumper().onTrue(superstructureCommands.goToStation());
-    }
+    // TODO: these are for final button bindings
+    // controller.leftBumper().onTrue(superstructureCommands.goToNet());
+    // controller.y().onTrue(superstructureCommands.goToL4());
+    // controller.x().onTrue(superstructureCommands.goToL3());
+    // controller.b().onTrue(superstructureCommands.goToL2());
+    // controller.a().onTrue(superstructureCommands.goToL1());
+    // controller.povDown().onTrue(superstructureCommands.goToProcessor());
+    // controller.rightBumper().onTrue(superstructureCommands.goToStation());
 
     // TODO: eventually remove this block in favor of supersructure commands
-    if (elevator != null) {
-      controller.leftBumper().onTrue(elevator.goToState(ElevatorState.NET));
-      controller.y().onTrue(elevator.goToState(ElevatorState.L4));
-      controller.x().onTrue(elevator.goToState(ElevatorState.L3));
-      controller.b().onTrue(elevator.goToState(ElevatorState.L2));
-      controller.a().onTrue(elevator.goToState(ElevatorState.L1));
-      controller.povDown().onTrue(elevator.goToState(ElevatorState.PROCESSOR));
-      controller.rightBumper().onTrue(elevator.goToState(ElevatorState.STATION));
+    controller.leftBumper().onTrue(elevator.goToState(ElevatorState.NET));
+    controller.y().onTrue(elevator.goToState(ElevatorState.L4));
+    controller.x().onTrue(elevator.goToState(ElevatorState.L3));
+    controller.b().onTrue(elevator.goToState(ElevatorState.L2));
+    controller.a().onTrue(elevator.goToState(ElevatorState.L1));
+    controller.povDown().onTrue(elevator.goToState(ElevatorState.PROCESSOR));
+    controller.rightBumper().onTrue(elevator.goToState(ElevatorState.STATION));
 
-      // controller.back().whileTrue(elevator.runHomingRoutine());
+    // controller.back().whileTrue(elevator.runHomingRoutine());
 
-      // TODO: remove after closed loop control is tuned
-      // controller.rightTrigger().whileTrue(elevator.lowerElevator());
-      // controller.leftTrigger().whileTrue(elevator.raiseElevator());
-    }
+    // TODO: remove after closed loop control is tuned
+    // controller.rightTrigger().whileTrue(elevator.lowerElevator());
+    // controller.leftTrigger().whileTrue(elevator.raiseElevator());
 
-    if (scorer != null) {
-      controller.rightTrigger().whileTrue(scorer.shootCoralCmd());
-      controller.leftTrigger().whileTrue(scorer.shootAlgaeCmd());
-    }
+    // controller.leftBumper().onTrue(wrist.goToState(WristState.NET));
+    // controller.y().onTrue(wrist.goToState(WristState.L4));
+    // controller.x().onTrue(wrist.goToState(WristState.L2_AND_L3));
+    // controller.b().onTrue(wrist.goToState(WristState.L2_AND_L3));
+    // controller.a().onTrue(wrist.goToState(WristState.L1));
+    // controller.povDown().onTrue(wrist.goToState(WristState.PROCESSOR));
+    // controller.rightBumper().onTrue(wrist.goToState(WristState.STATION));
 
-    if (climb != null) {
-      controller.povUp().whileTrue(climb.runClimbCmd());
-    }
+    // shoot coral and intake algae
+    controller.rightTrigger().whileTrue(scorer.shootCoralCmd());
+    // shoot algae
+    controller.leftTrigger().whileTrue(scorer.shootAlgaeCmd());
 
-    if (wrist != null) {
-      // TODO: remove after closed loop control is tuned
-      controller.povRight().whileTrue(wrist.moveWristRight());
-      controller.povLeft().whileTrue(wrist.moveWristLeft());
-    }
+    // run climb
+    controller.povUp().whileTrue(climb.runClimbCmd());
+
+    // TODO: remove after closed loop control is tuned
+    controller.povRight().whileTrue(wrist.moveWristRight());
+    controller.povLeft().whileTrue(wrist.moveWristLeft());
   }
 
   /**

@@ -1,10 +1,10 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.ElevatorConstants.ElevatorState;
-import frc.robot.Constants.WristConstants.WristState;
 import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.wrist.Wrist;
+import frc.robot.subsystems.wrist.WristConstants.WristState;
 
 // TODO: find a better name for this class
 public class SuperstructureCommands {
@@ -21,7 +21,8 @@ public class SuperstructureCommands {
   }
 
   public Command goToProcessor() {
-    return elevator.goToState(ElevatorState.PROCESSOR)
+    return elevator
+        .goToState(ElevatorState.PROCESSOR)
         .alongWith(wrist.goToState(WristState.PROCESSOR));
   }
 
@@ -34,8 +35,7 @@ public class SuperstructureCommands {
   }
 
   public Command goToStation() {
-    return elevator.goToState(ElevatorState.STATION)
-        .alongWith(wrist.goToState(WristState.STATION));
+    return elevator.goToState(ElevatorState.STATION).alongWith(wrist.goToState(WristState.STATION));
   }
 
   public Command goToL3() {

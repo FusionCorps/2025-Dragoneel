@@ -9,6 +9,7 @@ public interface WristIO {
   public static class WristIOInputs {
     boolean wristMotorConnected = false;
     double wristPositionRad = 0.0;
+    double wristAbsPositionRad = 0.0;
     double wristVelocityRadPerSec = 0.0;
     double wristAppliedVolts = 0.0;
     double wristCurrentAmps = 0.0;

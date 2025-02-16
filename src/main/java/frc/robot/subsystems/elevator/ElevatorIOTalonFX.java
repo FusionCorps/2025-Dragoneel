@@ -5,12 +5,13 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.Constants.ElevatorConstants.*;
+import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 import static frc.robot.util.PhoenixUtil.tryUntilOk;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -53,14 +54,16 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
     elevatorConfig.CurrentLimits = ELEVATOR_CURRENT_LIMITS_CONFIGS;
 
-    elevatorConfig.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-    elevatorConfig.Slot0.kP = 2.5;
-    elevatorConfig.Slot0.kI = 0.0; // unneeded
-    elevatorConfig.Slot0.kD = 0.3;
-    elevatorConfig.Slot0.kS = 0.0; // unneeded
-    elevatorConfig.Slot0.kG = 0.325;
-    elevatorConfig.Slot0.kV = 0.20;
-    elevatorConfig.Slot0.kA = 0.0; // unneeded
+    elevatorConfig.Slot0 =
+        new Slot0Configs()
+            .withGravityType(GravityTypeValue.Elevator_Static)
+            .withKP(ELEVATOR_kP)
+            .withKI(ELEVATOR_kI)
+            .withKD(ELEVATOR_kD)
+            .withKG(ELEVATOR_kG)
+            .withKS(ELEVATOR_kS)
+            .withKV(ELEVATOR_kV)
+            .withKA(ELEVATOR_kA);
 
     elevatorConfig.MotionMagic.MotionMagicCruiseVelocity = ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY;
     elevatorConfig.MotionMagic.MotionMagicAcceleration = ELEVATOR_MOTION_MAGIC_ACCELERATION;
@@ -151,6 +154,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
   @Override
   public void holdPosition() {
-    mainElevatorMotor.setControl(posRequest.withPosition(mainElevatorMotorPosition.refresh().getValue()));
+    mainElevatorMotor.setControl(
+        posRequest.withPosition(mainElevatorMotorPosition.refresh().getValue()));
   }
 }
