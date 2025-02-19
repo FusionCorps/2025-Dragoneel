@@ -51,7 +51,7 @@ public class Scorer extends SubsystemBase {
   /** Runs the scorer to shoot stored coral. This simultaneously intakes algae. */
   public Command shootCoralCmd() {
     return this.startEnd(() -> setState(ScorerState.SHOOT_CORAL), () -> setState(ScorerState.IDLE))
-        .withTimeout(Seconds.of(0.5))
+        .withTimeout(Seconds.of(2.0))
         .withName("ScorerShootCoral");
   }
 }

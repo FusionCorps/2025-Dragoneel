@@ -3,11 +3,6 @@ package frc.robot.subsystems.wrist;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.config.ClosedLoopConfig;
-import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj.Alert;
@@ -30,17 +25,17 @@ public class Wrist extends SubsystemBase {
       new Alert("Wrist Motor Disconnected.", AlertType.kError);
 
   LoggedTunableNumber wristProcessorPosition =
-      new LoggedTunableNumber("/Tuning/Wrist/ProcessorPosition", 0.0);
-  LoggedTunableNumber wristL1Position = new LoggedTunableNumber("/Tuning/Wrist/L1Position", 0.0);
+      new LoggedTunableNumber(
+          "/Tuning/Wrist/ProcessorPosition", WristState.PROCESSOR.rotations.in(Rotations));
+  LoggedTunableNumber wristL1Position =
+      new LoggedTunableNumber("/Tuning/Wrist/L1Position", WristState.L1.rotations.in(Rotations));
   LoggedTunableNumber wristL2_AND_L3Position =
-      new LoggedTunableNumber("/Tuning/Wrist/L2_AND_L3Position", 0.0);
-  LoggedTunableNumber wristStationPosition =
-      new LoggedTunableNumber("/Tuning/Wrist/StationPosition", 0.0);
-  LoggedTunableNumber wristL4Position = new LoggedTunableNumber("/Tuning/Wrist/L4Position", 0.0);
-  LoggedTunableNumber wristNetPosition = new LoggedTunableNumber("/Tuning/Wrist/NetPosition", 0.0);
-
-  LoggedTunableNumber wristkP = new LoggedTunableNumber("/Tuning/Wrist/kP", 0.0);
-  LoggedTunableNumber wristkD = new LoggedTunableNumber("/Tuning/Wrist/kD", 0.0);
+      new LoggedTunableNumber(
+          "/Tuning/Wrist/L2_AND_L3Position", WristState.L2_AND_L3.rotations.in(Rotations));
+  LoggedTunableNumber wristL4Position =
+      new LoggedTunableNumber("/Tuning/Wrist/L4Position", WristState.L4.rotations.in(Rotations));
+  LoggedTunableNumber wristNetPosition =
+      new LoggedTunableNumber("/Tuning/Wrist/NetPosition", WristState.NET.rotations.in(Rotations));
 
   boolean isOpenLoop = false;
 
@@ -66,33 +61,17 @@ public class Wrist extends SubsystemBase {
     LoggedTunableNumber.ifChanged(
         hashCode(),
         nums -> {
-          WristState.L1.rotations = Rotations.of(nums[0]);
-          WristState.L2_AND_L3.rotations = Rotations.of(nums[1]);
-          WristState.L4.rotations = Rotations.of(nums[2]);
-          WristState.PROCESSOR.rotations = Rotations.of(nums[3]);
-          WristState.STATION.rotations = Rotations.of(nums[4]);
-          WristState.NET.rotations = Rotations.of(nums[5]);
-
-          if (io instanceof WristIOSparkFlex) {
-            SparkFlex sparkFlex = ((WristIOSparkFlex) io).wristMotor;
-            sparkFlex.configureAsync(
-                new SparkFlexConfig().apply(new ClosedLoopConfig().p(nums[6])),
-                ResetMode.kNoResetSafeParameters,
-                PersistMode.kPersistParameters);
-            sparkFlex.configureAsync(
-                new SparkFlexConfig().apply(new ClosedLoopConfig().d(nums[7])),
-                ResetMode.kNoResetSafeParameters,
-                PersistMode.kPersistParameters);
-          }
+          WristState.PROCESSOR.rotations = Rotations.of(nums[0]);
+          WristState.L1.rotations = Rotations.of(nums[1]);
+          WristState.L2_AND_L3.rotations = Rotations.of(nums[2]);
+          WristState.L4.rotations = Rotations.of(nums[3]);
+          WristState.NET.rotations = Rotations.of(nums[4]);
         },
         wristProcessorPosition,
         wristL1Position,
         wristL2_AND_L3Position,
-        wristStationPosition,
         wristL4Position,
-        wristNetPosition,
-        wristkP,
-        wristkD);
+        wristNetPosition);
   }
 
   public Command moveWristRight() {

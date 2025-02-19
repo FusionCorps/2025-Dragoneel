@@ -2,13 +2,9 @@ package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
@@ -16,10 +12,9 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Robot;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.util.LoggedTunableNumber;
@@ -116,19 +111,6 @@ public class Elevator extends SubsystemBase {
       new LoggedTunableNumber(
           "/Tuning/Elevator/NetPosition", ElevatorState.NET.rotations.in(Rotations));
 
-  LoggedTunableNumber kP = new LoggedTunableNumber("/Tuning/Elevator/kP", ELEVATOR_kP);
-  LoggedTunableNumber kD = new LoggedTunableNumber("/Tuning/Elevator/kD", ELEVATOR_kD);
-  LoggedTunableNumber kV = new LoggedTunableNumber("/Tuning/Elevator/kV", ELEVATOR_kV);
-  LoggedTunableNumber kS = new LoggedTunableNumber("/Tuning/Elevator/kS", ELEVATOR_kS);
-  LoggedTunableNumber kG = new LoggedTunableNumber("/Tuning/Elevator/kG", ELEVATOR_kG);
-
-  LoggedTunableNumber vel =
-      new LoggedTunableNumber("/Tuning/Elevator/vel", ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY);
-  LoggedTunableNumber accel =
-      new LoggedTunableNumber("/Tuning/Elevator/accel", ELEVATOR_MOTION_MAGIC_ACCELERATION);
-
-  SysIdRoutine sysid;
-
   /* Constructor */
   public Elevator(ElevatorIO io) {
     this.io = io;
@@ -160,15 +142,6 @@ public class Elevator extends SubsystemBase {
       followerMotorConnectedAlert.set(true);
     }
 
-    sysid =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                Volts.of(1).per(Second),
-                Volts.of(3),
-                Seconds.of(6),
-                state -> Logger.recordOutput("Drive/SysIdState", state.toString())),
-            new SysIdRoutine.Mechanism(volts -> io.setVoltageOpenLoop(volts), null, this));
-
     // driver variables to visualize the elevator state
     SmartDashboard.putBoolean("Elevator HOMED", currentElevatorState == ElevatorState.ZERO);
     SmartDashboard.putBoolean("Elevator L1", currentElevatorState == ElevatorState.L1);
@@ -188,28 +161,6 @@ public class Elevator extends SubsystemBase {
           ElevatorState.L3.rotations = Rotations.of(nums[4]);
           ElevatorState.L4.rotations = Rotations.of(nums[5]);
           ElevatorState.NET.rotations = Rotations.of(nums[6]);
-
-          if (io instanceof ElevatorIOTalonFX) {
-            Slot0Configs gains =
-                new Slot0Configs()
-                    .withKP(nums[7])
-                    .withKD(nums[8])
-                    .withKV(nums[9])
-                    .withKS(nums[10])
-                    .withKG(nums[11]);
-            MotionMagicConfigs motmag =
-                new MotionMagicConfigs()
-                    .withMotionMagicCruiseVelocity(nums[12])
-                    .withMotionMagicAcceleration(nums[13]);
-
-            ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(gains);
-            ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(gains);
-
-            ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(motmag);
-            ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(motmag);
-
-            Logger.recordOutput("Elevator Configs", "Changed to: " + gains.toString());
-          }
         },
         elevatorProcessorPosition,
         elevatorL1Position,
@@ -217,14 +168,7 @@ public class Elevator extends SubsystemBase {
         elevatorStationPosition,
         elevatorL3Position,
         elevatorL4Position,
-        elevatorNetPosition,
-        kP,
-        kD,
-        kV,
-        kS,
-        kG,
-        vel,
-        accel);
+        elevatorNetPosition);
   }
 
   public Command goToState(ElevatorState targetState) {
@@ -241,7 +185,7 @@ public class Elevator extends SubsystemBase {
           isOpenLoop = true;
           io.setVoltageOpenLoop(Volts.of(-0.1 * 12.0));
         },
-        () -> io.setVoltageOpenLoop(Volts.zero()));
+        () -> io.holdPosition());
   }
 
   public Command raiseElevatorOpenLoop() {
@@ -250,14 +194,21 @@ public class Elevator extends SubsystemBase {
           isOpenLoop = true;
           io.setVoltageOpenLoop(Volts.of(0.1 * 12.0));
         },
-        () -> io.setVoltageOpenLoop(Volts.zero()));
+        () -> io.holdPosition());
   }
 
-  public Command sysIdQuasistatic(Direction direction) {
-    return sysid.quasistatic(direction);
-  }
-
-  public Command sysIdDynamic(Direction direction) {
-    return sysid.dynamic(direction);
+  public Command homeElevator() {
+    return new FunctionalCommand(
+        () -> {},
+        () -> {
+          isOpenLoop = true;
+          io.setVoltageOpenLoop(Volts.of(-0.1 * 12.0));
+        },
+        interrupted -> {
+          isOpenLoop = false;
+          io.zeroPosition();
+          currentElevatorState = ElevatorState.ZERO;
+        },
+        () -> inputs.reverseLimitSwitchTriggered);
   }
 }

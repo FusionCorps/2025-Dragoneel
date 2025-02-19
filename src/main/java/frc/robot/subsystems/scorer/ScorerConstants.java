@@ -14,16 +14,16 @@ public class ScorerConstants {
   public static final SparkFlexConfig SCORER_CONFIG =
       (SparkFlexConfig)
           new SparkFlexConfig()
-              .inverted(false)
+              .inverted(true)
               .idleMode(IdleMode.kBrake)
               .voltageCompensation(RobotController.getBatteryVoltage())
-              .smartCurrentLimit(80);
+              .smartCurrentLimit(120);
 
   /* Scorer motor state */
   public static enum ScorerState {
     IDLE(Volts.of(0.0)),
-    SHOOT_ALGAE(Volts.of(12.0)),
-    SHOOT_CORAL(Volts.of(-6.0));
+    SHOOT_ALGAE(Volts.of(-0.25 * 12.0)),
+    SHOOT_CORAL(Volts.of(0.25 * 12.0));
 
     public final Voltage volts;
 

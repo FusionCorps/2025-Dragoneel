@@ -2,6 +2,7 @@ package frc.robot.subsystems.wrist;
 
 import static edu.wpi.first.units.Units.Rotations;
 
+import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -18,20 +19,23 @@ public class WristConstants {
               .inverted(false)
               .idleMode(IdleMode.kBrake)
               .voltageCompensation(RobotController.getBatteryVoltage())
-              .smartCurrentLimit(60)
+              .smartCurrentLimit(120)
+              .apply(new AbsoluteEncoderConfig().zeroCentered(true))
               .apply(
                   new ClosedLoopConfig()
                       .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
-                      .pid(0, 0, 0));
+                      .positionWrappingInputRange(-0.5, 0.5)
+                      .positionWrappingEnabled(true)
+                      .pid(1.0, 0.001, 0));
 
   public static enum WristState {
     ZERO(Rotations.zero()),
     PROCESSOR(Rotations.of(0.15)),
+    STATION(Rotations.of(0)),
     L1(Rotations.of(0.2)),
     L2_AND_L3(Rotations.of(0.16)),
-    L4(Rotations.of(0.16)),
-    STATION(Rotations.of(0.154)),
-    NET(Rotations.of(0.2));
+    L4(Rotations.of(0.169)),
+    NET(Rotations.of(0.255));
 
     public Angle rotations;
 

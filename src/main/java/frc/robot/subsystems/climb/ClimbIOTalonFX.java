@@ -37,7 +37,7 @@ public class ClimbIOTalonFX implements ClimbIO {
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     /* Apply configs */
     tryUntilOk(5, () -> climbMotor.getConfigurator().apply(config, 0.25));

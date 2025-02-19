@@ -6,12 +6,11 @@ import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristConstants.WristState;
 
-// TODO: find a better name for this class
-public class SuperstructureCommands {
+public class ElevatorAndWristCommands {
   private final Elevator elevator;
   private final Wrist wrist;
 
-  public SuperstructureCommands(Elevator elevator, Wrist wrist) {
+  public ElevatorAndWristCommands(Elevator elevator, Wrist wrist) {
     this.elevator = elevator;
     this.wrist = wrist;
   }
@@ -26,16 +25,16 @@ public class SuperstructureCommands {
         .alongWith(wrist.goToState(WristState.PROCESSOR));
   }
 
+  public Command goToStation() {
+    return elevator.goToState(ElevatorState.STATION).alongWith(wrist.goToState(WristState.STATION));
+  }
+
   public Command goToL1() {
     return elevator.goToState(ElevatorState.L1).alongWith(wrist.goToState(WristState.L1));
   }
 
   public Command goToL2() {
     return elevator.goToState(ElevatorState.L2).alongWith(wrist.goToState(WristState.L2_AND_L3));
-  }
-
-  public Command goToStation() {
-    return elevator.goToState(ElevatorState.STATION).alongWith(wrist.goToState(WristState.STATION));
   }
 
   public Command goToL3() {
