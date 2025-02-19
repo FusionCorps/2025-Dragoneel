@@ -1,7 +1,11 @@
 package frc.robot.subsystems.wrist;
 
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.measure.Angle;
@@ -11,7 +15,12 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 public class WristIOSim implements WristIO {
   private final DCMotorSim wristMotorSim;
 
-  Voltage volts = Volts.zero();
+  PIDController controller = new PIDController(0.1, 0.0, 0.0);
+
+  double appliedVolts = 0.0;
+  Angle targetPosition = Rotations.zero();
+
+  boolean isOpenLoop = false;
 
   public WristIOSim() {
     wristMotorSim =
@@ -21,25 +30,35 @@ public class WristIOSim implements WristIO {
   }
 
   @Override
-  public void setTargetPosition(Angle angle) {
-    return;
-  }
-
-  @Override
-  public void setVoltage(Voltage voltage) {
-    volts = voltage;
-  }
-
-  @Override
   public void updateInputs(WristIOInputs inputs) {
-    wristMotorSim.setInputVoltage(volts.in(Volts));
+    if (!isOpenLoop)
+      appliedVolts =
+          MathUtil.clamp(
+              controller.calculate(inputs.wristPositionRad, targetPosition.in(Radians)),
+              -12.0,
+              12.0);
+    wristMotorSim.setInputVoltage(appliedVolts);
     wristMotorSim.update(0.02);
 
     /* Update inputs */
     inputs.wristMotorConnected = true;
     inputs.wristPositionRad = wristMotorSim.getAngularPositionRad();
     inputs.wristVelocityRadPerSec = wristMotorSim.getAngularVelocityRadPerSec();
-    inputs.wristAppliedVolts = volts.in(Volts);
+    inputs.wristAppliedVolts = appliedVolts;
     inputs.wristCurrentAmps = wristMotorSim.getCurrentDrawAmps();
+
+    inputs.wristSetpointRad = targetPosition.in(Radians);
+  }
+
+  @Override
+  public void setTargetPosition(Angle angle) {
+    isOpenLoop = false;
+    targetPosition = angle.unaryMinus();
+  }
+
+  @Override
+  public void setVoltageOpenLoop(Voltage voltage) {
+    isOpenLoop = true;
+    appliedVolts = voltage.in(Volts);
   }
 }

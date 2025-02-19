@@ -13,7 +13,7 @@
 
 package frc.robot.commands;
 
-import static frc.robot.Constants.VisionConstants.*;
+import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;

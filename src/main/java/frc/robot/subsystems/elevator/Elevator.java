@@ -1,9 +1,9 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.Constants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
-import static frc.robot.Constants.ElevatorConstants.ELEVATOR_SHAFT_DIAMETER;
+import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -13,12 +13,66 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.ElevatorConstants.ElevatorState;
 import frc.robot.Robot;
+import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
+import frc.robot.util.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
+/**
+ * The Elevator subsystem controls the elevator mechanism of the robot. This is a three-stage
+ * cascade elevator, with the first stage being fixed. The elevator can operate in both closed-loop
+ * and open-loop modes.
+ *
+ * <p>Constructor:
+ *
+ * <ul>
+ *   <li>{@link #Elevator(ElevatorIO)}: Initializes the Elevator subsystem with the given IO
+ *       interface.
+ * </ul>
+ *
+ * <p>Methods:
+ *
+ * <ul>
+ *   <li>{@link #periodic()}: Periodically updates the elevator state, processes inputs, and handles
+ *       alerts and tunable values.
+ *   <li>{@link #goToState(ElevatorState)}: Returns a {@link InstantCommand} to move the elevator to
+ *       the specified state.
+ *   <li>{@link #lowerElevatorOpenLoop()}: Returns a {@link InstantCommand} to lower the elevator in
+ *       open-loop mode.
+ *   <li>{@link #raiseElevatorOpenLoop()}: Returns a {@link InstantCommand} to raise the elevator in
+ *       open-loop mode.
+ * </ul>
+ *
+ * <p>Alerts:
+ *
+ * <ul>
+ *   <li>{@link #mainMotorConnectedAlert}: {@link Alert} for main elevator motor disconnection.
+ *   <li>{@link #followerMotorConnectedAlert}: {@link Alert} for follower elevator motor
+ *       disconnection.
+ * </ul>
+ *
+ * <p>Tunable Parameters:
+ *
+ * <ul>
+ *   <li>{@link #elevatorProcessorPosition}
+ *   <li>{@link #elevatorL1Position}
+ *   <li>{@link #elevatorL2Position}
+ *   <li>{@link #elevatorStationPosition}
+ *   <li>{@link #elevatorL3Position}
+ *   <li>{@link #elevatorL4Position}
+ *   <li>{@link #elevatorNetPosition}
+ *   <li>{@link #kP}
+ *   <li>{@link #kD}
+ *   <li>{@link #kV}
+ *   <li>{@link #kS}
+ *   <li>{@link #kG}
+ *   <li>{@link #vel}
+ *   <li>{@link #accel}
+ * </ul>
+ */
 public class Elevator extends SubsystemBase {
   /* IO and hardware inputs */
   private final ElevatorIO io;
@@ -33,6 +87,30 @@ public class Elevator extends SubsystemBase {
   /* State tracker for current height of the elevator */
   @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.ZERO;
 
+  boolean isOpenLoop = false;
+
+  LoggedTunableNumber elevatorProcessorPosition =
+      new LoggedTunableNumber(
+          "/Tuning/Elevator/ProcessorPosition", ElevatorState.PROCESSOR.rotations.in(Rotations));
+  LoggedTunableNumber elevatorL1Position =
+      new LoggedTunableNumber(
+          "/Tuning/Elevator/L1Position", ElevatorState.L1.rotations.in(Rotations));
+  LoggedTunableNumber elevatorL2Position =
+      new LoggedTunableNumber(
+          "/Tuning/Elevator/L2Position", ElevatorState.L2.rotations.in(Rotations));
+  LoggedTunableNumber elevatorStationPosition =
+      new LoggedTunableNumber(
+          "/Tuning/Elevator/StationPosition", ElevatorState.STATION.rotations.in(Rotations));
+  LoggedTunableNumber elevatorL3Position =
+      new LoggedTunableNumber(
+          "/Tuning/Elevator/L3Position", ElevatorState.L3.rotations.in(Rotations));
+  LoggedTunableNumber elevatorL4Position =
+      new LoggedTunableNumber(
+          "/Tuning/Elevator/L4Position", ElevatorState.L4.rotations.in(Rotations));
+  LoggedTunableNumber elevatorNetPosition =
+      new LoggedTunableNumber(
+          "/Tuning/Elevator/NetPosition", ElevatorState.NET.rotations.in(Rotations));
+
   /* Constructor */
   public Elevator(ElevatorIO io) {
     this.io = io;
@@ -41,14 +119,14 @@ public class Elevator extends SubsystemBase {
   /* Periodically running code */
   @Override
   public void periodic() {
-    // io.setTargetPosition(currentElevatorState.rotations);
+    if (!isOpenLoop) io.setTargetPosition(currentElevatorState.rotations);
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
     double elevatorStage2HeightMeters =
         // rev * circumference/rev / gear ratio = height in meters
         Units.radiansToRotations(inputs.mainElevatorPositionRad)
-            * (Math.PI * ELEVATOR_SHAFT_DIAMETER.in(Meters))
+            * (Math.PI * ELEVATOR_SPOOL_DIAMETER.in(Meters))
             / (ELEVATOR_GEAR_RATIO);
 
     double elevatorStage3HeightMeters = elevatorStage2HeightMeters * 2.0;
@@ -72,68 +150,65 @@ public class Elevator extends SubsystemBase {
     SmartDashboard.putBoolean("Elevator L3", currentElevatorState == ElevatorState.L3);
     SmartDashboard.putBoolean("Elevator L4", currentElevatorState == ElevatorState.L4);
     SmartDashboard.putBoolean("Elevator NET", currentElevatorState == ElevatorState.NET);
+
+    LoggedTunableNumber.ifChanged(
+        hashCode(),
+        nums -> {
+          ElevatorState.PROCESSOR.rotations = Rotations.of(nums[0]);
+          ElevatorState.L1.rotations = Rotations.of(nums[1]);
+          ElevatorState.L2.rotations = Rotations.of(nums[2]);
+          ElevatorState.STATION.rotations = Rotations.of(nums[3]);
+          ElevatorState.L3.rotations = Rotations.of(nums[4]);
+          ElevatorState.L4.rotations = Rotations.of(nums[5]);
+          ElevatorState.NET.rotations = Rotations.of(nums[6]);
+        },
+        elevatorProcessorPosition,
+        elevatorL1Position,
+        elevatorL2Position,
+        elevatorStationPosition,
+        elevatorL3Position,
+        elevatorL4Position,
+        elevatorNetPosition);
   }
 
-  public Command goToZero() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.ZERO).withName("ElevatorZero");
+  public Command goToState(ElevatorState targetState) {
+    return this.runOnce(
+        () -> {
+          isOpenLoop = false;
+          currentElevatorState = targetState;
+        });
   }
 
-  public Command goToProcessor() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.PROCESSOR)
-        .withName("ElevatorProcessor");
-  }
-
-  public Command goToL1() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L1).withName("ElevatorL1");
-  }
-
-  public Command goToL2() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L2).withName("ElevatorL2");
-  }
-
-  public Command goToStation() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.STATION)
-        .withName("ElevatorStation");
-  }
-
-  public Command goToL3() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L3).withName("ElevatorL3");
-  }
-
-  public Command goToL4() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L4).withName("ElevatorL4");
-  }
-
-  public Command goToNet() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.NET).withName("ElevatorNet");
-  }
-
-  public Command lowerElevator() {
+  public Command lowerElevatorOpenLoop() {
     return this.runEnd(
-        () -> io.setVoltage(Volts.of(-0.3 * 12.0)), () -> io.setVoltage(Volts.zero()));
+        () -> {
+          isOpenLoop = true;
+          io.setVoltageOpenLoop(Volts.of(-0.1 * 12.0));
+        },
+        () -> io.holdPosition());
   }
 
-  public Command raiseElevator() {
+  public Command raiseElevatorOpenLoop() {
     return this.runEnd(
-        () -> io.setVoltage(Volts.of(0.3 * 12.0)), () -> io.setVoltage(Volts.zero()));
+        () -> {
+          isOpenLoop = true;
+          io.setVoltageOpenLoop(Volts.of(0.1 * 12.0));
+        },
+        () -> io.holdPosition());
   }
 
-  /**
-   * This routine should be called when robot is first enabled. It will slowly lower the elevator
-   * until a current spike is detected, then stop the motor and zero its position. This does not
-   * require any external sensors.
-   */
-  public Command runHomingRoutine() {
+  public Command homeElevator() {
     return new FunctionalCommand(
-            () -> {},
-            () -> io.setVoltage(Volts.of(0.1 * -12.0)),
-            (interrupted) -> {
-              io.setVoltage(Volts.zero());
-              currentElevatorState = ElevatorState.ZERO;
-              io.zeroPosition();
-            },
-            () -> inputs.mainElevatorCurrentAmps > 60.0,
-            this)
-        .withName("ElevatorHomingRouting");
+        () -> {},
+        () -> {
+          isOpenLoop = true;
+          io.setVoltageOpenLoop(Volts.of(-0.1 * 12.0));
+        },
+        interrupted -> {
+          isOpenLoop = false;
+          io.zeroPosition();
+          currentElevatorState = ElevatorState.ZERO;
+        },
+        () -> inputs.reverseLimitSwitchTriggered);
   }
 }

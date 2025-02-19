@@ -1,31 +1,41 @@
 package frc.robot.subsystems.wrist;
 
 import static edu.wpi.first.units.Units.Rotations;
+import static frc.robot.subsystems.wrist.WristConstants.*;
 import static frc.robot.util.SparkUtil.*;
-import static frc.robot.Constants.WristConstants.*;
+
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkFlexConfig;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.RobotController;
 import java.util.function.DoubleSupplier;
 
 public class WristIOSparkFlex implements WristIO {
   /* Main scoring motor */
-  private final SparkFlex wristMotor;
+  public final SparkFlex wristMotor;
 
   /* Encoder */
   private final RelativeEncoder wristMotorEncoder;
+  private final AbsoluteEncoder wristMotorAbsoluteEncoder;
 
-  private final SparkClosedLoopController pidController;
+  SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0, 0.2);
+  // ProfiledPIDController pid =
+  //     new ProfiledPIDController(0.4, 0, 0, new TrapezoidProfile.Constraints(5, 5));
+
+  SparkClosedLoopController pid;
+
+  private double setpoint = 0.0;
 
   /* Debounce */
   private final Debouncer wristMotorDebouncer = new Debouncer(0.5);
@@ -33,14 +43,10 @@ public class WristIOSparkFlex implements WristIO {
   public WristIOSparkFlex() {
     wristMotor = new SparkFlex(WRIST_MOTOR_ID, MotorType.kBrushless);
     wristMotorEncoder = wristMotor.getEncoder();
-    pidController = wristMotor.getClosedLoopController();
-    SparkFlexConfig cfg = new SparkFlexConfig();
-    cfg.inverted(false)
-        .idleMode(IdleMode.kBrake)
-        .voltageCompensation(RobotController.getBatteryVoltage())
-        .smartCurrentLimit(60);
+    wristMotorAbsoluteEncoder = wristMotor.getAbsoluteEncoder();
 
-    cfg.closedLoop.pid(0, 0, 0);
+    // pid.enableContinuousInput(-0.5, 0.5);
+    pid = wristMotor.getClosedLoopController();
 
     /* Try to apply */
     tryUntilOk(
@@ -48,7 +54,7 @@ public class WristIOSparkFlex implements WristIO {
         5,
         () ->
             wristMotor.configure(
-                cfg, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters));
+                WRIST_CONFIG, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
   }
 
   @Override
@@ -57,6 +63,10 @@ public class WristIOSparkFlex implements WristIO {
     sparkStickyFault = false;
     ifOk(
         wristMotor, wristMotorEncoder::getPosition, position -> inputs.wristPositionRad = position);
+    ifOk(
+        wristMotor,
+        wristMotorAbsoluteEncoder::getPosition,
+        absPosition -> inputs.wristAbsPositionRad = Units.rotationsToRadians(absPosition));
     ifOk(
         wristMotor,
         wristMotorEncoder::getVelocity,
@@ -68,16 +78,24 @@ public class WristIOSparkFlex implements WristIO {
     ifOk(wristMotor, wristMotor::getOutputCurrent, current -> inputs.wristCurrentAmps = current);
 
     inputs.wristMotorConnected = wristMotorDebouncer.calculate(!sparkStickyFault);
+    inputs.wristSetpointRad = setpoint;
   }
 
   @Override
-  public void setVoltage(Voltage voltage) {
+  public void setVoltageOpenLoop(Voltage voltage) {
     /* Set voltage and hope it works */
     wristMotor.setVoltage(voltage);
   }
 
   @Override
   public void setTargetPosition(Angle angle) {
-    pidController.setReference(angle.in(Rotations), ControlType.kPosition);
+    setpoint = angle.in(Rotations);
+    pid.setReference(
+        setpoint, ControlType.kPosition, ClosedLoopSlot.kSlot0, 0, ArbFFUnits.kVoltage);
+
+    // pid.setGoal(setpoint);
+    // wristMotor.setVoltage(
+    //     feedforward.calculate(pid.getSetpoint().position - 0.5, pid.getSetpoint().velocity)
+    //         + pid.calculate(wristMotorAbsoluteEncoder.getPosition()));
   }
 }

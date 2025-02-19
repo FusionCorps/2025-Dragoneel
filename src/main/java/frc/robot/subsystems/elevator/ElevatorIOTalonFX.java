@@ -5,12 +5,13 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.Constants.ElevatorConstants.*;
+import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 import static frc.robot.util.PhoenixUtil.tryUntilOk;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -27,8 +28,8 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
-  private final TalonFX mainElevatorMotor = new TalonFX(MAIN_ELEVATOR_MOTOR_ID);
-  private final TalonFX followerElevatorMotor = new TalonFX(FOLLOWER_ELEVATOR_MOTOR_ID);
+  final TalonFX mainElevatorMotor = new TalonFX(MAIN_ELEVATOR_MOTOR_ID);
+  final TalonFX followerElevatorMotor = new TalonFX(FOLLOWER_ELEVATOR_MOTOR_ID);
 
   private final StatusSignal<Angle> mainElevatorMotorPosition;
   private final StatusSignal<AngularVelocity> mainElevatorMotorVelocity;
@@ -51,36 +52,31 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     elevatorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     elevatorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-    elevatorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-    elevatorConfig.CurrentLimits.StatorCurrentLimit = 80;
-    elevatorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-    elevatorConfig.CurrentLimits.SupplyCurrentLimit = 70;
-    elevatorConfig.CurrentLimits.SupplyCurrentLowerLimit = 40;
-    elevatorConfig.CurrentLimits.SupplyCurrentLowerTime = 1.0;
+    elevatorConfig.CurrentLimits = ELEVATOR_CURRENT_LIMITS_CONFIGS;
 
-    elevatorConfig.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-    elevatorConfig.Slot0.kP = 0.0;
-    elevatorConfig.Slot0.kI = 0.0;
-    elevatorConfig.Slot0.kD = 0.0;
-    elevatorConfig.Slot0.kS = 0.0;
-    elevatorConfig.Slot0.kG = 0.0;
-    elevatorConfig.Slot0.kV = 0.0;
-    elevatorConfig.Slot0.kA = 0.0;
+    elevatorConfig.Slot0 =
+        new Slot0Configs()
+            .withGravityType(GravityTypeValue.Elevator_Static)
+            .withKP(ELEVATOR_kP)
+            .withKI(ELEVATOR_kI)
+            .withKD(ELEVATOR_kD)
+            .withKG(ELEVATOR_kG)
+            .withKS(ELEVATOR_kS)
+            .withKV(ELEVATOR_kV)
+            .withKA(ELEVATOR_kA);
 
-    elevatorConfig.MotionMagic.MotionMagicCruiseVelocity = 0;
-    elevatorConfig.MotionMagic.MotionMagicAcceleration = 0;
-    elevatorConfig.MotionMagic.MotionMagicJerk = 0;
+    elevatorConfig.MotionMagic.MotionMagicCruiseVelocity = ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY;
+    elevatorConfig.MotionMagic.MotionMagicAcceleration = ELEVATOR_MOTION_MAGIC_ACCELERATION;
 
-    elevatorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-    elevatorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-        100; // TODO: change forward limit
-    elevatorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    elevatorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0;
+    elevatorConfig.SoftwareLimitSwitch = ELEVATOR_SOFT_LIMITS_CONFIGS;
 
     tryUntilOk(5, () -> mainElevatorMotor.getConfigurator().apply(elevatorConfig, 0.5));
     tryUntilOk(5, () -> followerElevatorMotor.getConfigurator().apply(elevatorConfig, 0.5));
 
     followerElevatorMotor.setControl(new Follower(MAIN_ELEVATOR_MOTOR_ID, false));
+
+    mainElevatorMotor.setPosition(0);
+    followerElevatorMotor.setPosition(0);
 
     mainElevatorMotorPosition = mainElevatorMotor.getPosition();
     mainElevatorMotorVelocity = mainElevatorMotor.getVelocity();
@@ -146,7 +142,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
   }
 
   @Override
-  public void setVoltage(Voltage volts) {
+  public void setVoltageOpenLoop(Voltage volts) {
     mainElevatorMotor.setControl(voltageRequest.withOutput(volts));
   }
 
@@ -154,5 +150,11 @@ public class ElevatorIOTalonFX implements ElevatorIO {
   public void zeroPosition() {
     mainElevatorMotor.setPosition(0.0);
     followerElevatorMotor.setPosition(0.0);
+  }
+
+  @Override
+  public void holdPosition() {
+    mainElevatorMotor.setControl(
+        posRequest.withPosition(mainElevatorMotorPosition.refresh().getValue()));
   }
 }

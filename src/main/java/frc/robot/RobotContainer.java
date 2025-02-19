@@ -13,22 +13,21 @@
 
 package frc.robot;
 
-import static frc.robot.Constants.VisionConstants.*;
+import static frc.robot.subsystems.vision.VisionConstants.*;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ElevatorAndWristCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.gyro.GyroIO;
 import frc.robot.subsystems.drive.gyro.GyroIOPigeon2;
 import frc.robot.subsystems.drive.module.ModuleIO;
@@ -41,13 +40,14 @@ import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
 import frc.robot.subsystems.scorer.Scorer;
 import frc.robot.subsystems.scorer.ScorerIO;
 import frc.robot.subsystems.scorer.ScorerIOSim;
+import frc.robot.subsystems.scorer.ScorerIOSparkFlex;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
+import frc.robot.subsystems.wrist.WristIOSparkFlex;
 import java.util.Map;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -66,9 +66,10 @@ public class RobotContainer {
   private final Scorer scorer;
   private final Wrist wrist;
 
-  // private final LoggedDashboardChooser<Command> autoChooser;
+  ElevatorAndWristCommands elevatorAndWristCommands = null;
+  private final LoggedDashboardChooser<Command> autoChooser =
+      new LoggedDashboardChooser<>("Auto Chooser");
 
-  // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -76,31 +77,25 @@ public class RobotContainer {
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
-        // drive =
-        //     new Drive(
-        //         new GyroIOPigeon2(),
-        //         new ModuleIOTalonFX(DriveConstants.FRONT_LEFT),
-        //         new ModuleIOTalonFX(DriveConstants.FRONT_RIGHT),
-        //         new ModuleIOTalonFX(DriveConstants.BACK_LEFT),
-        //         new ModuleIOTalonFX(DriveConstants.BACK_RIGHT));
-        drive = null;
+        drive =
+            new Drive(
+                new GyroIOPigeon2(),
+                new ModuleIOTalonFX(DriveConstants.FRONT_LEFT),
+                new ModuleIOTalonFX(DriveConstants.FRONT_RIGHT),
+                new ModuleIOTalonFX(DriveConstants.BACK_LEFT),
+                new ModuleIOTalonFX(DriveConstants.BACK_RIGHT));
         // vision =
         //     new Vision(
         //         drive,
         //         new VisionIOPhotonVision(camera0Name, robotToCamera0),
         //         new VisionIOPhotonVision(camera1Name, robotToCamera1));
-        // vision = new Vision((a, b, c) -> {}, new VisionIOPhotonVision(camera0Name, robotToCamera0));
+        // vision = new Vision((a, b, c) -> {}, new VisionIOPhotonVision(camera0Name,
+        // robotToCamera0));
         vision = null;
-
-        climb = null;
-        // climb = new Climb(new ClimbIOTalonFX());
-        scorer = null;
-        // scorer = new Scorer(new ScorerIOSparkFlex());
+        climb = new Climb(new ClimbIOTalonFX());
+        scorer = new Scorer(new ScorerIOSparkFlex());
         elevator = new Elevator(new ElevatorIOTalonFX());
-        // elevator = null;
-
-        // wrist = new Wrist(new WristIOSparkFlex());
-        wrist = null;
+        wrist = new Wrist(new WristIOSparkFlex());
         break;
 
       case SIM:
@@ -115,7 +110,10 @@ public class RobotContainer {
                 new ModuleIOSim(DriveConstants.BACK_RIGHT));
         vision =
             new Vision(
-                drive, new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose));
+                (a, b, c) -> {},
+                // drive,
+                new VisionIOPhotonVisionSim(
+                    CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getPose));
         climb = new Climb(new ClimbIOSim());
         scorer = new Scorer(new ScorerIOSim());
         wrist = new Wrist(new WristIOSim());
@@ -138,52 +136,56 @@ public class RobotContainer {
         break;
     }
 
-    // Set up auto routines
-    // register commands for PathPlanner
-
-    if (elevator != null && scorer != null && climb != null) {
-      NamedCommands.registerCommands(
-          Map.of(
-              "ElevatorL1", elevator.goToL1(),
-              "ElevatorL2", elevator.goToL2(),
-              "ElevatorStation", elevator.goToStation(),
-              "ElevatorL3", elevator.goToL3(),
-              "ElevatorL4", elevator.goToL4(),
-              "ElevatorNet", elevator.goToNet(),
-              "ElevatorProcessor", elevator.goToProcessor(),
-              "ScorerShootCoral", scorer.shootCoralCmd(),
-              "ScorerShootAlgae", scorer.shootAlgaeCmd()));
+    if (elevator != null && wrist != null) {
+      elevatorAndWristCommands = new ElevatorAndWristCommands(elevator, wrist);
     }
 
-    // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-    // autoChooser = new LoggedDashboardChooser<>("Auto Chooser");
-    // autoChooser.addOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
+    // Register named commands for auto
+    if (drive != null && elevator != null && wrist != null && scorer != null) {
+      NamedCommands.registerCommands(
+          Map.of(
+              "L1", elevatorAndWristCommands.goToL1(),
+              "L2", elevatorAndWristCommands.goToL2(),
+              "Station", elevatorAndWristCommands.goToStation(),
+              "L3", elevatorAndWristCommands.goToL3(),
+              "L4", elevatorAndWristCommands.goToL4(),
+              "Net", elevatorAndWristCommands.goToNet(),
+              "Processor", elevatorAndWristCommands.goToProcessor(),
+              "ShootCoral", scorer.shootCoralCmd(),
+              "ShootAlgae", scorer.shootAlgaeCmd()));
+    }
 
-    // // Set up SysId routines
-    // autoChooser.addOption(
-    //     "Drive SysId (Quasistatic Forward)",
-    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Drive SysId (Quasistatic Reverse)",
-    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // add auto routine selector to the dashboard
+    // TODO: eventually use PathPlanner to build auto chooser
+    // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    // autoChooser.addDefaultOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
+
+    // Set up SysId routines
+    // TODO: remove these later
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Forward)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Reverse)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
     configureButtonBindings();
+
+    // when robot is enabled in any circumstance, ensure the robot elevator and wrist start at
+    // station
+    RobotModeTriggers.disabled().negate().onTrue(elevatorAndWristCommands.goToStation());
   }
 
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
+  /** {@link CommandXboxController} button bindings for each subsystem are defined here. */
   private void configureButtonBindings() {
-    // Default command, normal field-relative drive
+    /* drive commands */
     if (drive != null) {
+      // Default command, normal field-relative drive
       drive.setDefaultCommand(
           DriveCommands.joystickDrive(
               drive,
@@ -194,42 +196,39 @@ public class RobotContainer {
       // Reset gyro to 0° when B button is pressed
       controller.start().onTrue(drive.zeroOdometry());
 
-      controller
-          .povRight()
-          .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, false));
+      // controller
+      //     .povRight()
+      //     .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, false));
 
-      controller
-          .povLeft()
-          .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, true));
+      // controller
+      //     .povLeft()
+      //     .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, true));
+    }
+
+    /* elevator and wrist movement commands */
+    if (elevatorAndWristCommands != null) {
+      controller.leftBumper().onTrue(elevatorAndWristCommands.goToNet());
+      controller.y().onTrue(elevatorAndWristCommands.goToL4());
+      controller.x().onTrue(elevatorAndWristCommands.goToL3());
+      controller.b().onTrue(elevatorAndWristCommands.goToL2());
+      controller.a().onTrue(elevatorAndWristCommands.goToL1());
+      controller.povDown().onTrue(elevatorAndWristCommands.goToProcessor());
+      controller.rightBumper().onTrue(elevatorAndWristCommands.goToStation());
     }
 
     if (elevator != null) {
-      // controller.leftBumper().onTrue(elevator.goToNet());
-      // controller.y().onTrue(elevator.goToL4());
-      // controller.x().onTrue(elevator.goToL3());
-      // controller.b().onTrue(elevator.goToL2());
-      // controller.a().onTrue(elevator.goToL1());
-      // controller.povDown().onTrue(elevator.goToZero());
-      // controller.rightBumper().onTrue(elevator.goToStation());
-
       // controller.back().whileTrue(elevator.runHomingRoutine());
-
-      controller.a().whileTrue(elevator.lowerElevator());
-      controller.y().whileTrue(elevator.raiseElevator());
     }
 
+    /* scoring commands */
     if (scorer != null) {
       controller.rightTrigger().whileTrue(scorer.shootCoralCmd());
       controller.leftTrigger().whileTrue(scorer.shootAlgaeCmd());
     }
 
     if (climb != null) {
+      // run climb
       controller.povUp().whileTrue(climb.runClimbCmd());
-    }
-
-    if (wrist != null) {
-      controller.povRight().whileTrue(wrist.moveWristRight());
-      controller.povLeft().whileTrue(wrist.moveWristLeft());
     }
   }
 
@@ -239,7 +238,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // return autoChooser.get();
-    return Commands.none();
+    return autoChooser.get();
   }
 }

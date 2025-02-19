@@ -1,6 +1,6 @@
 package frc.robot.subsystems.scorer;
 
-import static frc.robot.Constants.ScorerConstants.*;
+import static frc.robot.subsystems.scorer.ScorerConstants.*;
 import static frc.robot.util.SparkUtil.*;
 
 import com.revrobotics.RelativeEncoder;
@@ -32,7 +32,7 @@ public class ScorerIOSparkFlex implements ScorerIO {
         5,
         () ->
             scorerMotor.configure(
-                SCORER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+                SCORER_CONFIG, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
   }
 
   @Override

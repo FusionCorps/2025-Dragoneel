@@ -20,13 +20,19 @@ public interface ElevatorIO {
     double followerElevatorCurrentAmps = 0.0;
 
     double elevatorPositionSetpointRad = 0.0;
+
+    boolean reverseLimitSwitchTriggered = false;
+    boolean forwardLimitSwitchTriggered = false;
   }
 
   default void updateInputs(ElevatorIOInputs inputs) {}
 
   default void setTargetPosition(Angle motorTargetRotations) {}
 
-  default void setVoltage(Voltage volts) {}
+  default void setVoltageOpenLoop(Voltage volts) {}
+
+  /** Only necessary in use with {@link #setVoltageOpenLoop()} */
+  default void holdPosition() {}
 
   default void zeroPosition() {}
 }

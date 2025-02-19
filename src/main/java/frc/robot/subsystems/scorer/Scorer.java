@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.ScorerConstants.ScorerState;
+import frc.robot.subsystems.scorer.ScorerConstants.ScorerState;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -51,7 +51,7 @@ public class Scorer extends SubsystemBase {
   /** Runs the scorer to shoot stored coral. This simultaneously intakes algae. */
   public Command shootCoralCmd() {
     return this.startEnd(() -> setState(ScorerState.SHOOT_CORAL), () -> setState(ScorerState.IDLE))
-        .withTimeout(Seconds.of(0.5))
+        .withTimeout(Seconds.of(2.0))
         .withName("ScorerShootCoral");
   }
 }
