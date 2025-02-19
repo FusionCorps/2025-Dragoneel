@@ -138,7 +138,7 @@ gversion {
     classPackage = "frc.robot"
     className    = "BuildConstants"
     dateFormat   = "yyyy-MM-dd HH:mm:ss z"
-    timeZone     = "America/Chicago"
+    timeZone     = "CST"
     indent       = "  "
 }
 
