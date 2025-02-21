@@ -101,7 +101,7 @@ public class DriveConstants {
   // Theoretical free speed (m/s) at 12 V applied output
   // TODO: needs to be tuned
   public static final LinearVelocity SPEED_AT_12V = MetersPerSecond.of(4.48);
-  public static final AngularVelocity MAX_MODULE_ROTATION_SPEED = RotationsPerSecond.of(10);
+  public static final AngularVelocity MODULE_ANGULAR_VEL_AT_12V = RotationsPerSecond.of(10);
 
   // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns
   private static final double kCoupleRatio = 3;
@@ -263,4 +263,19 @@ public class DriveConstants {
       };
 
   public static final double WHEEL_COF = 1.5;
+
+// TunerConstants doesn't include these constants, so they are declared locally
+  public static final double ODOMETRY_FREQUENCY =
+      new CANBus(DRIVETRAIN_CONSTANTS.CANBusName).isNetworkFD() ? 250.0 : 100.0;
+
+public static final double DRIVE_BASE_RADIUS =
+Math.max(
+    Math.max(
+        Math.hypot(FRONT_LEFT.LocationX, FRONT_LEFT.LocationY),
+        Math.hypot(
+            FRONT_RIGHT.LocationX, FRONT_RIGHT.LocationY)),
+    Math.max(
+        Math.hypot(BACK_LEFT.LocationX, BACK_LEFT.LocationY),
+        Math.hypot(
+            BACK_RIGHT.LocationX, BACK_RIGHT.LocationY)));
 }

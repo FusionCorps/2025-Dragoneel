@@ -49,8 +49,8 @@ import org.littletonrobotics.junction.Logger;
  * <p>Alerts:
  *
  * <ul>
- *   <li>{@link #mainMotorConnectedAlert}: {@link Alert} for main elevator motor disconnection.
- *   <li>{@link #followerMotorConnectedAlert}: {@link Alert} for follower elevator motor
+ *   <li>{@link #mainMotorDisconnectedAlert}: {@link Alert} for main elevator motor disconnection.
+ *   <li>{@link #followerMotorDisconnectedAlert}: {@link Alert} for follower elevator motor
  *       disconnection.
  * </ul>
  *
@@ -79,16 +79,17 @@ public class Elevator extends SubsystemBase {
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
   /* Connection Alerts */
-  private final Alert mainMotorConnectedAlert =
+  private final Alert mainMotorDisconnectedAlert =
       new Alert("Main Elevator Motor Disconnected.", AlertType.kError);
-  private final Alert followerMotorConnectedAlert =
+  private final Alert followerMotorDisconnectedAlert =
       new Alert("Follower Elevator Motor Disconnected.", AlertType.kError);
-  private final Alert forwardLimitSwitchAlert =
-      new Alert("Forward Limit Switch Triggered.", AlertType.kInfo);
-  private final Alert reverseLimitSwitchAlert =
-      new Alert("Reverse Limit Switch Triggered.", AlertType.kInfo);
+  private final Alert forwardLimitSwitchTriggeredAlert =
+      new Alert("Top Limit Switch Triggered.", AlertType.kInfo);
+  private final Alert reverseLimitSwitchTriggeredAlert =
+      new Alert("Bottom Limit Switch Triggered. Elevator zeroed", AlertType.kInfo);
+  
   /* State tracker for current height of the elevator */
-  @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.ZERO;
+  private ElevatorState currentElevatorState = ElevatorState.ZERO;
 
   boolean isOpenLoop = false;
 
@@ -138,29 +139,29 @@ public class Elevator extends SubsystemBase {
     Robot.componentPoses[1] = new Pose3d(0.0, 0.0, elevatorStage3HeightMeters, Rotation3d.kZero);
 
     if (!inputs.mainElevatorMotorConnected) {
-      mainMotorConnectedAlert.set(true);
+      mainMotorDisconnectedAlert.set(true);
     }
 
     if (!inputs.followerElevatorMotorConnected) {
-      followerMotorConnectedAlert.set(true);
+      followerMotorDisconnectedAlert.set(true);
     }
 
     if (inputs.forwardLimitSwitchTriggered) {
-      forwardLimitSwitchAlert.set(true);
+      forwardLimitSwitchTriggeredAlert.set(true);
     }
 
     if (inputs.reverseLimitSwitchTriggered) {
-      reverseLimitSwitchAlert.set(true);
+      reverseLimitSwitchTriggeredAlert.set(true);
     }
 
     // driver variables to visualize the elevator state
-    SmartDashboard.putBoolean("Elevator HOMED", currentElevatorState == ElevatorState.ZERO);
-    SmartDashboard.putBoolean("Elevator L1", currentElevatorState == ElevatorState.L1);
-    SmartDashboard.putBoolean("Elevator L2", currentElevatorState == ElevatorState.L2);
-    SmartDashboard.putBoolean("Elevator at STATION", currentElevatorState == ElevatorState.STATION);
-    SmartDashboard.putBoolean("Elevator L3", currentElevatorState == ElevatorState.L3);
-    SmartDashboard.putBoolean("Elevator L4", currentElevatorState == ElevatorState.L4);
-    SmartDashboard.putBoolean("Elevator NET", currentElevatorState == ElevatorState.NET);
+    SmartDashboard.putBoolean("ZERO", currentElevatorState == ElevatorState.ZERO);
+    SmartDashboard.putBoolean("L1", currentElevatorState == ElevatorState.L1);
+    SmartDashboard.putBoolean("L2", currentElevatorState == ElevatorState.L2);
+    SmartDashboard.putBoolean("STATION", currentElevatorState == ElevatorState.STATION);
+    SmartDashboard.putBoolean("L3", currentElevatorState == ElevatorState.L3);
+    SmartDashboard.putBoolean("L4", currentElevatorState == ElevatorState.L4);
+    SmartDashboard.putBoolean("NET", currentElevatorState == ElevatorState.NET);
 
     LoggedTunableNumber.ifChanged(
         hashCode(),
@@ -217,9 +218,19 @@ public class Elevator extends SubsystemBase {
         },
         interrupted -> {
           isOpenLoop = false;
-          io.zeroPosition();
-          currentElevatorState = ElevatorState.ZERO;
+          if (interrupted) { // e.g. robot disabled or operator lets go of button
+            io.holdPosition();
+          }
+          if (!interrupted) { // ends normally when bottom limit switch is triggered
+            io.zeroPosition();
+            currentElevatorState = ElevatorState.ZERO;
+          }
         },
         () -> inputs.reverseLimitSwitchTriggered);
+  }
+
+  @AutoLogOutput
+  public ElevatorState getCurrentElevatorState() {
+    return currentElevatorState;
   }
 }

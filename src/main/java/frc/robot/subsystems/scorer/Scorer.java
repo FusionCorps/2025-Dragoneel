@@ -2,10 +2,13 @@ package frc.robot.subsystems.scorer;
 
 import static edu.wpi.first.units.Units.Seconds;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.scorer.ScorerConstants.ScorerState;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -19,7 +22,7 @@ public class Scorer extends SubsystemBase {
 
   /* Motor disconnected alert */
   private final Alert motorDisconnectedAlert =
-      new Alert("Scorer motor disconnnected", AlertType.kError);
+      new Alert("Scorer Motor Disconnnected", AlertType.kError);
 
   @AutoLogOutput private ScorerState currentScorerState = ScorerState.IDLE;
 
@@ -44,14 +47,22 @@ public class Scorer extends SubsystemBase {
 
   /** Runs the scorer to outtake algae. */
   public Command shootAlgaeCmd() {
-    return startEnd(() -> setState(ScorerState.SHOOT_ALGAE), () -> setState(ScorerState.IDLE))
-        .withName("ScorerOuttakeAlgae");
+    return startEnd(() -> setState(ScorerState.SHOOT_ALGAE), () -> setState(ScorerState.IDLE));
   }
 
-  /** Runs the scorer to shoot stored coral. This simultaneously intakes algae. */
-  public Command shootCoralCmd() {
-    return this.startEnd(() -> setState(ScorerState.SHOOT_CORAL), () -> setState(ScorerState.IDLE))
-        .withTimeout(Seconds.of(2.0))
-        .withName("ScorerShootCoral");
+  /** Runs the scorer to shoot stored coral. This simultaneously intakes algae.
+   * Shoots coral at different speed on L1 vs other levels.
+   * @param elevatorStateSupplier Supplies the current elevator state.
+   */
+  public Command shootCoralCmd(Supplier<ElevatorState> elevatorStateSupplier) {
+    return this.startEnd(
+      () -> {
+        if (elevatorStateSupplier.get() == ElevatorState.L1) {
+          setState(ScorerState.SHOOT_CORAL_L1);
+        } else {
+          setState(ScorerState.SHOOT_CORAL_DEFAULT);
+        }
+      }, () -> setState(ScorerState.IDLE))
+        .withTimeout(Seconds.of(2.0));
   }
 }

@@ -23,7 +23,8 @@ public class ScorerConstants {
   public static enum ScorerState {
     IDLE(Volts.of(0.0)),
     SHOOT_ALGAE(Volts.of(-0.25 * 12.0)),
-    SHOOT_CORAL(Volts.of(0.25 * 12.0));
+    SHOOT_CORAL_DEFAULT(Volts.of(0.25 * 12.0)),
+    SHOOT_CORAL_L1(Volts.of(0.15 * 12.0));
 
     public final Voltage volts;
 

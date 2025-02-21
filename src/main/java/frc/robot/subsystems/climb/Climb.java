@@ -18,7 +18,7 @@ public class Climb extends SubsystemBase {
 
   /* Motor alert */
   private final Alert motorDisconnectedAlert =
-      new Alert("Climb motor disconnected", AlertType.kError);
+      new Alert("Climb Motor Disconnected", AlertType.kError);
 
   /* Constructor */
   public Climb(ClimbIO io) {

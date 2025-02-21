@@ -15,7 +15,6 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -62,20 +61,6 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase implements VisionConsumer {
-  // TunerConstants doesn't include these constants, so they are declared locally
-  public static final double ODOMETRY_FREQUENCY =
-      new CANBus(DriveConstants.DRIVETRAIN_CONSTANTS.CANBusName).isNetworkFD() ? 250.0 : 100.0;
-  public static final double DRIVE_BASE_RADIUS =
-      Math.max(
-          Math.max(
-              Math.hypot(DriveConstants.FRONT_LEFT.LocationX, DriveConstants.FRONT_LEFT.LocationY),
-              Math.hypot(
-                  DriveConstants.FRONT_RIGHT.LocationX, DriveConstants.FRONT_RIGHT.LocationY)),
-          Math.max(
-              Math.hypot(DriveConstants.BACK_LEFT.LocationX, DriveConstants.BACK_LEFT.LocationY),
-              Math.hypot(
-                  DriveConstants.BACK_RIGHT.LocationX, DriveConstants.BACK_RIGHT.LocationY)));
-
   private static RobotConfig PP_CONFIG;
 
   static final Lock odometryLock = new ReentrantLock();
@@ -126,7 +111,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
     try {
       PP_CONFIG = RobotConfig.fromGUISettings();
     } catch (IOException | ParseException e) {
-      PP_CONFIG = Constants.DEFAULT_PP_ROBOT_CONFIG;
+      PP_CONFIG = Constants.PP_ROBOT_CONFIG_DEFAULT;
       pathPlannerSettingsLoadAlert.set(true);
     }
     AutoBuilder.configure(
@@ -150,10 +135,10 @@ public class Drive extends SubsystemBase implements VisionConsumer {
           Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
         });
 
-    // Configure setpoint generator
+    // Configure setpoint generator and start with zero setpoint
     setpointGenerator =
         new SwerveSetpointGenerator(
-            PP_CONFIG, DriveConstants.MAX_MODULE_ROTATION_SPEED.in(RadiansPerSecond));
+            PP_CONFIG, DriveConstants.MODULE_ANGULAR_VEL_AT_12V.in(RadiansPerSecond));
     previousSetpoint =
         new SwerveSetpoint(
             getChassisSpeeds(), getModuleStates(), DriveFeedforwards.zeros(PP_CONFIG.numModules));
@@ -362,7 +347,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
   /** Returns the maximum angular speed in radians per sec. */
   public double getMaxAngularSpeedRadPerSec() {
-    return getMaxLinearSpeedMetersPerSec() / DRIVE_BASE_RADIUS;
+    return getMaxLinearSpeedMetersPerSec() / DriveConstants.DRIVE_BASE_RADIUS;
   }
 
   /** Sets the gyro angle to 0° and sets current gyro angle to forward. */

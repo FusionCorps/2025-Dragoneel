@@ -21,7 +21,7 @@ public class Wrist extends SubsystemBase {
 
   @AutoLogOutput private WristState currentWristState = WristState.ZERO;
 
-  private final Alert wristMotorConnectedAlert =
+  private final Alert wristMotorDisconnectedAlert =
       new Alert("Wrist Motor Disconnected.", AlertType.kError);
 
   LoggedTunableNumber wristProcessorPosition =
@@ -56,7 +56,7 @@ public class Wrist extends SubsystemBase {
             new Rotation3d(0, inputs.wristPositionRad, 0));
 
     Logger.processInputs("Wrist", inputs);
-    wristMotorConnectedAlert.set(!inputs.wristMotorConnected);
+    wristMotorDisconnectedAlert.set(!inputs.wristMotorConnected);
 
     LoggedTunableNumber.ifChanged(
         hashCode(),

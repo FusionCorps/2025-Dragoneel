@@ -66,13 +66,13 @@ public class RobotContainer {
   private final Scorer scorer;
   private final Wrist wrist;
 
-  ElevatorAndWristCommands elevatorAndWristCommands = null;
+  private ElevatorAndWristCommands elevatorAndWristCommands = null;
   private final LoggedDashboardChooser<Command> autoChooser =
       new LoggedDashboardChooser<>("Auto Chooser");
 
   private final CommandXboxController controller = new CommandXboxController(0);
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  /** The container for the robot. Contains subsystems, operator devices, and commands. */
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
@@ -149,7 +149,7 @@ public class RobotContainer {
               "L4", elevatorAndWristCommands.goToL4(),
               "Net", elevatorAndWristCommands.goToNet(),
               "Processor", elevatorAndWristCommands.goToProcessor(),
-              "ShootCoral", scorer.shootCoralCmd(),
+              "ShootCoral", scorer.shootCoralCmd(elevator::getCurrentElevatorState),
               "ShootAlgae", scorer.shootAlgaeCmd()));
     }
 
@@ -211,12 +211,12 @@ public class RobotContainer {
     }
 
     if (elevator != null) {
-      // controller.back().whileTrue(elevator.runHomingRoutine());
+      controller.back().whileTrue(elevator.homeElevator());
     }
 
     /* scoring commands */
-    if (scorer != null) {
-      controller.rightTrigger().whileTrue(scorer.shootCoralCmd());
+    if (scorer != null && elevator != null) {
+      controller.rightTrigger().whileTrue(scorer.shootCoralCmd(elevator::getCurrentElevatorState));
       controller.leftTrigger().whileTrue(scorer.shootAlgaeCmd());
     }
 

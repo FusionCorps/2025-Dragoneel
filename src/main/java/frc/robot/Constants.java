@@ -19,6 +19,7 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.subsystems.drive.DriveConstants;
 
@@ -42,12 +43,15 @@ public final class Constants {
     REPLAY
   }
 
-  public static final double ROBOT_MASS_KG = 74.088;
+  // TODO: Update these values in PathPlanner and Choreo and here
+  public static final Mass ROBOT_MASS = Pounds.of(115);
   public static final double ROBOT_MOI =
-      ROBOT_MASS_KG * Units.inchesToMeters(20.75) / 2.0 * 0.011992 / (DriveConstants.driveGains.kA);
-  public static final RobotConfig DEFAULT_PP_ROBOT_CONFIG =
+    //   ROBOT_MASS.in(Kilograms) * DriveConstants.FRONT_LEFT.LocationX * (0.011992 / DriveConstants.driveGains.kA);
+    8.0; // round number on the higher/safer side, higher MOI means slower path rotation which is OK
+  // default PathPlanner configuration for path following
+  public static final RobotConfig PP_ROBOT_CONFIG_DEFAULT =
       new RobotConfig(
-          Constants.ROBOT_MASS_KG,
+          Constants.ROBOT_MASS.in(Kilograms),
           Constants.ROBOT_MOI,
           new ModuleConfig(
               DriveConstants.FRONT_LEFT.WheelRadius,
