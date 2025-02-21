@@ -16,6 +16,7 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
@@ -60,23 +61,23 @@ public class WristIOSparkFlex implements WristIO {
     /* Update inputs */
     sparkStickyFault = false;
     ifOk(
-        wristMotor, wristMotorEncoder::getPosition, position -> inputs.wristPositionRad = position);
+        wristMotor, wristMotorEncoder::getPosition, position -> inputs.positionRad = position);
     ifOk(
         wristMotor,
         wristMotorAbsoluteEncoder::getPosition,
-        absPosition -> inputs.wristAbsPositionRad = Units.rotationsToRadians(absPosition));
+        absPosition -> inputs.absolutePositionRad = Rotation2d.fromRotations(absPosition));
     ifOk(
         wristMotor,
         wristMotorEncoder::getVelocity,
-        velocity -> inputs.wristVelocityRadPerSec = velocity);
+        velocity -> inputs.velocityRadPerSec = velocity);
     ifOk(
         wristMotor,
         new DoubleSupplier[] {wristMotor::getAppliedOutput, wristMotor::getBusVoltage},
-        (doubles) -> inputs.wristAppliedVolts = doubles[0] * doubles[1]);
-    ifOk(wristMotor, wristMotor::getOutputCurrent, current -> inputs.wristCurrentAmps = current);
+        (doubles) -> inputs.appliedVolts = doubles[0] * doubles[1]);
+    ifOk(wristMotor, wristMotor::getOutputCurrent, current -> inputs.currentAmps = current);
 
-    inputs.wristMotorConnected = wristMotorDebouncer.calculate(!sparkStickyFault);
-    inputs.wristSetpointRad = Units.rotationsToRadians(setpoint);
+    inputs.connected = wristMotorDebouncer.calculate(!sparkStickyFault);
+    inputs.wristSetpoint = new Rotation2d(setpoint);
   }
 
   @Override

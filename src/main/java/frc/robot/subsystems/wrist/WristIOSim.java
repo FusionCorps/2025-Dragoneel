@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.measure.Angle;
@@ -34,20 +35,20 @@ public class WristIOSim implements WristIO {
     if (!isOpenLoop)
       appliedVolts =
           MathUtil.clamp(
-              controller.calculate(inputs.wristPositionRad, targetPosition.in(Radians)),
+              controller.calculate(inputs.positionRad, targetPosition.in(Radians)),
               -12.0,
               12.0);
     wristMotorSim.setInputVoltage(appliedVolts);
     wristMotorSim.update(0.02);
 
     /* Update inputs */
-    inputs.wristMotorConnected = true;
-    inputs.wristPositionRad = wristMotorSim.getAngularPositionRad();
-    inputs.wristVelocityRadPerSec = wristMotorSim.getAngularVelocityRadPerSec();
-    inputs.wristAppliedVolts = appliedVolts;
-    inputs.wristCurrentAmps = wristMotorSim.getCurrentDrawAmps();
+    inputs.connected = true;
+    inputs.positionRad = wristMotorSim.getAngularPositionRad();
+    inputs.velocityRadPerSec = wristMotorSim.getAngularVelocityRadPerSec();
+    inputs.appliedVolts = appliedVolts;
+    inputs.currentAmps = wristMotorSim.getCurrentDrawAmps();
 
-    inputs.wristSetpointRad = targetPosition.in(Radians);
+    inputs.wristSetpoint = new Rotation2d(targetPosition);
   }
 
   @Override

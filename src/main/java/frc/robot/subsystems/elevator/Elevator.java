@@ -8,6 +8,7 @@ import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -129,7 +130,7 @@ public class Elevator extends SubsystemBase {
 
     double elevatorStage2HeightMeters =
         // rev * circumference/rev / gear ratio = height in meters
-        Units.radiansToRotations(inputs.mainElevatorPositionRad)
+        Units.radiansToRotations(inputs.mainPositionRad)
             * (Math.PI * ELEVATOR_SPOOL_DIAMETER.in(Meters))
             / (ELEVATOR_GEAR_RATIO);
 
@@ -138,11 +139,11 @@ public class Elevator extends SubsystemBase {
     Robot.componentPoses[0] = new Pose3d(0.0, 0.0, elevatorStage2HeightMeters, Rotation3d.kZero);
     Robot.componentPoses[1] = new Pose3d(0.0, 0.0, elevatorStage3HeightMeters, Rotation3d.kZero);
 
-    if (!inputs.mainElevatorMotorConnected) {
+    if (!inputs.mainConnected) {
       mainMotorDisconnectedAlert.set(true);
     }
 
-    if (!inputs.followerElevatorMotorConnected) {
+    if (!inputs.followerConnected) {
       followerMotorDisconnectedAlert.set(true);
     }
 

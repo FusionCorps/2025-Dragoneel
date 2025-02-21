@@ -53,10 +53,10 @@ public class Wrist extends SubsystemBase {
             0.14,
             -0.04,
             Robot.componentPoses[1].getZ() + 0.55,
-            new Rotation3d(0, inputs.wristPositionRad, 0));
+            new Rotation3d(0, inputs.positionRad, 0));
 
     Logger.processInputs("Wrist", inputs);
-    wristMotorDisconnectedAlert.set(!inputs.wristMotorConnected);
+    wristMotorDisconnectedAlert.set(!inputs.connected);
 
     LoggedTunableNumber.ifChanged(
         hashCode(),

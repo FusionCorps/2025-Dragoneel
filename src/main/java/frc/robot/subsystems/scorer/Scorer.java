@@ -38,7 +38,7 @@ public class Scorer extends SubsystemBase {
 
     io.updateInputs(inputs);
     Logger.processInputs("Scorer", inputs);
-    motorDisconnectedAlert.set(!inputs.scorerMotorConnected);
+    motorDisconnectedAlert.set(!inputs.connected);
   }
 
   public void setState(ScorerState state) {

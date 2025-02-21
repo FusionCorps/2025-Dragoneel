@@ -137,30 +137,30 @@ public class ElevatorIOTalonFX implements ElevatorIO {
             followerElevatorMotorAppliedVoltage,
             followerElevatorMotorCurrent);
 
-    inputs.mainElevatorMotorConnected =
+    inputs.mainConnected =
         mainElevatorMotorDebouncer.calculate(mainElevatorIsOK == StatusCode.OK);
-    inputs.mainElevatorPositionRad = mainElevatorMotorPosition.getValue().in(Radians);
-    inputs.mainElevatorVelocityRadPerSec =
+    inputs.mainPositionRad = mainElevatorMotorPosition.getValue().in(Radians);
+    inputs.mainVelocityRadPerSec =
         mainElevatorMotorVelocity.getValue().in(RadiansPerSecond);
-    inputs.mainElevatorAppliedVolts = mainElevatorMotorAppliedVoltage.getValue().in(Volts);
-    inputs.mainElevatorCurrentAmps = mainElevatorMotorCurrent.getValue().in(Amps);
+    inputs.mainAppliedVolts = mainElevatorMotorAppliedVoltage.getValue().in(Volts);
+    inputs.mainCurrentAmps = mainElevatorMotorCurrent.getValue().in(Amps);
 
-    inputs.followerElevatorMotorConnected =
+    inputs.followerConnected =
         followerElevatorMotorDebouncer.calculate(followerElevatorIsOK == StatusCode.OK);
-    inputs.followerElevatorPositionRad = followerElevatorMotorPosition.getValue().in(Radians);
-    inputs.followerElevatorVelocityRadPerSec =
+    inputs.followerPositionRad = followerElevatorMotorPosition.getValue().in(Radians);
+    inputs.followerVelocityRadPerSec =
         followerElevatorMotorVelocity.getValue().in(RadiansPerSecond);
-    inputs.followerElevatorAppliedVolts = followerElevatorMotorAppliedVoltage.getValue().in(Volts);
-    inputs.followerElevatorCurrentAmps = followerElevatorMotorCurrent.getValue().in(Amps);
+    inputs.followerAppliedVolts = followerElevatorMotorAppliedVoltage.getValue().in(Volts);
+    inputs.followerCurrentAmps = followerElevatorMotorCurrent.getValue().in(Amps);
 
-    inputs.elevatorPositionSetpointRad = posRequest.getPositionMeasure().in(Radians);
+    inputs.positionSetpointRad = posRequest.getPositionMeasure().in(Radians);
 
     if (switchesConnected) {
       inputs.forwardLimitSwitchTriggered = forwardLimitSwitch.get();
       inputs.reverseLimitSwitchTriggered = reverseLimitSwitch.get();
       if (inputs.reverseLimitSwitchTriggered) {
-        if (inputs.mainElevatorPositionRad != 0.0) mainElevatorMotor.setPosition(0.0);
-        if (inputs.followerElevatorPositionRad != 0.0) followerElevatorMotor.setPosition(0.0);
+        if (inputs.mainPositionRad != 0.0) mainElevatorMotor.setPosition(0.0);
+        if (inputs.followerPositionRad != 0.0) followerElevatorMotor.setPosition(0.0);
         // new Alert("Elevator Zeroed", AlertType.kInfo).set(true);
       }
     }

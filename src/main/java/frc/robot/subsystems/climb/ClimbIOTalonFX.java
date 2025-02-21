@@ -56,11 +56,11 @@ public class ClimbIOTalonFX implements ClimbIO {
   public void updateInputs(ClimbIOInputs inputs) {
     BaseStatusSignal.refreshAll(climbPosition, climbVelocity, climbAppliedVolts, climbCurrent);
 
-    inputs.climbMotorConnected = climbDebounce.calculate(climbMotor.isConnected());
-    inputs.climbPositionRad = climbPosition.getValue().in(Radians);
-    inputs.climbVelocityRadPerSec = climbVelocity.getValue().in(RadiansPerSecond);
-    inputs.climbAppliedVolts = climbAppliedVolts.getValue().in(Volts);
-    inputs.climbCurrentAmps = climbCurrent.getValue().in(Amps);
+    inputs.connected = climbDebounce.calculate(climbMotor.isConnected());
+    inputs.positionRad = climbPosition.getValue().in(Radians);
+    inputs.velocityRadPerSec = climbVelocity.getValue().in(RadiansPerSecond);
+    inputs.appliedVolts = climbAppliedVolts.getValue().in(Volts);
+    inputs.currentAmps = climbCurrent.getValue().in(Amps);
   }
 
   @Override

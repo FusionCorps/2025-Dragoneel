@@ -42,18 +42,18 @@ public class ScorerIOSparkFlex implements ScorerIO {
     ifOk(
         scorerMotor,
         scorerMotorEncoder::getPosition,
-        position -> inputs.scorerPositionRad = position);
+        position -> inputs.positionRad = position);
     ifOk(
         scorerMotor,
         scorerMotorEncoder::getVelocity,
-        velocity -> inputs.scorerVelocityRadPerSec = velocity);
+        velocity -> inputs.velocityRadPerSec = velocity);
     ifOk(
         scorerMotor,
         new DoubleSupplier[] {scorerMotor::getAppliedOutput, scorerMotor::getBusVoltage},
-        (doubles) -> inputs.scorerAppliedVolts = doubles[0] * doubles[1]);
-    ifOk(scorerMotor, scorerMotor::getOutputCurrent, current -> inputs.scorerCurrentAmps = current);
+        (doubles) -> inputs.appliedVolts = doubles[0] * doubles[1]);
+    ifOk(scorerMotor, scorerMotor::getOutputCurrent, current -> inputs.currentAmps = current);
 
-    inputs.scorerMotorConnected = scorerMotorDebouncer.calculate(!sparkStickyFault);
+    inputs.connected = scorerMotorDebouncer.calculate(!sparkStickyFault);
   }
 
   @Override

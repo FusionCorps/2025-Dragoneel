@@ -264,7 +264,6 @@ public class DriveConstants {
 
   public static final double WHEEL_COF = 1.5;
 
-// TunerConstants doesn't include these constants, so they are declared locally
   public static final double ODOMETRY_FREQUENCY =
       new CANBus(DRIVETRAIN_CONSTANTS.CANBusName).isNetworkFD() ? 250.0 : 100.0;
 

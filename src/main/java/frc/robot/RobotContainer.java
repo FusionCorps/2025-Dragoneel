@@ -98,7 +98,6 @@ public class RobotContainer {
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
-        elevator = new Elevator(new ElevatorIOSim());
         drive =
             new Drive(
                 new GyroIO() {},
@@ -112,6 +111,7 @@ public class RobotContainer {
                 // drive,
                 new VisionIOPhotonVisionSim(
                     CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getPose));
+        elevator = new Elevator(new ElevatorIOSim());
         climb = new Climb(new ClimbIOSim());
         scorer = new Scorer(new ScorerIOSim());
         wrist = new Wrist(new WristIOSim());

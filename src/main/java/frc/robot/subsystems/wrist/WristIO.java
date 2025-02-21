@@ -1,5 +1,6 @@
 package frc.robot.subsystems.wrist;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import org.littletonrobotics.junction.AutoLog;
@@ -7,14 +8,14 @@ import org.littletonrobotics.junction.AutoLog;
 public interface WristIO {
   @AutoLog
   public static class WristIOInputs {
-    boolean wristMotorConnected = false;
-    double wristPositionRad = 0.0;
-    double wristAbsPositionRad = 0.0;
-    double wristVelocityRadPerSec = 0.0;
-    double wristAppliedVolts = 0.0;
-    double wristCurrentAmps = 0.0;
+    boolean connected = false;
+    double positionRad = 0.0;
+    Rotation2d absolutePositionRad = new Rotation2d();
+    double velocityRadPerSec = 0.0;
+    double appliedVolts = 0.0;
+    double currentAmps = 0.0;
 
-    double wristSetpointRad = 0.0;
+    Rotation2d wristSetpoint = new Rotation2d();
   }
 
   default void updateInputs(WristIOInputs inputs) {}

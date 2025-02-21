@@ -30,7 +30,7 @@ public class Climb extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Climb", inputs);
-    motorDisconnectedAlert.set(!inputs.climbMotorConnected);
+    motorDisconnectedAlert.set(!inputs.connected);
   }
 
   /* Run the climb motor and hold position in brake mode when stopped. */

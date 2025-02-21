@@ -57,19 +57,19 @@ public class ElevatorIOSim implements ElevatorIO {
     elevatorSim.setInputVoltage(appliedVolts);
     elevatorSim.update(0.02);
 
-    inputs.mainElevatorMotorConnected = true;
-    inputs.mainElevatorPositionRad = elevatorSim.getAngularPositionRad();
-    inputs.mainElevatorVelocityRadPerSec = elevatorSim.getAngularVelocityRadPerSec();
-    inputs.mainElevatorAppliedVolts = appliedVolts;
-    inputs.mainElevatorCurrentAmps = elevatorSim.getCurrentDrawAmps();
+    inputs.mainConnected = true;
+    inputs.mainPositionRad = elevatorSim.getAngularPositionRad();
+    inputs.mainVelocityRadPerSec = elevatorSim.getAngularVelocityRadPerSec();
+    inputs.mainAppliedVolts = appliedVolts;
+    inputs.mainCurrentAmps = elevatorSim.getCurrentDrawAmps();
 
-    inputs.followerElevatorMotorConnected = true;
-    inputs.followerElevatorPositionRad = elevatorSim.getAngularPositionRad();
-    inputs.followerElevatorVelocityRadPerSec = elevatorSim.getAngularVelocityRadPerSec();
-    inputs.followerElevatorAppliedVolts = appliedVolts;
-    inputs.followerElevatorCurrentAmps = elevatorSim.getCurrentDrawAmps();
+    inputs.followerConnected = true;
+    inputs.followerPositionRad = elevatorSim.getAngularPositionRad();
+    inputs.followerVelocityRadPerSec = elevatorSim.getAngularVelocityRadPerSec();
+    inputs.followerAppliedVolts = appliedVolts;
+    inputs.followerCurrentAmps = elevatorSim.getCurrentDrawAmps();
 
-    inputs.elevatorPositionSetpointRad = targetPosition.in(Rotations);
+    inputs.positionSetpointRad = targetPosition.in(Rotations);
   }
 
   @Override

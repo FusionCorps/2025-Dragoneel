@@ -29,11 +29,11 @@ public class ScorerIOSim implements ScorerIO {
     scorerMotorSim.update(0.02);
 
     /* Update inputs */
-    inputs.scorerMotorConnected = true;
-    inputs.scorerPositionRad = scorerMotorSim.getAngularPositionRad();
-    inputs.scorerVelocityRadPerSec = scorerMotorSim.getAngularVelocityRadPerSec();
-    inputs.scorerAppliedVolts = appliedVolts.in(Volts);
-    inputs.scorerCurrentAmps = scorerMotorSim.getCurrentDrawAmps();
+    inputs.connected = true;
+    inputs.positionRad = scorerMotorSim.getAngularPositionRad();
+    inputs.velocityRadPerSec = scorerMotorSim.getAngularVelocityRadPerSec();
+    inputs.appliedVolts = appliedVolts.in(Volts);
+    inputs.currentAmps = scorerMotorSim.getCurrentDrawAmps();
   }
 
   @Override
