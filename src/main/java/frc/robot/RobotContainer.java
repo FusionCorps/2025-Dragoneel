@@ -18,7 +18,6 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorAndWristCommands;
@@ -43,6 +42,7 @@ import frc.robot.subsystems.scorer.ScorerIOSim;
 import frc.robot.subsystems.scorer.ScorerIOSparkFlex;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristIO;
@@ -84,14 +84,12 @@ public class RobotContainer {
                 new ModuleIOTalonFX(DriveConstants.FRONT_RIGHT),
                 new ModuleIOTalonFX(DriveConstants.BACK_LEFT),
                 new ModuleIOTalonFX(DriveConstants.BACK_RIGHT));
-        // vision =
-        //     new Vision(
-        //         drive,
-        //         new VisionIOPhotonVision(camera0Name, robotToCamera0),
-        //         new VisionIOPhotonVision(camera1Name, robotToCamera1));
-        // vision = new Vision((a, b, c) -> {}, new VisionIOPhotonVision(camera0Name,
-        // robotToCamera0));
-        vision = null;
+        vision =
+            new Vision(
+                // drive,
+                (a, b, c) -> {},
+                new VisionIOPhotonVision(CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM),
+                new VisionIOPhotonVision(CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM));
         climb = new Climb(new ClimbIOTalonFX());
         scorer = new Scorer(new ScorerIOSparkFlex());
         elevator = new Elevator(new ElevatorIOTalonFX());
@@ -175,10 +173,6 @@ public class RobotContainer {
 
     // Configure the button bindings
     configureButtonBindings();
-
-    // when robot is enabled in any circumstance, ensure the robot elevator and wrist start at
-    // station
-    RobotModeTriggers.disabled().negate().onTrue(elevatorAndWristCommands.goToStation());
   }
 
   /** {@link CommandXboxController} button bindings for each subsystem are defined here. */

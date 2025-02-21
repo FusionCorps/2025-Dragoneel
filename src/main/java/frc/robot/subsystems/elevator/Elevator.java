@@ -83,7 +83,10 @@ public class Elevator extends SubsystemBase {
       new Alert("Main Elevator Motor Disconnected.", AlertType.kError);
   private final Alert followerMotorConnectedAlert =
       new Alert("Follower Elevator Motor Disconnected.", AlertType.kError);
-
+  private final Alert forwardLimitSwitchAlert =
+      new Alert("Forward Limit Switch Triggered.", AlertType.kInfo);
+  private final Alert reverseLimitSwitchAlert =
+      new Alert("Reverse Limit Switch Triggered.", AlertType.kInfo);
   /* State tracker for current height of the elevator */
   @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.ZERO;
 
@@ -140,6 +143,14 @@ public class Elevator extends SubsystemBase {
 
     if (!inputs.followerElevatorMotorConnected) {
       followerMotorConnectedAlert.set(true);
+    }
+
+    if (inputs.forwardLimitSwitchTriggered) {
+      forwardLimitSwitchAlert.set(true);
+    }
+
+    if (inputs.reverseLimitSwitchTriggered) {
+      reverseLimitSwitchAlert.set(true);
     }
 
     // driver variables to visualize the elevator state

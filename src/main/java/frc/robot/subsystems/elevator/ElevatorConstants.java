@@ -11,15 +11,15 @@ import edu.wpi.first.units.measure.Distance;
 public class ElevatorConstants {
   public static final int MAIN_ELEVATOR_MOTOR_ID = 13;
   public static final int FOLLOWER_ELEVATOR_MOTOR_ID = 14;
-  public static final int ELEVATOR_FORWARD_LIMIT_SWITCH_DIO_PORT = 0;
-  public static final int ELEVATOR_REVERSE_LIMIT_SWITCH_DIO_PORT = 1;
+  public static final int ELEVATOR_FORWARD_LIMIT_SWITCH_DIO_PORT = 1;
+  public static final int ELEVATOR_REVERSE_LIMIT_SWITCH_DIO_PORT = 2;
 
   public static enum ElevatorState {
     ZERO(Rotations.of(0.0)),
     PROCESSOR(Rotations.of(0.0)),
     STATION(Rotations.of(1)),
-    L1(Rotations.of(0.0)),
-    L2(Rotations.of(9)),
+    L1(Rotations.of(3)),
+    L2(Rotations.of(10)),
     L3(Rotations.of(15)),
     L4(Rotations.of(25)),
     NET(Rotations.of(20));
@@ -39,8 +39,8 @@ public class ElevatorConstants {
   public static final double ELEVATOR_kG = 0.2057;
   public static final double ELEVATOR_kA = 0.0099757;
 
-  public static final double ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY = 200;
-  public static final double ELEVATOR_MOTION_MAGIC_ACCELERATION = 250;
+  public static final double ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY = 100;
+  public static final double ELEVATOR_MOTION_MAGIC_ACCELERATION = 150;
 
   public static final CurrentLimitsConfigs ELEVATOR_CURRENT_LIMITS_CONFIGS =
       new CurrentLimitsConfigs()

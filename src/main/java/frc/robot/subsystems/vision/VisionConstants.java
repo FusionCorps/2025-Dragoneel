@@ -33,17 +33,19 @@ public class VisionConstants {
           aprilTagLayout.getTagPose(11).get().toPose2d());
 
   // Camera names, must match names configured on coprocessor
-  public static String CAM_FL_NAME = "OV9281-1";
-  public static String CAM_FR_NAME = "OV9281-2";
+  public static String CAM_FL_NAME = "CamLeft";
+  public static String CAM_FR_NAME = "CamRight";
   public static String CAM_BACK_NAME = "OV9281-3";
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
   // TODO: find out proper transforms
   public static Transform3d ROBOT_TO_CAM_FL_TRANSFORM =
-      new Transform3d(-0.255, 0.206, 0.152, new Rotation3d(0.0, 0.0, Units.degreesToRadians(20)));
+      new Transform3d(
+          0.3175, 0.2921, 0.1778, new Rotation3d(0.0, 0.0, Units.degreesToRadians(-30)));
   public static Transform3d ROBOT_TO_CAM_FR_TRANSFORM =
-      new Transform3d(0.255, 0.206, 0.152, new Rotation3d(0.0, 0.0, Units.degreesToRadians(-20)));
+      new Transform3d(
+          0.3175, -0.2921, 0.1778, new Rotation3d(0.0, 0.0, Units.degreesToRadians(30)));
   public static Transform3d ROBOT_TO_CAM_BACK_TRANSFORM =
       new Transform3d(-0.05, 0, 0.3, new Rotation3d(0.0, 0.0, Math.PI / 2.0));
   // Basic filtering thresholds

@@ -30,8 +30,6 @@ public class WristIOSparkFlex implements WristIO {
   private final AbsoluteEncoder wristMotorAbsoluteEncoder;
 
   SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0, 0.2);
-  // ProfiledPIDController pid =
-  //     new ProfiledPIDController(0.4, 0, 0, new TrapezoidProfile.Constraints(5, 5));
 
   SparkClosedLoopController pid;
 
@@ -78,7 +76,7 @@ public class WristIOSparkFlex implements WristIO {
     ifOk(wristMotor, wristMotor::getOutputCurrent, current -> inputs.wristCurrentAmps = current);
 
     inputs.wristMotorConnected = wristMotorDebouncer.calculate(!sparkStickyFault);
-    inputs.wristSetpointRad = setpoint;
+    inputs.wristSetpointRad = Units.rotationsToRadians(setpoint);
   }
 
   @Override
@@ -91,11 +89,10 @@ public class WristIOSparkFlex implements WristIO {
   public void setTargetPosition(Angle angle) {
     setpoint = angle.in(Rotations);
     pid.setReference(
-        setpoint, ControlType.kPosition, ClosedLoopSlot.kSlot0, 0, ArbFFUnits.kVoltage);
-
-    // pid.setGoal(setpoint);
-    // wristMotor.setVoltage(
-    //     feedforward.calculate(pid.getSetpoint().position - 0.5, pid.getSetpoint().velocity)
-    //         + pid.calculate(wristMotorAbsoluteEncoder.getPosition()));
+        setpoint,
+        ControlType.kPosition,
+        ClosedLoopSlot.kSlot0,
+        WRIST_kG * Math.sin(Units.rotationsToRadians(wristMotorAbsoluteEncoder.getPosition())),
+        ArbFFUnits.kVoltage);
   }
 }
