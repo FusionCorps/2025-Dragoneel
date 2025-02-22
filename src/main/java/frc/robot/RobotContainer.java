@@ -24,7 +24,6 @@ import frc.robot.commands.ElevatorAndWristCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
-import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.gyro.GyroIO;
@@ -90,7 +89,8 @@ public class RobotContainer {
                 (a, b, c) -> {},
                 new VisionIOPhotonVision(CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM),
                 new VisionIOPhotonVision(CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM));
-        climb = new Climb(new ClimbIOTalonFX());
+        // climb = new Climb(new ClimbIOTalonFX());
+        climb = null;
         scorer = new Scorer(new ScorerIOSparkFlex());
         elevator = new Elevator(new ElevatorIOTalonFX());
         wrist = new Wrist(new WristIOSparkFlex());

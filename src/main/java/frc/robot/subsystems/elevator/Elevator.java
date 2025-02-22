@@ -8,7 +8,6 @@ import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -88,7 +87,7 @@ public class Elevator extends SubsystemBase {
       new Alert("Top Limit Switch Triggered.", AlertType.kInfo);
   private final Alert reverseLimitSwitchTriggeredAlert =
       new Alert("Bottom Limit Switch Triggered. Elevator zeroed", AlertType.kInfo);
-  
+
   /* State tracker for current height of the elevator */
   private ElevatorState currentElevatorState = ElevatorState.ZERO;
 

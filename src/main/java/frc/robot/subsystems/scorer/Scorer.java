@@ -2,14 +2,13 @@ package frc.robot.subsystems.scorer;
 
 import static edu.wpi.first.units.Units.Seconds;
 
-import java.util.function.Supplier;
-
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.scorer.ScorerConstants.ScorerState;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -50,19 +49,22 @@ public class Scorer extends SubsystemBase {
     return startEnd(() -> setState(ScorerState.SHOOT_ALGAE), () -> setState(ScorerState.IDLE));
   }
 
-  /** Runs the scorer to shoot stored coral. This simultaneously intakes algae.
-   * Shoots coral at different speed on L1 vs other levels.
+  /**
+   * Runs the scorer to shoot stored coral. This simultaneously intakes algae. Shoots coral at
+   * different speed on L1 vs other levels.
+   *
    * @param elevatorStateSupplier Supplies the current elevator state.
    */
   public Command shootCoralCmd(Supplier<ElevatorState> elevatorStateSupplier) {
     return this.startEnd(
-      () -> {
-        if (elevatorStateSupplier.get() == ElevatorState.L1) {
-          setState(ScorerState.SHOOT_CORAL_L1);
-        } else {
-          setState(ScorerState.SHOOT_CORAL_DEFAULT);
-        }
-      }, () -> setState(ScorerState.IDLE))
+            () -> {
+              if (elevatorStateSupplier.get() == ElevatorState.L1) {
+                setState(ScorerState.SHOOT_CORAL_L1);
+              } else {
+                setState(ScorerState.SHOOT_CORAL_DEFAULT);
+              }
+            },
+            () -> setState(ScorerState.IDLE))
         .withTimeout(Seconds.of(2.0));
   }
 }

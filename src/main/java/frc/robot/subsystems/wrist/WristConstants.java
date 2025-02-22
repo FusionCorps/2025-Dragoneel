@@ -13,21 +13,28 @@ import edu.wpi.first.wpilibj.RobotController;
 public class WristConstants {
   public static final int WRIST_MOTOR_ID = 15;
 
-  public static final double WRIST_kG = 0.224;
+  // public static final double WRIST_kG = 0.224;
   public static final SparkFlexConfig WRIST_CONFIG =
       (SparkFlexConfig)
           new SparkFlexConfig()
               .inverted(false)
               .idleMode(IdleMode.kBrake)
               .voltageCompensation(RobotController.getBatteryVoltage())
-              .smartCurrentLimit(180)
+              .smartCurrentLimit(60)
               .apply(new AbsoluteEncoderConfig().zeroCentered(true))
               .apply(
                   new ClosedLoopConfig()
                       .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
                       .positionWrappingInputRange(-0.5, 0.5)
                       .positionWrappingEnabled(true)
-                      .pid(0.8, 0, 0));
+                      .pid(2.0, 0, 0))
+      // .apply(
+      //     new SoftLimitConfig()
+      //         .reverseSoftLimitEnabled(true)
+      //         .reverseSoftLimit(0)
+      //         .forwardSoftLimitEnabled(true)
+      //         .forwardSoftLimit(0.35)
+      ;
 
   public static enum WristState {
     ZERO(Rotations.zero()),

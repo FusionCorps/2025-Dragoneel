@@ -1,7 +1,6 @@
 package frc.robot.subsystems.wrist;
 
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -37,15 +36,13 @@ public class Wrist extends SubsystemBase {
   LoggedTunableNumber wristNetPosition =
       new LoggedTunableNumber("/Tuning/Wrist/NetPosition", WristState.NET.rotations.in(Rotations));
 
-  boolean isOpenLoop = false;
-
   public Wrist(WristIO io) {
     this.io = io;
   }
 
   @Override
   public void periodic() {
-    if (!isOpenLoop) io.setTargetPosition(currentWristState.rotations);
+    io.setTargetPosition(currentWristState.rotations);
     io.updateInputs(inputs);
 
     Robot.componentPoses[2] =
@@ -74,29 +71,10 @@ public class Wrist extends SubsystemBase {
         wristNetPosition);
   }
 
-  public Command moveWristRight() {
-    return this.runEnd(
-        () -> {
-          io.setVoltageOpenLoop(Volts.of(0.01 * 12.0));
-          isOpenLoop = true;
-        },
-        () -> io.setVoltageOpenLoop(Volts.zero()));
-  }
-
-  public Command moveWristLeft() {
-    return this.runEnd(
-        () -> {
-          io.setVoltageOpenLoop(Volts.of(-0.01 * 12.0));
-          isOpenLoop = true;
-        },
-        () -> io.setVoltageOpenLoop(Volts.zero()));
-  }
-
   public Command goToState(WristState state) {
     return this.runOnce(
         () -> {
           currentWristState = state;
-          isOpenLoop = false;
         });
   }
 }

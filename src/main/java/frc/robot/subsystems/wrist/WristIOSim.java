@@ -6,7 +6,6 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.measure.Angle;
@@ -35,9 +34,7 @@ public class WristIOSim implements WristIO {
     if (!isOpenLoop)
       appliedVolts =
           MathUtil.clamp(
-              controller.calculate(inputs.positionRad, targetPosition.in(Radians)),
-              -12.0,
-              12.0);
+              controller.calculate(inputs.positionRad, targetPosition.in(Radians)), -12.0, 12.0);
     wristMotorSim.setInputVoltage(appliedVolts);
     wristMotorSim.update(0.02);
 
@@ -48,7 +45,7 @@ public class WristIOSim implements WristIO {
     inputs.appliedVolts = appliedVolts;
     inputs.currentAmps = wristMotorSim.getCurrentDrawAmps();
 
-    inputs.wristSetpoint = new Rotation2d(targetPosition);
+    inputs.wristSetpointRad = targetPosition.in(Radians);
   }
 
   @Override

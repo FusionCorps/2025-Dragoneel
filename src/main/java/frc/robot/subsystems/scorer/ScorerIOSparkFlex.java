@@ -39,10 +39,7 @@ public class ScorerIOSparkFlex implements ScorerIO {
   public void updateInputs(ScorerIOInputs inputs) {
     /* Update inputs */
     sparkStickyFault = false;
-    ifOk(
-        scorerMotor,
-        scorerMotorEncoder::getPosition,
-        position -> inputs.positionRad = position);
+    ifOk(scorerMotor, scorerMotorEncoder::getPosition, position -> inputs.positionRad = position);
     ifOk(
         scorerMotor,
         scorerMotorEncoder::getVelocity,

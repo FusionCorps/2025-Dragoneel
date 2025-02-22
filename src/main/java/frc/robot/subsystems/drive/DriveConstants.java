@@ -264,17 +264,16 @@ public class DriveConstants {
 
   public static final double WHEEL_COF = 1.5;
 
+  // TunerConstants doesn't include these constants, so they are declared locally
   public static final double ODOMETRY_FREQUENCY =
       new CANBus(DRIVETRAIN_CONSTANTS.CANBusName).isNetworkFD() ? 250.0 : 100.0;
 
-public static final double DRIVE_BASE_RADIUS =
-Math.max(
-    Math.max(
-        Math.hypot(FRONT_LEFT.LocationX, FRONT_LEFT.LocationY),
-        Math.hypot(
-            FRONT_RIGHT.LocationX, FRONT_RIGHT.LocationY)),
-    Math.max(
-        Math.hypot(BACK_LEFT.LocationX, BACK_LEFT.LocationY),
-        Math.hypot(
-            BACK_RIGHT.LocationX, BACK_RIGHT.LocationY)));
+  public static final double DRIVE_BASE_RADIUS =
+      Math.max(
+          Math.max(
+              Math.hypot(FRONT_LEFT.LocationX, FRONT_LEFT.LocationY),
+              Math.hypot(FRONT_RIGHT.LocationX, FRONT_RIGHT.LocationY)),
+          Math.max(
+              Math.hypot(BACK_LEFT.LocationX, BACK_LEFT.LocationY),
+              Math.hypot(BACK_RIGHT.LocationX, BACK_RIGHT.LocationY)));
 }

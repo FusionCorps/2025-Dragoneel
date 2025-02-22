@@ -137,11 +137,9 @@ public class ElevatorIOTalonFX implements ElevatorIO {
             followerElevatorMotorAppliedVoltage,
             followerElevatorMotorCurrent);
 
-    inputs.mainConnected =
-        mainElevatorMotorDebouncer.calculate(mainElevatorIsOK == StatusCode.OK);
+    inputs.mainConnected = mainElevatorMotorDebouncer.calculate(mainElevatorIsOK == StatusCode.OK);
     inputs.mainPositionRad = mainElevatorMotorPosition.getValue().in(Radians);
-    inputs.mainVelocityRadPerSec =
-        mainElevatorMotorVelocity.getValue().in(RadiansPerSecond);
+    inputs.mainVelocityRadPerSec = mainElevatorMotorVelocity.getValue().in(RadiansPerSecond);
     inputs.mainAppliedVolts = mainElevatorMotorAppliedVoltage.getValue().in(Volts);
     inputs.mainCurrentAmps = mainElevatorMotorCurrent.getValue().in(Amps);
 
