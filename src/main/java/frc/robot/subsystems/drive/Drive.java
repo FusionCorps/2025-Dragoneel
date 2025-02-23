@@ -38,6 +38,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -56,6 +57,8 @@ import frc.robot.util.LocalADStarAK;
 import java.io.IOException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -89,17 +92,22 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   private final SwerveSetpointGenerator setpointGenerator;
   private SwerveSetpoint previousSetpoint;
 
+  private final Consumer<Pose2d> resetSimulationPose;
+  private Supplier<Angle> currentElevatorPositionSupplier = () -> Rotations.zero();
+
   public Drive(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
       ModuleIO frModuleIO,
       ModuleIO blModuleIO,
-      ModuleIO brModuleIO) {
+      ModuleIO brModuleIO,
+      Consumer<Pose2d> resetSimulationPose) {
     this.gyroIO = gyroIO;
     modules[0] = new Module(flModuleIO, 0, DriveConstants.FRONT_LEFT);
     modules[1] = new Module(frModuleIO, 1, DriveConstants.FRONT_RIGHT);
     modules[2] = new Module(blModuleIO, 2, DriveConstants.BACK_LEFT);
     modules[3] = new Module(brModuleIO, 3, DriveConstants.BACK_RIGHT);
+    this.resetSimulationPose = resetSimulationPose;
 
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
@@ -175,7 +183,6 @@ public class Drive extends SubsystemBase implements VisionConsumer {
     // Log empty setpoint states when disabled
     if (DriverStation.isDisabled()) {
       Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
-      Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
     }
 
     // Update odometry
@@ -224,7 +231,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
     // Applies angle optimization, cosine compensation, wheel slip reduction, and converts to
     // field-centric
     previousSetpoint = setpointGenerator.generateSetpoint(previousSetpoint, speeds, 0.02);
-    // Log unoptimized setpoints and setpoint speeds
+    // Log setpoints and setpoint speeds
     Logger.recordOutput("SwerveStates/Setpoints", previousSetpoint.moduleStates());
     Logger.recordOutput("SwerveChassisSpeeds/Setpoints", previousSetpoint.robotRelativeSpeeds());
 
@@ -327,6 +334,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
   /** Resets the current odometry pose. */
   public void setPose(Pose2d pose) {
+    this.resetSimulationPose.accept(pose);
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
 
@@ -343,18 +351,26 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   /** Returns the maximum linear speed in meters per sec. */
   public double getMaxLinearSpeedMetersPerSec() {
     // return DriveConstants.SPEED_AT_12V.in(MetersPerSecond);
-    return 3.0;
+    // return 3.0;
+    return DriveConstants.DRIVE_TRANSLATIONAL_MAX_SPEED_MAP_METER_PER_SEC.get(
+        currentElevatorPositionSupplier.get().in(Rotations));
   }
 
   /** Returns the maximum angular speed in radians per sec. */
   public double getMaxAngularSpeedRadPerSec() {
     // return getMaxLinearSpeedMetersPerSec() / DriveConstants.DRIVE_BASE_RADIUS;
-    return 2 * Math.PI;
+    // return 2 * Math.PI;
+    return DriveConstants.DRIVE_ROTATIONAL_MAX_SPEED_MAP_RAD_PER_SEC.get(
+        currentElevatorPositionSupplier.get().in(Rotations));
   }
 
   /** Sets the gyro angle to 0° and sets current gyro angle to forward. */
   public Command zeroOdometry() {
     return runOnce(() -> setPose(new Pose2d(getPose().getTranslation(), new Rotation2d())))
         .ignoringDisable(true);
+  }
+
+  public void setCurrentElevatorPositionSupplier(Supplier<Angle> currentElevatorPositionSupplier) {
+    this.currentElevatorPositionSupplier = currentElevatorPositionSupplier;
   }
 }

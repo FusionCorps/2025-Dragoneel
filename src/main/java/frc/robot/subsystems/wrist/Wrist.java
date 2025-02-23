@@ -47,9 +47,9 @@ public class Wrist extends SubsystemBase {
 
     Robot.componentPoses[2] =
         new Pose3d(
-            0.14,
-            -0.04,
-            Robot.componentPoses[1].getZ() + 0.55,
+            0.135,
+            -0.06,
+            Robot.componentPoses[1].getZ() + 0.525,
             new Rotation3d(0, inputs.positionRad, 0));
 
     Logger.processInputs("Wrist", inputs);

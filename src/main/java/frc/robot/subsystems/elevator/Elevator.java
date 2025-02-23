@@ -1,6 +1,7 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.elevator.ElevatorConstants.*;
@@ -8,6 +9,7 @@ import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -127,16 +129,16 @@ public class Elevator extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
-    double elevatorStage2HeightMeters =
-        // rev * circumference/rev / gear ratio = height in meters
+    double elevatorStage1HeightMeters =
+        // rev_of_motor / gear ratio * circumference_of_drum/rev_of_drum  = height in meters
         Units.radiansToRotations(inputs.mainPositionRad)
-            * (Math.PI * ELEVATOR_SPOOL_DIAMETER.in(Meters))
-            / (ELEVATOR_GEAR_RATIO);
+            / ELEVATOR_GEAR_RATIO
+            * (Math.PI * ELEVATOR_SPOOL_DIAMETER.in(Meters));
 
-    double elevatorStage3HeightMeters = elevatorStage2HeightMeters * 2.0;
+    double elevatorStage2HeightMeters = elevatorStage1HeightMeters * 2.0;
 
-    Robot.componentPoses[0] = new Pose3d(0.0, 0.0, elevatorStage2HeightMeters, Rotation3d.kZero);
-    Robot.componentPoses[1] = new Pose3d(0.0, 0.0, elevatorStage3HeightMeters, Rotation3d.kZero);
+    Robot.componentPoses[0] = new Pose3d(0.0, 0.0, elevatorStage1HeightMeters, Rotation3d.kZero);
+    Robot.componentPoses[1] = new Pose3d(0.0, 0.0, elevatorStage2HeightMeters, Rotation3d.kZero);
 
     if (!inputs.mainConnected) {
       mainMotorDisconnectedAlert.set(true);
@@ -232,5 +234,9 @@ public class Elevator extends SubsystemBase {
   @AutoLogOutput
   public ElevatorState getCurrentElevatorState() {
     return currentElevatorState;
+  }
+
+  public Angle getCurrentElevatorPosition() {
+    return Radians.of(inputs.mainPositionRad);
   }
 }

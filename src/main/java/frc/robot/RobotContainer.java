@@ -16,21 +16,24 @@ package frc.robot;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorAndWristCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
-import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.gyro.GyroIO;
 import frc.robot.subsystems.drive.gyro.GyroIOPigeon2;
+import frc.robot.subsystems.drive.gyro.GyroIOSim;
 import frc.robot.subsystems.drive.module.ModuleIO;
-import frc.robot.subsystems.drive.module.ModuleIOSim;
-import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
+import frc.robot.subsystems.drive.module.ModuleIOTalonFXReal;
+import frc.robot.subsystems.drive.module.ModuleIOTalonFXSim;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
@@ -48,6 +51,9 @@ import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
 import java.util.Map;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -60,6 +66,7 @@ public class RobotContainer {
   // Subsystems
   private final Elevator elevator;
   private final Drive drive;
+  private SwerveDriveSimulation driveSim = null;
   private final Vision vision;
   private final Climb climb;
   private final Scorer scorer;
@@ -79,10 +86,11 @@ public class RobotContainer {
         drive =
             new Drive(
                 new GyroIOPigeon2(),
-                new ModuleIOTalonFX(DriveConstants.FRONT_LEFT),
-                new ModuleIOTalonFX(DriveConstants.FRONT_RIGHT),
-                new ModuleIOTalonFX(DriveConstants.BACK_LEFT),
-                new ModuleIOTalonFX(DriveConstants.BACK_RIGHT));
+                new ModuleIOTalonFXReal(DriveConstants.FRONT_LEFT),
+                new ModuleIOTalonFXReal(DriveConstants.FRONT_RIGHT),
+                new ModuleIOTalonFXReal(DriveConstants.BACK_LEFT),
+                new ModuleIOTalonFXReal(DriveConstants.BACK_RIGHT),
+                pose -> {});
         vision =
             new Vision(
                 // drive,
@@ -98,23 +106,34 @@ public class RobotContainer {
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
+        driveSim =
+            new SwerveDriveSimulation(
+                DriveConstants.DRIVE_SIMULATION_CONFIG, new Pose2d(6, 4, Rotation2d.kZero));
+        Arena2025Reefscape.getInstance().addDriveTrainSimulation(driveSim);
         drive =
             new Drive(
-                new GyroIO() {},
-                new ModuleIOSim(DriveConstants.FRONT_LEFT),
-                new ModuleIOSim(DriveConstants.FRONT_RIGHT),
-                new ModuleIOSim(DriveConstants.BACK_LEFT),
-                new ModuleIOSim(DriveConstants.BACK_RIGHT));
+                new GyroIOSim(driveSim.getGyroSimulation()),
+                new ModuleIOTalonFXSim(DriveConstants.FRONT_LEFT, driveSim.getModules()[0]),
+                new ModuleIOTalonFXSim(DriveConstants.FRONT_RIGHT, driveSim.getModules()[1]),
+                new ModuleIOTalonFXSim(DriveConstants.BACK_LEFT, driveSim.getModules()[2]),
+                new ModuleIOTalonFXSim(DriveConstants.BACK_RIGHT, driveSim.getModules()[3]),
+                driveSim::setSimulationWorldPose);
         vision =
             new Vision(
                 (a, b, c) -> {},
                 // drive,
+                new VisionIOPhotonVisionSim(CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getPose),
                 new VisionIOPhotonVisionSim(
-                    CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getPose));
+                    CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM, drive::getPose));
         elevator = new Elevator(new ElevatorIOSim());
-        climb = new Climb(new ClimbIOSim());
+        drive.setCurrentElevatorPositionSupplier(elevator::getCurrentElevatorPosition);
+        // climb = new Climb(new ClimbIOSim());
         scorer = new Scorer(new ScorerIOSim());
         wrist = new Wrist(new WristIOSim());
+        // elevator = null;
+        climb = null;
+        // scorer = null;
+        // wrist = null;
         break;
 
       default:
@@ -126,7 +145,8 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {},
-                new ModuleIO() {});
+                new ModuleIO() {},
+                robotPose -> {});
         vision = new Vision(drive, new VisionIO() {});
         climb = new Climb(new ClimbIO() {});
         scorer = new Scorer(new ScorerIO() {});
@@ -188,15 +208,21 @@ public class RobotContainer {
               () -> -controller.getRightX()));
 
       // Reset gyro to 0° when B button is pressed
-      controller.start().onTrue(drive.zeroOdometry());
+      // Reset gyro / odometry
+      final Runnable resetGyro =
+          Constants.currentMode == Constants.Mode.SIM
+              ? () ->
+                  drive.setPose(
+                      driveSim.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose
+              // during simulation
+              : () ->
+                  drive.setPose(
+                      new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
+      controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
-      // controller
-      //     .povRight()
-      //     .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, false));
+      controller.povRight().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, false));
 
-      // controller
-      //     .povLeft()
-      //     .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, true));
+      controller.povLeft().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, true));
     }
 
     /* elevator and wrist movement commands */
@@ -233,5 +259,24 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  public void resetSimulationField() {
+    if (Constants.currentMode != Constants.Mode.SIM) return;
+
+    Arena2025Reefscape.getInstance().resetFieldForAuto();
+  }
+
+  public void updateSimulation() {
+    if (Constants.currentMode != Constants.Mode.SIM) return;
+
+    Arena2025Reefscape.getInstance().simulationPeriodic();
+    Logger.recordOutput("FieldSimulation/RobotPosition", driveSim.getSimulatedDriveTrainPose());
+    Logger.recordOutput(
+        "FieldSimulation/Coral",
+        Arena2025Reefscape.getInstance().getGamePiecesArrayByType("Coral"));
+    Logger.recordOutput(
+        "FieldSimulation/Algae",
+        Arena2025Reefscape.getInstance().getGamePiecesArrayByType("Algae"));
   }
 }

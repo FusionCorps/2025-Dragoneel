@@ -13,6 +13,8 @@
 
 package frc.robot.subsystems.drive.module;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -80,7 +82,7 @@ public class Module {
   /** Runs the module with the specified setpoint state. */
   public void runSetpoint(SwerveModuleState state) {
     // Apply setpoints
-    io.setDriveVelocity(state.speedMetersPerSecond / constants.WheelRadius);
+    io.setDriveVelocity(RadiansPerSecond.of(state.speedMetersPerSecond / constants.WheelRadius));
     io.setTurnPosition(state.angle);
   }
 

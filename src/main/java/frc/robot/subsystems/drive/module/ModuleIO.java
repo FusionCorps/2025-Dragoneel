@@ -14,6 +14,7 @@
 package frc.robot.subsystems.drive.module;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.AngularVelocity;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ModuleIO {
@@ -50,7 +51,7 @@ public interface ModuleIO {
   public default void setTurnOpenLoop(double output) {}
 
   /** Run the drive motor at the specified velocity. */
-  public default void setDriveVelocity(double velocityRadPerSec) {}
+  public default void setDriveVelocity(AngularVelocity angularVelocity) {}
 
   /** Run the turn motor to the specified rotation. */
   public default void setTurnPosition(Rotation2d rotation) {}
