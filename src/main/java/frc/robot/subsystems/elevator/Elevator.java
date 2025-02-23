@@ -127,16 +127,16 @@ public class Elevator extends SubsystemBase {
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
-    double elevatorStage2HeightMeters =
-        // rev * circumference/rev / gear ratio = height in meters
+    double elevatorStage1HeightMeters =
+        // rev_of_motor / gear ratio * circumference_of_drum/rev_of_drum  = height in meters
         Units.radiansToRotations(inputs.mainPositionRad)
-            * (Math.PI * ELEVATOR_SPOOL_DIAMETER.in(Meters))
-            / (ELEVATOR_GEAR_RATIO);
+            / ELEVATOR_GEAR_RATIO
+            * (Math.PI * ELEVATOR_SPOOL_DIAMETER.in(Meters));
 
-    double elevatorStage3HeightMeters = elevatorStage2HeightMeters * 2.0;
+    double elevatorStage2HeightMeters = elevatorStage1HeightMeters * 2.0;
 
-    Robot.componentPoses[0] = new Pose3d(0.0, 0.0, elevatorStage2HeightMeters, Rotation3d.kZero);
-    Robot.componentPoses[1] = new Pose3d(0.0, 0.0, elevatorStage3HeightMeters, Rotation3d.kZero);
+    Robot.componentPoses[0] = new Pose3d(0.0, 0.0, elevatorStage1HeightMeters, Rotation3d.kZero);
+    Robot.componentPoses[1] = new Pose3d(0.0, 0.0, elevatorStage2HeightMeters, Rotation3d.kZero);
 
     if (!inputs.mainConnected) {
       mainMotorDisconnectedAlert.set(true);

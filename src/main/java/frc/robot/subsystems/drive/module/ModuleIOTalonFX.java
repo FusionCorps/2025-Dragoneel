@@ -1,5 +1,6 @@
 package frc.robot.subsystems.drive.module;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 import static frc.robot.util.PhoenixUtil.tryUntilOk;
 
@@ -152,7 +153,7 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
 
     // Configure periodic frames
     BaseStatusSignal.setUpdateFrequencyForAll(
-        DriveConstants.ODOMETRY_FREQUENCY, drivePosition, turnPosition, turnAbsolutePosition);
+        DriveConstants.ODOMETRY_FREQUENCY, drivePosition, turnPosition);
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,
         driveVelocity,
@@ -180,10 +181,8 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
 
     // Update drive inputs
     inputs.driveConnected = driveConnectedDebounce.calculate(driveStatus.isOK());
-    inputs.drivePositionRad =
-        Units.rotationsToRadians(drivePosition.getValueAsDouble()) / constants.DriveMotorGearRatio;
-    inputs.driveVelocityRadPerSec =
-        Units.rotationsToRadians(driveVelocity.getValueAsDouble()) / constants.DriveMotorGearRatio;
+    inputs.drivePositionRad = Units.rotationsToRadians(drivePosition.getValueAsDouble());
+    inputs.driveVelocityRadPerSec = Units.rotationsToRadians(driveVelocity.getValueAsDouble());
     inputs.driveAppliedVolts = driveAppliedVolts.getValueAsDouble();
     inputs.driveCurrentAmps = driveCurrent.getValueAsDouble();
     inputs.driveTemp = driveTemp.getValueAsDouble();
@@ -191,6 +190,7 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
     // Update turn inputs
     inputs.turnConnected = turnConnectedDebounce.calculate(turnStatus.isOK());
     inputs.turnEncoderConnected = turnEncoderConnectedDebounce.calculate(turnEncoderStatus.isOK());
+    inputs.turnPosition = Rotation2d.fromRotations(turnPosition.getValueAsDouble());
     inputs.turnAbsolutePosition = Rotation2d.fromRotations(turnAbsolutePosition.getValueAsDouble());
     inputs.turnVelocityRadPerSec = Units.rotationsToRadians(turnVelocity.getValueAsDouble());
     inputs.turnAppliedVolts = turnAppliedVolts.getValueAsDouble();
@@ -217,12 +217,13 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
   }
 
   @Override
-  public void setDriveVelocity(double velocityRadPerSec) {
-    double velocityRotPerSec = Units.radiansToRotations(velocityRadPerSec);
+  public void setDriveVelocity(AngularVelocity angularVelocity) {
     driveTalon.setControl(
         switch (constants.DriveMotorClosedLoopOutput) {
-          case Voltage -> velocityVoltageRequest.withVelocity(velocityRotPerSec);
-          case TorqueCurrentFOC -> velocityTorqueCurrentRequest.withVelocity(velocityRotPerSec);
+          case Voltage -> velocityVoltageRequest.withVelocity(
+              angularVelocity.in(RotationsPerSecond));
+          case TorqueCurrentFOC -> velocityTorqueCurrentRequest.withVelocity(
+              angularVelocity.in(RotationsPerSecond));
         });
   }
 

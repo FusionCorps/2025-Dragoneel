@@ -10,6 +10,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -19,14 +20,9 @@ public class ElevatorIOSim implements ElevatorIO {
 
   ProfiledPIDController elevatorPIDController =
       new ProfiledPIDController(
-          2.0,
-          0,
-          0.01,
-          new TrapezoidProfile.Constraints(
-              ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY,
-              ELEVATOR_MOTION_MAGIC_ACCELERATION)); // in rotations units
+          1.5, 0, 0.0, new TrapezoidProfile.Constraints(75, 40)); // in rotations units
 
-  ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0.00001, 3.0);
+  ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0, 0.53);
 
   private double appliedVolts = 0.0;
   private Angle targetPosition = Rotations.zero();
@@ -69,7 +65,8 @@ public class ElevatorIOSim implements ElevatorIO {
     inputs.followerAppliedVolts = appliedVolts;
     inputs.followerCurrentAmps = elevatorSim.getCurrentDrawAmps();
 
-    inputs.positionSetpointRad = targetPosition.in(Rotations);
+    inputs.positionSetpointRad =
+        Units.rotationsToRadians(elevatorPIDController.getSetpoint().position);
   }
 
   @Override

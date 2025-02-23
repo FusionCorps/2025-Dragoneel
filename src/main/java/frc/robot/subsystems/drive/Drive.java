@@ -228,7 +228,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
     // Applies angle optimization, cosine compensation, wheel slip reduction, and converts to
     // field-centric
     previousSetpoint = setpointGenerator.generateSetpoint(previousSetpoint, speeds, 0.02);
-    // Log unoptimized setpoints and setpoint speeds
+    // Log setpoints and setpoint speeds
     Logger.recordOutput("SwerveStates/Setpoints", previousSetpoint.moduleStates());
     Logger.recordOutput("SwerveChassisSpeeds/Setpoints", previousSetpoint.robotRelativeSpeeds());
 

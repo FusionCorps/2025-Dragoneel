@@ -104,8 +104,8 @@ public class DriveConstants {
 
   // Theoretical free speed (m/s) at 12 V applied output
   // TODO: needs to be tuned
-  public static final LinearVelocity SPEED_AT_12V = MetersPerSecond.of(4.48);
-  public static final AngularVelocity MODULE_ANGULAR_VEL_AT_12V = RotationsPerSecond.of(10);
+  public static final LinearVelocity SPEED_AT_12V = MetersPerSecond.of(100);
+  public static final AngularVelocity MODULE_ANGULAR_VEL_AT_12V = RotationsPerSecond.of(100);
 
   // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns
   private static final double kCoupleRatio = 3;

@@ -37,7 +37,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
-import frc.robot.subsystems.vision.Vision;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -48,7 +47,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
-  private static final double ANGLE_KP = 5.0;
+  private static final double ANGLE_KP = 4.0;
   private static final double ANGLE_KD = 0.4;
   private static final double ANGLE_MAX_VELOCITY = 8.0;
   private static final double ANGLE_MAX_ACCELERATION = 20.0;
@@ -56,8 +55,6 @@ public class DriveCommands {
   private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
-
-  private DriveCommands() {}
 
   private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
     // Apply deadband
@@ -164,19 +161,6 @@ public class DriveCommands {
         });
   }
 
-  /** Rotates in-place to center on the currently seen reef tag. */
-  public static Command rotateToTag(Drive drive, Vision vision) {
-    return joystickDriveAtAngle(
-        drive, () -> 0.0, () -> 0.0, () -> drive.getRotation().plus(vision.getTargetX(0)));
-  }
-
-  /** Rotates to center on the currently seen reef tag. Driver can still control linear velocity. */
-  public static Command rotateToTag(
-      Drive drive, Vision vision, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
-    return joystickDriveAtAngle(
-        drive, xSupplier, ySupplier, () -> drive.getRotation().plus(vision.getTargetX(0)));
-  }
-
   /** Field relative drive command using PID for full control to a specified pose. */
   private static Command driveToPose(Drive drive, Supplier<Pose2d> poseSupplier) {
     // Create PID controller
@@ -187,9 +171,12 @@ public class DriveCommands {
             ANGLE_KD,
             new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
     angleController.enableContinuousInput(-Math.PI, Math.PI);
+    angleController.setTolerance(Units.degreesToRadians(2.0));
 
-    PIDController xController = new PIDController(5.0, 0.0, 0.5);
-    PIDController yController = new PIDController(5.0, 0.0, 0.5);
+    PIDController xController = new PIDController(4.0, 0.0, 0.5);
+    xController.setTolerance(0.05);
+    PIDController yController = new PIDController(4.0, 0.0, 0.5);
+    yController.setTolerance(0.05);
 
     // Construct command
     return new FunctionalCommand(
@@ -200,15 +187,8 @@ public class DriveCommands {
           yController.reset();
         },
         () -> {
-          Logger.recordOutput("Drivetrain/desiredX", poseSupplier.get().getX());
-          Logger.recordOutput("Drivetrain/desiredY", poseSupplier.get().getY());
-          Logger.recordOutput(
-              "Drivetrain/desiredTheta", poseSupplier.get().getRotation().getDegrees());
           double xVel = xController.calculate(drive.getPose().getX(), poseSupplier.get().getX());
           double yVel = yController.calculate(drive.getPose().getY(), poseSupplier.get().getY());
-
-          Logger.recordOutput("Drivetrain/xVel", xVel);
-          Logger.recordOutput("Drivetrain/yVel", yVel);
 
           // Calculate angular speed
           double omega =
@@ -225,10 +205,15 @@ public class DriveCommands {
               ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
         },
         interrupted -> {
+          drive.driveRobotCentric(new ChassisSpeeds());
           xController.close();
           yController.close();
         },
-        () -> false, // only end on interrupt
+        () -> {
+          return xController.atSetpoint()
+              && yController.atSetpoint()
+              && angleController.atSetpoint();
+        }, // only end on interrupt
         drive);
   }
 
@@ -262,13 +247,12 @@ public class DriveCommands {
    * @param tagPoseSupplier A supplier for the tag pose - should be the actual tag pose, not the
    *     pose of the robot relative to the tag or any offset pose.
    */
-  public static Command driveToReefTag(
+  public static Command autoAlignToBranch(
       Drive drive, Supplier<Pose3d> tagPoseSupplierNoOffset, boolean alignLeft) {
-    // applies a 0.7m offset to the tag pose and discards the z (vertical) component
+    // applies x/y offsets from the tag pose
     // rotate, because apriltag will always be 180° from robot
     Supplier<Pose2d> tagPoseSupplierIn2DWOffset =
         () -> {
-          Logger.recordOutput("alignLeft", alignLeft);
           Logger.recordOutput("tag", tagPoseSupplierNoOffset.get());
           if (tagPoseSupplierNoOffset.get() == null) {
             return drive.getPose();
@@ -277,7 +261,7 @@ public class DriveCommands {
                 .get()
                 .transformBy(
                     new Transform3d(
-                        0.7, (alignLeft ? -0.4 : 0.0), 0, new Rotation3d(Rotation2d.kPi)))
+                        0.5, (alignLeft ? -0.3285 : 0.0), 0, new Rotation3d(Rotation2d.kPi)))
                 .toPose2d();
           }
         };
@@ -285,7 +269,8 @@ public class DriveCommands {
     return driveToPose(drive, tagPoseSupplierIn2DWOffset)
         .alongWith(
             Commands.run(
-                () -> Logger.recordOutput("reefPoseTargetPose", tagPoseSupplierIn2DWOffset.get())));
+                () ->
+                    Logger.recordOutput("targetAutoAlignPose", tagPoseSupplierIn2DWOffset.get())));
   }
 
   /**
@@ -293,8 +278,8 @@ public class DriveCommands {
    * (doesn't have to be seen). Separate commands should be created for aligning to left and right
    * branches.
    */
-  public static Command driveToNearestReefTagWOdometryAndOffset(Drive drive, boolean alignLeft) {
-    return driveToReefTag(
+  public static Command autoAlignToNearestBranch(Drive drive, boolean alignLeft) {
+    return autoAlignToBranch(
         drive,
         () ->
             new Pose3d(

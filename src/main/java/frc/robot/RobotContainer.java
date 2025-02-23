@@ -34,15 +34,18 @@ import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFXSim;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
+import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
 import frc.robot.subsystems.scorer.Scorer;
 import frc.robot.subsystems.scorer.ScorerIO;
+import frc.robot.subsystems.scorer.ScorerIOSim;
 import frc.robot.subsystems.scorer.ScorerIOSparkFlex;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristIO;
+import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
 import java.util.Map;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -120,16 +123,17 @@ public class RobotContainer {
             new Vision(
                 (a, b, c) -> {},
                 // drive,
+                new VisionIOPhotonVisionSim(CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getPose),
                 new VisionIOPhotonVisionSim(
-                    CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getPose));
-        // elevator = new Elevator(new ElevatorIOSim());
+                    CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM, drive::getPose));
+        elevator = new Elevator(new ElevatorIOSim());
         // climb = new Climb(new ClimbIOSim());
-        // scorer = new Scorer(new ScorerIOSim());
-        // wrist = new Wrist(new WristIOSim());
-        elevator = null;
+        scorer = new Scorer(new ScorerIOSim());
+        wrist = new Wrist(new WristIOSim());
+        // elevator = null;
         climb = null;
-        scorer = null;
-        wrist = null;
+        // scorer = null;
+        // wrist = null;
         break;
 
       default:
@@ -216,13 +220,9 @@ public class RobotContainer {
                       new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
       controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
-      controller
-          .povRight()
-          .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, false));
+      controller.povRight().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, false));
 
-      controller
-          .povLeft()
-          .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, true));
+      controller.povLeft().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, true));
     }
 
     /* elevator and wrist movement commands */

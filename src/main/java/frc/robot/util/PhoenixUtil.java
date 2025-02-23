@@ -144,7 +144,12 @@ public final class PhoenixUtil {
             moduleConstants
                 .SteerMotorGains
                 .withKP(70) // Proportional gain
-                .withKD(4.5)) // Derivative gain
+                .withKD(4.5))
+        // .withDriveMotorGains(
+        //     moduleConstants
+        //         .DriveMotorGains
+        //         .withKP(3.0) // Proportional gain
+        //         .withKV(6.0))
         // Adjust friction voltages
         .withDriveFrictionVoltage(Volts.of(0.1))
         .withSteerFrictionVoltage(Volts.of(0.15))
