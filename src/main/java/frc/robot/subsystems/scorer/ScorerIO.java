@@ -6,11 +6,11 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ScorerIO {
   @AutoLog
   public static class ScorerIOInputs {
-    boolean scorerMotorConnected = false;
-    double scorerPositionRad = 0.0;
-    double scorerVelocityRadPerSec = 0.0;
-    double scorerAppliedVolts = 0.0;
-    double scorerCurrentAmps = 0.0;
+    boolean connected = false;
+    double positionRad = 0.0;
+    double velocityRadPerSec = 0.0;
+    double appliedVolts = 0.0;
+    double currentAmps = 0.0;
   }
 
   default void updateInputs(ScorerIOInputs inputs) {}

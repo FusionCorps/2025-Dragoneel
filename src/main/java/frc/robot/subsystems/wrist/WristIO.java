@@ -7,11 +7,12 @@ import org.littletonrobotics.junction.AutoLog;
 public interface WristIO {
   @AutoLog
   public static class WristIOInputs {
-    boolean wristMotorConnected = false;
-    double wristPositionRad = 0.0;
-    double wristVelocityRadPerSec = 0.0;
-    double wristAppliedVolts = 0.0;
-    double wristCurrentAmps = 0.0;
+    boolean connected = false;
+    double positionRad = 0.0;
+    double absolutePositionRad = 0.0;
+    double velocityRadPerSec = 0.0;
+    double appliedVolts = 0.0;
+    double currentAmps = 0.0;
 
     double wristSetpointRad = 0.0;
   }

@@ -1,23 +1,18 @@
 package frc.robot.subsystems.wrist;
 
-import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.Rotations;
 
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.config.ClosedLoopConfig;
-import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.WristConstants.WristState;
 import frc.robot.Robot;
+import frc.robot.subsystems.wrist.WristConstants.WristState;
+import frc.robot.util.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class Wrist extends SubsystemBase {
   private final WristIO io;
@@ -25,23 +20,21 @@ public class Wrist extends SubsystemBase {
 
   @AutoLogOutput private WristState currentWristState = WristState.ZERO;
 
-  private final Alert wristMotorConnectedAlert =
+  private final Alert wristMotorDisconnectedAlert =
       new Alert("Wrist Motor Disconnected.", AlertType.kError);
 
-  LoggedNetworkNumber wristProcessorPosition =
-      new LoggedNetworkNumber("/Tuning/Wrist/ProcessorPosition", 0.0);
-  LoggedNetworkNumber wristL1Position = new LoggedNetworkNumber("/Tuning/Wrist/L1Position", 0.0);
-  LoggedNetworkNumber wristL2_AND_L3Position =
-      new LoggedNetworkNumber("/Tuning/Wrist/L2_AND_L3Position", 0.0);
-  LoggedNetworkNumber wristStationPosition =
-      new LoggedNetworkNumber("/Tuning/Wrist/StationPosition", 0.0);
-  LoggedNetworkNumber wristL4Position = new LoggedNetworkNumber("/Tuning/Wrist/L4Position", 0.0);
-  LoggedNetworkNumber wristNetPosition = new LoggedNetworkNumber("/Tuning/Wrist/NetPosition", 0.0);
-
-  LoggedNetworkNumber wristkP = new LoggedNetworkNumber("/Tuning/Wrist/kP", 0.0);
-  LoggedNetworkNumber wristkD = new LoggedNetworkNumber("/Tuning/Wrist/kD", 0.0);
-
-  boolean isOpenLoop = false;
+  LoggedTunableNumber wristProcessorPosition =
+      new LoggedTunableNumber(
+          "/Tuning/Wrist/ProcessorPosition", WristState.PROCESSOR.rotations.in(Rotations));
+  LoggedTunableNumber wristL1Position =
+      new LoggedTunableNumber("/Tuning/Wrist/L1Position", WristState.L1.rotations.in(Rotations));
+  LoggedTunableNumber wristL2_AND_L3Position =
+      new LoggedTunableNumber(
+          "/Tuning/Wrist/L2_AND_L3Position", WristState.L2_AND_L3.rotations.in(Rotations));
+  LoggedTunableNumber wristL4Position =
+      new LoggedTunableNumber("/Tuning/Wrist/L4Position", WristState.L4.rotations.in(Rotations));
+  LoggedTunableNumber wristNetPosition =
+      new LoggedTunableNumber("/Tuning/Wrist/NetPosition", WristState.NET.rotations.in(Rotations));
 
   public Wrist(WristIO io) {
     this.io = io;
@@ -49,7 +42,7 @@ public class Wrist extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (!isOpenLoop) io.setTargetPosition(currentWristState.rotations);
+    io.setTargetPosition(currentWristState.rotations);
     io.updateInputs(inputs);
 
     Robot.componentPoses[2] =
@@ -57,116 +50,31 @@ public class Wrist extends SubsystemBase {
             0.14,
             -0.04,
             Robot.componentPoses[1].getZ() + 0.55,
-            new Rotation3d(0, inputs.wristPositionRad, 0));
+            new Rotation3d(0, inputs.positionRad, 0));
 
     Logger.processInputs("Wrist", inputs);
-    wristMotorConnectedAlert.set(!inputs.wristMotorConnected);
+    wristMotorDisconnectedAlert.set(!inputs.connected);
 
-    // WristState.L1.rotations = Rotations.of(wristL1Position.get());
-    // WristState.L2_AND_L3.rotations = Rotations.of(wristL2_AND_L3Position.get());
-    // WristState.L4.rotations = Rotations.of(wristL4Position.get());
-    // WristState.NET.rotations = Rotations.of(wristNetPosition.get());
-    // WristState.PROCESSOR.rotations = Rotations.of(wristProcessorPosition.get());
-    // WristState.STATION.rotations = Rotations.of(wristStationPosition.get());
-
-    if (io instanceof WristIOSparkFlex) {
-      SparkFlex sparkFlex = ((WristIOSparkFlex) io).wristMotor;
-      double cachedkP = sparkFlex.configAccessor.closedLoop.getP();
-      double cachedkD = sparkFlex.configAccessor.closedLoop.getD();
-      if (cachedkP != wristkP.get()) {
-        sparkFlex.configureAsync(
-            new SparkFlexConfig().apply(new ClosedLoopConfig().p(wristkP.get())),
-            ResetMode.kNoResetSafeParameters,
-            PersistMode.kPersistParameters);
-      }
-      if (cachedkD != wristkD.get()) {
-        sparkFlex.configureAsync(
-            new SparkFlexConfig().apply(new ClosedLoopConfig().d(wristkD.get())),
-            ResetMode.kNoResetSafeParameters,
-            PersistMode.kPersistParameters);
-      }
-    }
-  }
-
-  public Command moveWristRight() {
-    return this.runEnd(
-        () -> {
-          io.setVoltageOpenLoop(Volts.of(0.01 * 12.0));
-          isOpenLoop = true;
+    LoggedTunableNumber.ifChanged(
+        hashCode(),
+        nums -> {
+          WristState.PROCESSOR.rotations = Rotations.of(nums[0]);
+          WristState.L1.rotations = Rotations.of(nums[1]);
+          WristState.L2_AND_L3.rotations = Rotations.of(nums[2]);
+          WristState.L4.rotations = Rotations.of(nums[3]);
+          WristState.NET.rotations = Rotations.of(nums[4]);
         },
-        () -> io.setVoltageOpenLoop(Volts.zero()));
+        wristProcessorPosition,
+        wristL1Position,
+        wristL2_AND_L3Position,
+        wristL4Position,
+        wristNetPosition);
   }
 
-  public Command moveWristLeft() {
-    return this.runEnd(
-        () -> {
-          io.setVoltageOpenLoop(Volts.of(-0.01 * 12.0));
-          isOpenLoop = true;
-        },
-        () -> io.setVoltageOpenLoop(Volts.zero()));
-  }
-
-  public Command goToZero() {
+  public Command goToState(WristState state) {
     return this.runOnce(
         () -> {
-          currentWristState = WristState.ZERO;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToProcessor() {
-    return this.runOnce(
-        () -> {
-          currentWristState = WristState.PROCESSOR;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToL1() {
-    return this.runOnce(
-        () -> {
-          currentWristState = WristState.L1;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToL2() {
-    return this.runOnce(
-        () -> {
-          currentWristState = WristState.L2_AND_L3;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToL3() {
-    return this.runOnce(
-        () -> {
-          currentWristState = WristState.L2_AND_L3;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToStation() {
-    return this.runOnce(
-        () -> {
-          currentWristState = WristState.STATION;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToL4() {
-    return this.runOnce(
-        () -> {
-          currentWristState = WristState.L4;
-          isOpenLoop = false;
-        });
-  }
-
-  public Command goToNet() {
-    return this.runOnce(
-        () -> {
-          currentWristState = WristState.NET;
-          isOpenLoop = false;
+          currentWristState = state;
         });
   }
 }

@@ -2,7 +2,7 @@ package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.Constants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
+import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
@@ -17,12 +17,16 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 public class ElevatorIOSim implements ElevatorIO {
   private final DCMotorSim elevatorSim;
 
-  private final ProfiledPIDController elevatorPIDController =
+  ProfiledPIDController elevatorPIDController =
       new ProfiledPIDController(
-          2.0, 0, 0.01, new TrapezoidProfile.Constraints(200, 100)); // in rotations units
+          2.0,
+          0,
+          0.01,
+          new TrapezoidProfile.Constraints(
+              ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY,
+              ELEVATOR_MOTION_MAGIC_ACCELERATION)); // in rotations units
 
-  private final ElevatorFeedforward elevatorFeedforward =
-      new ElevatorFeedforward(0.0, 0.00001, 3.0);
+  ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0.00001, 3.0);
 
   private double appliedVolts = 0.0;
   private Angle targetPosition = Rotations.zero();
@@ -53,19 +57,19 @@ public class ElevatorIOSim implements ElevatorIO {
     elevatorSim.setInputVoltage(appliedVolts);
     elevatorSim.update(0.02);
 
-    inputs.mainElevatorMotorConnected = true;
-    inputs.mainElevatorPositionRad = elevatorSim.getAngularPositionRad();
-    inputs.mainElevatorVelocityRadPerSec = elevatorSim.getAngularVelocityRadPerSec();
-    inputs.mainElevatorAppliedVolts = appliedVolts;
-    inputs.mainElevatorCurrentAmps = elevatorSim.getCurrentDrawAmps();
+    inputs.mainConnected = true;
+    inputs.mainPositionRad = elevatorSim.getAngularPositionRad();
+    inputs.mainVelocityRadPerSec = elevatorSim.getAngularVelocityRadPerSec();
+    inputs.mainAppliedVolts = appliedVolts;
+    inputs.mainCurrentAmps = elevatorSim.getCurrentDrawAmps();
 
-    inputs.followerElevatorMotorConnected = true;
-    inputs.followerElevatorPositionRad = elevatorSim.getAngularPositionRad();
-    inputs.followerElevatorVelocityRadPerSec = elevatorSim.getAngularVelocityRadPerSec();
-    inputs.followerElevatorAppliedVolts = appliedVolts;
-    inputs.followerElevatorCurrentAmps = elevatorSim.getCurrentDrawAmps();
+    inputs.followerConnected = true;
+    inputs.followerPositionRad = elevatorSim.getAngularPositionRad();
+    inputs.followerVelocityRadPerSec = elevatorSim.getAngularVelocityRadPerSec();
+    inputs.followerAppliedVolts = appliedVolts;
+    inputs.followerCurrentAmps = elevatorSim.getCurrentDrawAmps();
 
-    inputs.elevatorPositionSetpointRad = targetPosition.in(Rotations);
+    inputs.positionSetpointRad = targetPosition.in(Rotations);
   }
 
   @Override

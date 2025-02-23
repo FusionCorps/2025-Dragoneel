@@ -1,7 +1,7 @@
 package frc.robot.subsystems.climb;
 
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.Constants.ClimbConstants.CLIMB_RUN_VOLTS;
+import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_RUN_VOLTS;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -18,7 +18,7 @@ public class Climb extends SubsystemBase {
 
   /* Motor alert */
   private final Alert motorDisconnectedAlert =
-      new Alert("Climb motor disconnected", AlertType.kError);
+      new Alert("Climb Motor Disconnected", AlertType.kError);
 
   /* Constructor */
   public Climb(ClimbIO io) {
@@ -30,7 +30,7 @@ public class Climb extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Climb", inputs);
-    motorDisconnectedAlert.set(!inputs.climbMotorConnected);
+    motorDisconnectedAlert.set(!inputs.connected);
   }
 
   /* Run the climb motor and hold position in brake mode when stopped. */

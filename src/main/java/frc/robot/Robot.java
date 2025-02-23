@@ -13,6 +13,7 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Threads;
@@ -36,7 +37,7 @@ public class Robot extends LoggedRobot {
   private RobotContainer robotContainer;
 
   // Order: 2nd stage, 3rd stage, wrist
-  public static Pose3d[] componentPoses = new Pose3d[3];
+  public static Pose3d[] componentPoses = new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d()};
 
   public Robot() {
     // Record metadata
@@ -85,6 +86,9 @@ public class Robot extends LoggedRobot {
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
+
+    // Warmup auto path following
+    FollowPathCommand.warmupCommand().schedule();
 
     DriverStation.silenceJoystickConnectionWarning(true);
   }
@@ -147,17 +151,6 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {}
-
-  /** This function is called once when test mode is enabled. */
-  @Override
-  public void testInit() {
-    // Cancels all running commands at the start of test mode.
-    CommandScheduler.getInstance().cancelAll();
-  }
-
-  /** This function is called periodically during test mode. */
-  @Override
-  public void testPeriodic() {}
 
   /** This function is called once when the robot is first started up. */
   @Override

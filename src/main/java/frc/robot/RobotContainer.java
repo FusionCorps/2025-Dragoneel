@@ -13,24 +13,24 @@
 
 package frc.robot;
 
-import static frc.robot.Constants.VisionConstants.*;
+import static frc.robot.subsystems.vision.VisionConstants.*;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants.DriveConstants;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.SuperstructureCommands;
+import frc.robot.commands.ElevatorAndWristCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.gyro.GyroIO;
+import frc.robot.subsystems.drive.gyro.GyroIOPigeon2;
 import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOSim;
+import frc.robot.subsystems.drive.module.ModuleIOTalonFX;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
@@ -38,12 +38,15 @@ import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
 import frc.robot.subsystems.scorer.Scorer;
 import frc.robot.subsystems.scorer.ScorerIO;
 import frc.robot.subsystems.scorer.ScorerIOSim;
+import frc.robot.subsystems.scorer.ScorerIOSparkFlex;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
+import frc.robot.subsystems.wrist.WristIOSparkFlex;
 import java.util.Map;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -62,47 +65,39 @@ public class RobotContainer {
   private final Scorer scorer;
   private final Wrist wrist;
 
-  private final LoggedDashboardChooser<Command> autoChooser;
-  SuperstructureCommands superstructureCommands;
-  // Controller
+  private ElevatorAndWristCommands elevatorAndWristCommands = null;
+  private final LoggedDashboardChooser<Command> autoChooser =
+      new LoggedDashboardChooser<>("Auto Chooser");
+
   private final CommandXboxController controller = new CommandXboxController(0);
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  /** The container for the robot. Contains subsystems, operator devices, and commands. */
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
-        // drive =
-        //     new Drive(
-        //         new GyroIOPigeon2(),
-        //         new ModuleIOTalonFX(DriveConstants.FRONT_LEFT),
-        //         new ModuleIOTalonFX(DriveConstants.FRONT_RIGHT),
-        //         new ModuleIOTalonFX(DriveConstants.BACK_LEFT),
-        //         new ModuleIOTalonFX(DriveConstants.BACK_RIGHT));
-        drive = null;
-        // vision =
-        //     new Vision(
-        //         drive,
-        //         new VisionIOPhotonVision(camera0Name, robotToCamera0),
-        //         new VisionIOPhotonVision(camera1Name, robotToCamera1));
-        // vision = new Vision((a, b, c) -> {}, new VisionIOPhotonVision(camera0Name,
-        // robotToCamera0));
-        vision = null;
-
-        climb = null;
+        drive =
+            new Drive(
+                new GyroIOPigeon2(),
+                new ModuleIOTalonFX(DriveConstants.FRONT_LEFT),
+                new ModuleIOTalonFX(DriveConstants.FRONT_RIGHT),
+                new ModuleIOTalonFX(DriveConstants.BACK_LEFT),
+                new ModuleIOTalonFX(DriveConstants.BACK_RIGHT));
+        vision =
+            new Vision(
+                // drive,
+                (a, b, c) -> {},
+                new VisionIOPhotonVision(CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM),
+                new VisionIOPhotonVision(CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM));
         // climb = new Climb(new ClimbIOTalonFX());
-        scorer = null;
-        // scorer = new Scorer(new ScorerIOSparkFlex());
+        climb = null;
+        scorer = new Scorer(new ScorerIOSparkFlex());
         elevator = new Elevator(new ElevatorIOTalonFX());
-        // elevator = null;
-
-        // wrist = new Wrist(new WristIOSparkFlex());
-        wrist = null;
+        wrist = new Wrist(new WristIOSparkFlex());
         break;
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
-        elevator = new Elevator(new ElevatorIOSim());
         drive =
             new Drive(
                 new GyroIO() {},
@@ -114,7 +109,9 @@ public class RobotContainer {
             new Vision(
                 (a, b, c) -> {},
                 // drive,
-                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose));
+                new VisionIOPhotonVisionSim(
+                    CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getPose));
+        elevator = new Elevator(new ElevatorIOSim());
         climb = new Climb(new ClimbIOSim());
         scorer = new Scorer(new ScorerIOSim());
         wrist = new Wrist(new WristIOSim());
@@ -137,55 +134,52 @@ public class RobotContainer {
         break;
     }
 
-    // Set up auto routines
-    // register commands for PathPlanner
+    if (elevator != null && wrist != null) {
+      elevatorAndWristCommands = new ElevatorAndWristCommands(elevator, wrist);
+    }
 
-    if (elevator != null && wrist != null)
-      superstructureCommands = new SuperstructureCommands(elevator, wrist);
-
-    if (elevator != null && scorer != null && climb != null) {
+    // Register named commands for auto
+    if (drive != null && elevator != null && wrist != null && scorer != null) {
       NamedCommands.registerCommands(
           Map.of(
-              "L1", superstructureCommands.goToL1(),
-              "L2", superstructureCommands.goToL2(),
-              "Station", superstructureCommands.goToStation(),
-              "L3", superstructureCommands.goToL3(),
-              "L4", superstructureCommands.goToL4(),
-              "Net", superstructureCommands.goToNet(),
-              "Processor", superstructureCommands.goToProcessor(),
-              "ShootCoral", scorer.shootCoralCmd(),
+              "L1", elevatorAndWristCommands.goToL1(),
+              "L2", elevatorAndWristCommands.goToL2(),
+              "Station", elevatorAndWristCommands.goToStation(),
+              "L3", elevatorAndWristCommands.goToL3(),
+              "L4", elevatorAndWristCommands.goToL4(),
+              "Net", elevatorAndWristCommands.goToNet(),
+              "Processor", elevatorAndWristCommands.goToProcessor(),
+              "ShootCoral", scorer.shootCoralCmd(elevator::getCurrentElevatorState),
               "ShootAlgae", scorer.shootAlgaeCmd()));
     }
 
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-    // autoChooser = new LoggedDashboardChooser<>("Auto Chooser");
+    // add auto routine selector to the dashboard
+    // TODO: eventually use PathPlanner to build auto chooser
+    // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     // autoChooser.addDefaultOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
 
     // Set up SysId routines
-    // autoChooser.addOption(
-    //     "Drive SysId (Quasistatic Forward)",
-    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Drive SysId (Quasistatic Reverse)",
-    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption(
-    //     "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // TODO: remove these later
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Forward)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Reverse)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
     configureButtonBindings();
   }
 
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
+  /** {@link CommandXboxController} button bindings for each subsystem are defined here. */
   private void configureButtonBindings() {
-    // Default command, normal field-relative drive
+    /* drive commands */
     if (drive != null) {
+      // Default command, normal field-relative drive
       drive.setDefaultCommand(
           DriveCommands.joystickDrive(
               drive,
@@ -205,46 +199,30 @@ public class RobotContainer {
       //     .whileTrue(DriveCommands.driveToNearestReefTagWOdometryAndOffset(drive, true));
     }
 
-    if (elevator != null && wrist != null) {
-      controller.leftBumper().onTrue(superstructureCommands.goToNet());
-      controller.y().onTrue(superstructureCommands.goToL4());
-      controller.x().onTrue(superstructureCommands.goToL3());
-      controller.b().onTrue(superstructureCommands.goToL2());
-      controller.a().onTrue(superstructureCommands.goToL1());
-      controller.povDown().onTrue(superstructureCommands.goToProcessor());
-      controller.rightBumper().onTrue(superstructureCommands.goToStation());
+    /* elevator and wrist movement commands */
+    if (elevatorAndWristCommands != null) {
+      controller.leftBumper().onTrue(elevatorAndWristCommands.goToNet());
+      controller.y().onTrue(elevatorAndWristCommands.goToL4());
+      controller.x().onTrue(elevatorAndWristCommands.goToL3());
+      controller.b().onTrue(elevatorAndWristCommands.goToL2());
+      controller.a().onTrue(elevatorAndWristCommands.goToL1());
+      controller.povDown().onTrue(elevatorAndWristCommands.goToProcessor());
+      controller.rightBumper().onTrue(elevatorAndWristCommands.goToStation());
     }
 
-    // TODO: eventually remove this block in favor of supersructure commands
     if (elevator != null) {
-      //   controller.leftBumper().onTrue(elevator.goToNet());
-      //   controller.y().onTrue(elevator.goToL4());
-      //   controller.x().onTrue(elevator.goToL3());
-      //   controller.b().onTrue(elevator.goToL2());
-      //   controller.a().onTrue(elevator.goToL1());
-      //   controller.povDown().onTrue(elevator.goToZero());
-      //   controller.rightBumper().onTrue(elevator.goToStation());
-
-      // controller.back().whileTrue(elevator.runHomingRoutine());
-
-      // TODO: remove after closed loop control is tuned
-      controller.rightTrigger().whileTrue(elevator.lowerElevator());
-      controller.leftTrigger().whileTrue(elevator.raiseElevator());
+      controller.back().whileTrue(elevator.homeElevator());
     }
 
-    if (scorer != null) {
-      controller.rightTrigger().whileTrue(scorer.shootCoralCmd());
+    /* scoring commands */
+    if (scorer != null && elevator != null) {
+      controller.rightTrigger().whileTrue(scorer.shootCoralCmd(elevator::getCurrentElevatorState));
       controller.leftTrigger().whileTrue(scorer.shootAlgaeCmd());
     }
 
     if (climb != null) {
+      // run climb
       controller.povUp().whileTrue(climb.runClimbCmd());
-    }
-
-    if (wrist != null) {
-      // TODO: remove after closed loop control is tuned
-      controller.povRight().whileTrue(wrist.moveWristRight());
-      controller.povLeft().whileTrue(wrist.moveWristLeft());
     }
   }
 

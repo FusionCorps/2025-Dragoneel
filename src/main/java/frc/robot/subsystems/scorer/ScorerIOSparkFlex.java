@@ -1,6 +1,6 @@
 package frc.robot.subsystems.scorer;
 
-import static frc.robot.Constants.ScorerConstants.*;
+import static frc.robot.subsystems.scorer.ScorerConstants.*;
 import static frc.robot.util.SparkUtil.*;
 
 import com.revrobotics.RelativeEncoder;
@@ -32,28 +32,25 @@ public class ScorerIOSparkFlex implements ScorerIO {
         5,
         () ->
             scorerMotor.configure(
-                SCORER_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+                SCORER_CONFIG, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
   }
 
   @Override
   public void updateInputs(ScorerIOInputs inputs) {
     /* Update inputs */
     sparkStickyFault = false;
-    ifOk(
-        scorerMotor,
-        scorerMotorEncoder::getPosition,
-        position -> inputs.scorerPositionRad = position);
+    ifOk(scorerMotor, scorerMotorEncoder::getPosition, position -> inputs.positionRad = position);
     ifOk(
         scorerMotor,
         scorerMotorEncoder::getVelocity,
-        velocity -> inputs.scorerVelocityRadPerSec = velocity);
+        velocity -> inputs.velocityRadPerSec = velocity);
     ifOk(
         scorerMotor,
         new DoubleSupplier[] {scorerMotor::getAppliedOutput, scorerMotor::getBusVoltage},
-        (doubles) -> inputs.scorerAppliedVolts = doubles[0] * doubles[1]);
-    ifOk(scorerMotor, scorerMotor::getOutputCurrent, current -> inputs.scorerCurrentAmps = current);
+        (doubles) -> inputs.appliedVolts = doubles[0] * doubles[1]);
+    ifOk(scorerMotor, scorerMotor::getOutputCurrent, current -> inputs.currentAmps = current);
 
-    inputs.scorerMotorConnected = scorerMotorDebouncer.calculate(!sparkStickyFault);
+    inputs.connected = scorerMotorDebouncer.calculate(!sparkStickyFault);
   }
 
   @Override

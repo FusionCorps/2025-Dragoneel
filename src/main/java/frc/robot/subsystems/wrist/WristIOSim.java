@@ -34,18 +34,16 @@ public class WristIOSim implements WristIO {
     if (!isOpenLoop)
       appliedVolts =
           MathUtil.clamp(
-              controller.calculate(inputs.wristPositionRad, targetPosition.in(Radians)),
-              -12.0,
-              12.0);
+              controller.calculate(inputs.positionRad, targetPosition.in(Radians)), -12.0, 12.0);
     wristMotorSim.setInputVoltage(appliedVolts);
     wristMotorSim.update(0.02);
 
     /* Update inputs */
-    inputs.wristMotorConnected = true;
-    inputs.wristPositionRad = wristMotorSim.getAngularPositionRad();
-    inputs.wristVelocityRadPerSec = wristMotorSim.getAngularVelocityRadPerSec();
-    inputs.wristAppliedVolts = appliedVolts;
-    inputs.wristCurrentAmps = wristMotorSim.getCurrentDrawAmps();
+    inputs.connected = true;
+    inputs.positionRad = wristMotorSim.getAngularPositionRad();
+    inputs.velocityRadPerSec = wristMotorSim.getAngularVelocityRadPerSec();
+    inputs.appliedVolts = appliedVolts;
+    inputs.currentAmps = wristMotorSim.getCurrentDrawAmps();
 
     inputs.wristSetpointRad = targetPosition.in(Radians);
   }
