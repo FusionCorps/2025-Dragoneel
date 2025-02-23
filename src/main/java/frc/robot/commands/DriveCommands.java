@@ -188,8 +188,8 @@ public class DriveCommands {
             new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
     angleController.enableContinuousInput(-Math.PI, Math.PI);
 
-    PIDController xController = new PIDController(5.0, 0.0, 0.0);
-    PIDController yController = new PIDController(5.0, 0.0, 0.0);
+    PIDController xController = new PIDController(5.0, 0.0, 0.5);
+    PIDController yController = new PIDController(5.0, 0.0, 0.5);
 
     // Construct command
     return new FunctionalCommand(
@@ -200,8 +200,15 @@ public class DriveCommands {
           yController.reset();
         },
         () -> {
+          Logger.recordOutput("Drivetrain/desiredX", poseSupplier.get().getX());
+          Logger.recordOutput("Drivetrain/desiredY", poseSupplier.get().getY());
+          Logger.recordOutput(
+              "Drivetrain/desiredTheta", poseSupplier.get().getRotation().getDegrees());
           double xVel = xController.calculate(drive.getPose().getX(), poseSupplier.get().getX());
           double yVel = yController.calculate(drive.getPose().getY(), poseSupplier.get().getY());
+
+          Logger.recordOutput("Drivetrain/xVel", xVel);
+          Logger.recordOutput("Drivetrain/yVel", yVel);
 
           // Calculate angular speed
           double omega =
@@ -261,15 +268,18 @@ public class DriveCommands {
     // rotate, because apriltag will always be 180° from robot
     Supplier<Pose2d> tagPoseSupplierIn2DWOffset =
         () -> {
+          Logger.recordOutput("alignLeft", alignLeft);
+          Logger.recordOutput("tag", tagPoseSupplierNoOffset.get());
           if (tagPoseSupplierNoOffset.get() == null) {
             return drive.getPose();
-          } else
+          } else {
             return tagPoseSupplierNoOffset
                 .get()
                 .transformBy(
                     new Transform3d(
-                        0.7, (alignLeft ? 0.4 : 0.0), 0, new Rotation3d(Rotation2d.kPi)))
+                        0.7, (alignLeft ? -0.4 : 0.0), 0, new Rotation3d(Rotation2d.kPi)))
                 .toPose2d();
+          }
         };
 
     return driveToPose(drive, tagPoseSupplierIn2DWOffset)

@@ -56,6 +56,7 @@ import frc.robot.util.LocalADStarAK;
 import java.io.IOException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -89,17 +90,21 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   private final SwerveSetpointGenerator setpointGenerator;
   private SwerveSetpoint previousSetpoint;
 
+  private final Consumer<Pose2d> resetSimulationPose;
+
   public Drive(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
       ModuleIO frModuleIO,
       ModuleIO blModuleIO,
-      ModuleIO brModuleIO) {
+      ModuleIO brModuleIO,
+      Consumer<Pose2d> resetSimulationPose) {
     this.gyroIO = gyroIO;
     modules[0] = new Module(flModuleIO, 0, DriveConstants.FRONT_LEFT);
     modules[1] = new Module(frModuleIO, 1, DriveConstants.FRONT_RIGHT);
     modules[2] = new Module(blModuleIO, 2, DriveConstants.BACK_LEFT);
     modules[3] = new Module(brModuleIO, 3, DriveConstants.BACK_RIGHT);
+    this.resetSimulationPose = resetSimulationPose;
 
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
@@ -175,7 +180,6 @@ public class Drive extends SubsystemBase implements VisionConsumer {
     // Log empty setpoint states when disabled
     if (DriverStation.isDisabled()) {
       Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
-      Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
     }
 
     // Update odometry
@@ -327,6 +331,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
   /** Resets the current odometry pose. */
   public void setPose(Pose2d pose) {
+    this.resetSimulationPose.accept(pose);
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
 
