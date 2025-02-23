@@ -127,6 +127,7 @@ public class RobotContainer {
                 new VisionIOPhotonVisionSim(
                     CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM, drive::getPose));
         elevator = new Elevator(new ElevatorIOSim());
+        drive.setCurrentElevatorPositionSupplier(elevator::getCurrentElevatorPosition);
         // climb = new Climb(new ClimbIOSim());
         scorer = new Scorer(new ScorerIOSim());
         wrist = new Wrist(new WristIOSim());

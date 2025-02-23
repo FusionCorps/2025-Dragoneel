@@ -38,6 +38,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -57,6 +58,7 @@ import java.io.IOException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -91,6 +93,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   private SwerveSetpoint previousSetpoint;
 
   private final Consumer<Pose2d> resetSimulationPose;
+  private Supplier<Angle> currentElevatorPositionSupplier = () -> Rotations.zero();
 
   public Drive(
       GyroIO gyroIO,
@@ -348,18 +351,26 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   /** Returns the maximum linear speed in meters per sec. */
   public double getMaxLinearSpeedMetersPerSec() {
     // return DriveConstants.SPEED_AT_12V.in(MetersPerSecond);
-    return 3.0;
+    // return 3.0;
+    return DriveConstants.DRIVE_TRANSLATIONAL_MAX_SPEED_MAP_METER_PER_SEC.get(
+        currentElevatorPositionSupplier.get().in(Rotations));
   }
 
   /** Returns the maximum angular speed in radians per sec. */
   public double getMaxAngularSpeedRadPerSec() {
     // return getMaxLinearSpeedMetersPerSec() / DriveConstants.DRIVE_BASE_RADIUS;
-    return 2 * Math.PI;
+    // return 2 * Math.PI;
+    return DriveConstants.DRIVE_ROTATIONAL_MAX_SPEED_MAP_RAD_PER_SEC.get(
+        currentElevatorPositionSupplier.get().in(Rotations));
   }
 
   /** Sets the gyro angle to 0° and sets current gyro angle to forward. */
   public Command zeroOdometry() {
     return runOnce(() -> setPose(new Pose2d(getPose().getTranslation(), new Rotation2d())))
         .ignoringDisable(true);
+  }
+
+  public void setCurrentElevatorPositionSupplier(Supplier<Angle> currentElevatorPositionSupplier) {
+    this.currentElevatorPositionSupplier = currentElevatorPositionSupplier;
   }
 }

@@ -148,7 +148,7 @@ public class DriveCommands {
               new ChassisSpeeds(
                   linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                   linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                  omega);
+                  omega * drive.getMaxAngularSpeedRadPerSec());
           boolean isFlipped =
               DriverStation.getAlliance().isPresent()
                   && DriverStation.getAlliance().get() == Alliance.Red;
@@ -200,7 +200,7 @@ public class DriveCommands {
               new ChassisSpeeds(
                   xVel * drive.getMaxLinearSpeedMetersPerSec(),
                   yVel * drive.getMaxLinearSpeedMetersPerSec(),
-                  omega);
+                  omega * drive.getMaxAngularSpeedRadPerSec());
           drive.driveRobotCentric(
               ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
         },

@@ -1,6 +1,7 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.elevator.ElevatorConstants.*;
@@ -8,6 +9,7 @@ import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -232,5 +234,9 @@ public class Elevator extends SubsystemBase {
   @AutoLogOutput
   public ElevatorState getCurrentElevatorState() {
     return currentElevatorState;
+  }
+
+  public Angle getCurrentElevatorPosition() {
+    return Radians.of(inputs.mainPositionRad);
   }
 }
