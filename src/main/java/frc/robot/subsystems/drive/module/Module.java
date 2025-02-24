@@ -24,6 +24,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
@@ -81,6 +82,11 @@ public class Module {
 
   /** Runs the module with the specified setpoint state. */
   public void runSetpoint(SwerveModuleState state) {
+    if (DriverStation.isAutonomousEnabled()) {
+      // Optimize velocity setpoint
+      state.optimize(getAngle());
+      state.cosineScale(inputs.turnPosition);
+    }
     // Apply setpoints
     io.setDriveVelocity(RadiansPerSecond.of(state.speedMetersPerSecond / constants.WheelRadius));
     io.setTurnPosition(state.angle);
@@ -88,13 +94,13 @@ public class Module {
 
   /** Runs the module with the specified output while controlling to zero degrees. */
   public void runCharacterization(double output) {
-    // io.setDriveOpenLoop(output);
-    // io.setTurnPosition(new Rotation2d());
+    io.setDriveOpenLoop(output);
+    io.setTurnPosition(new Rotation2d());
 
     // for rotational characterization
-    io.setDriveOpenLoop(output);
-    io.setTurnPosition(
-        new Rotation2d(constants.LocationX, constants.LocationY).plus(Rotation2d.kCCW_Pi_2));
+    // io.setDriveOpenLoop(output);
+    // io.setTurnPosition(
+    //     new Rotation2d(constants.LocationX, constants.LocationY).plus(Rotation2d.kCCW_Pi_2));
   }
 
   /** Disables all outputs to motors. */

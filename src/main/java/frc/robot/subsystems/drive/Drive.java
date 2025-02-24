@@ -14,6 +14,7 @@
 package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.subsystems.drive.DriveConstants.SPEED_AT_12V;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -128,7 +129,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
         this::getChassisSpeeds,
         this::driveRobotCentric,
         new PPHolonomicDriveController(
-            new PIDConstants(15.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+            new PIDConstants(10.0, 0.0, 0.0), new PIDConstants(10.0, 0.0, 0.0)),
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
@@ -230,14 +231,25 @@ public class Drive extends SubsystemBase implements VisionConsumer {
     // Calculate module setpoints from robot-centric speeds
     // Applies angle optimization, cosine compensation, wheel slip reduction, and converts to
     // field-centric
-    previousSetpoint = setpointGenerator.generateSetpoint(previousSetpoint, speeds, 0.02);
-    // Log setpoints and setpoint speeds
-    Logger.recordOutput("SwerveStates/Setpoints", previousSetpoint.moduleStates());
-    Logger.recordOutput("SwerveChassisSpeeds/Setpoints", previousSetpoint.robotRelativeSpeeds());
-
-    // Send setpoints to modules
-    for (int i = 0; i < 4; i++) {
-      modules[i].runSetpoint(previousSetpoint.moduleStates()[i]);
+    if (DriverStation.isAutonomousEnabled()) {
+      ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
+      SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+      SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, SPEED_AT_12V);
+      // Log setpoints and setpoint speeds
+      for (int i = 0; i < 4; i++) {
+        modules[i].runSetpoint(setpointStates[i]);
+      }
+      Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
+      Logger.recordOutput("SwerveChassisSpeeds/Setpoints", previousSetpoint.robotRelativeSpeeds());
+    } else {
+      previousSetpoint = setpointGenerator.generateSetpoint(previousSetpoint, speeds, 0.02);
+      // Log setpoints and setpoint speeds
+      Logger.recordOutput("SwerveStates/Setpoints", previousSetpoint.moduleStates());
+      Logger.recordOutput("SwerveChassisSpeeds/Setpoints", previousSetpoint.robotRelativeSpeeds());
+      // Send setpoints to modules
+      for (int i = 0; i < 4; i++) {
+        modules[i].runSetpoint(previousSetpoint.moduleStates()[i]);
+      }
     }
   }
 
@@ -299,7 +311,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
   /** Returns the measured chassis speeds of the robot. */
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
-  private ChassisSpeeds getChassisSpeeds() {
+  public ChassisSpeeds getChassisSpeeds() {
     return kinematics.toChassisSpeeds(getModuleStates());
   }
 
@@ -365,9 +377,8 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   }
 
   /** Sets the gyro angle to 0° and sets current gyro angle to forward. */
-  public Command zeroOdometry() {
-    return runOnce(() -> setPose(new Pose2d(getPose().getTranslation(), new Rotation2d())))
-        .ignoringDisable(true);
+  public Command zeroGyro() {
+    return runOnce(() -> setPose(new Pose2d(getPose().getTranslation(), new Rotation2d())));
   }
 
   public void setCurrentElevatorPositionSupplier(Supplier<Angle> currentElevatorPositionSupplier) {

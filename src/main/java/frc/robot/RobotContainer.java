@@ -15,9 +15,12 @@ package frc.robot;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -50,9 +53,12 @@ import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
+import frc.robot.util.ShootingUtil;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
+import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -77,6 +83,8 @@ public class RobotContainer {
       new LoggedDashboardChooser<>("Auto Chooser");
 
   private final CommandXboxController controller = new CommandXboxController(0);
+
+  private Supplier<ReefscapeCoralOnFly> coralProjectileSupplier;
 
   /** The container for the robot. Contains subsystems, operator devices, and commands. */
   public RobotContainer() {
@@ -108,7 +116,7 @@ public class RobotContainer {
         // Sim robot, instantiate physics sim IO implementations
         driveSim =
             new SwerveDriveSimulation(
-                DriveConstants.DRIVE_SIMULATION_CONFIG, new Pose2d(6, 4, Rotation2d.kZero));
+                DriveConstants.DRIVE_SIMULATION_CONFIG, new Pose2d(6, 5.5, Rotation2d.kZero));
         Arena2025Reefscape.getInstance().addDriveTrainSimulation(driveSim);
         drive =
             new Drive(
@@ -134,6 +142,8 @@ public class RobotContainer {
         climb = null;
         // scorer = null;
         // wrist = null;
+        coralProjectileSupplier =
+            () -> ShootingUtil.createCoralProjectile(drive, elevator, wrist, scorer);
         break;
 
       default:
@@ -154,9 +164,15 @@ public class RobotContainer {
         break;
     }
 
-    if (elevator != null && wrist != null) {
-      elevatorAndWristCommands = new ElevatorAndWristCommands(elevator, wrist);
-    }
+    elevatorAndWristCommands = new ElevatorAndWristCommands(elevator, wrist);
+
+    elevator.isAtTargetState.onTrue(
+        Commands.run(
+                () -> {
+                  controller.setRumble(RumbleType.kBothRumble, 1.0);
+                })
+            .withTimeout(0.1)
+            .andThen(Commands.runOnce(() -> controller.setRumble(RumbleType.kBothRumble, 0.0))));
 
     // Register named commands for auto
     if (drive != null && elevator != null && wrist != null && scorer != null) {
@@ -169,14 +185,15 @@ public class RobotContainer {
               "L4", elevatorAndWristCommands.goToL4(),
               "Net", elevatorAndWristCommands.goToNet(),
               "Processor", elevatorAndWristCommands.goToProcessor(),
-              "ShootCoral", scorer.shootCoralCmd(elevator::getCurrentElevatorState),
+              "ShootCoral",
+                  scorer.shootCoralCmd(elevator::getCurrentElevatorState, coralProjectileSupplier),
               "ShootAlgae", scorer.shootAlgaeCmd()));
     }
 
     // add auto routine selector to the dashboard
     // TODO: eventually use PathPlanner to build auto chooser
-    // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     // autoChooser.addDefaultOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
+    autoChooser.addDefaultOption("4 Piece Opposite Processor", AutoBuilder.buildAuto("T2-ILKJ"));
 
     // Set up SysId routines
     // TODO: remove these later
@@ -207,22 +224,16 @@ public class RobotContainer {
               () -> -controller.getLeftX(),
               () -> -controller.getRightX()));
 
-      // Reset gyro to 0° when B button is pressed
-      // Reset gyro / odometry
+      // in simulation: reset odometry to actual robot pose
+      // in real: zero gyro heading
       final Runnable resetGyro =
           Constants.currentMode == Constants.Mode.SIM
-              ? () ->
-                  drive.setPose(
-                      driveSim.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose
-              // during simulation
-              : () ->
-                  drive.setPose(
-                      new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
+              ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
+              : () -> drive.zeroGyro();
       controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
-      controller.povRight().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, false));
-
       controller.povLeft().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, true));
+      controller.povRight().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, false));
     }
 
     /* elevator and wrist movement commands */
@@ -237,12 +248,15 @@ public class RobotContainer {
     }
 
     if (elevator != null) {
-      controller.back().whileTrue(elevator.homeElevator());
+      SmartDashboard.putData("Home Elevator Command", elevator.homeElevator());
     }
 
     /* scoring commands */
     if (scorer != null && elevator != null) {
-      controller.rightTrigger().whileTrue(scorer.shootCoralCmd(elevator::getCurrentElevatorState));
+      controller
+          .rightTrigger()
+          .whileTrue(
+              scorer.shootCoralCmd(elevator::getCurrentElevatorState, coralProjectileSupplier));
       controller.leftTrigger().whileTrue(scorer.shootAlgaeCmd());
     }
 
@@ -263,7 +277,6 @@ public class RobotContainer {
 
   public void resetSimulationField() {
     if (Constants.currentMode != Constants.Mode.SIM) return;
-
     Arena2025Reefscape.getInstance().resetFieldForAuto();
   }
 

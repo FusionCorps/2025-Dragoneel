@@ -63,6 +63,7 @@ public class DriveConstants {
           .withKS(0.18271)
           .withKV(0.82)
           .withKA(0.0055232);
+  ;
 
   // When using closed-loop control, the drive motor uses the control
   // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
@@ -107,8 +108,8 @@ public class DriveConstants {
 
   // Theoretical free speed (m/s) at 12 V applied output
   // TODO: needs to be tuned
-  public static final LinearVelocity SPEED_AT_12V = MetersPerSecond.of(5.0);
-  public static final AngularVelocity MODULE_ANGULAR_VEL_AT_12V = RotationsPerSecond.of(10);
+  public static final LinearVelocity SPEED_AT_12V = MetersPerSecond.of(4.32816);
+  public static final AngularVelocity MODULE_ANGULAR_VEL_AT_12V = RotationsPerSecond.of(60);
 
   // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns
   private static final double kCoupleRatio = 3;

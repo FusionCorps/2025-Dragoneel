@@ -14,15 +14,16 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import org.ironmaple.simulation.motorsims.SimulatedBattery;
 
 public class ElevatorIOSim implements ElevatorIO {
   private final DCMotorSim elevatorSim;
 
   ProfiledPIDController elevatorPIDController =
       new ProfiledPIDController(
-          1.5, 0, 0.0, new TrapezoidProfile.Constraints(75, 40)); // in rotations units
+          0.8, 0, 0.0, new TrapezoidProfile.Constraints(80, 60)); // in rotations units
 
-  ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0, 0.53);
+  ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0, 0.65, 0.2);
 
   private double appliedVolts = 0.0;
 
@@ -31,8 +32,7 @@ public class ElevatorIOSim implements ElevatorIO {
   public ElevatorIOSim() {
     elevatorSim =
         new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(
-                DCMotor.getKrakenX60Foc(2), 0.01, ELEVATOR_GEAR_RATIO),
+            LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60Foc(2), 0.01, 4.0),
             DCMotor.getKrakenX60Foc(2));
 
     elevatorPIDController.reset(0);
@@ -45,8 +45,8 @@ public class ElevatorIOSim implements ElevatorIO {
           MathUtil.clamp(
               elevatorPIDController.calculate(elevatorSim.getAngularPositionRotations())
                   + elevatorFeedforward.calculate(elevatorPIDController.getSetpoint().velocity),
-              -12.0,
-              12.0);
+              SimulatedBattery.getBatteryVoltage().unaryMinus().in(Volts),
+              SimulatedBattery.getBatteryVoltage().in(Volts));
     }
 
     elevatorSim.setInputVoltage(appliedVolts);

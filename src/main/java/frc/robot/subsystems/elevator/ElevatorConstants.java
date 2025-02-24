@@ -59,7 +59,7 @@ public class ElevatorConstants {
           .withReverseSoftLimitThreshold(Rotations.of(0));
 
   public static final double ELEVATOR_GEAR_RATIO =
-      60.0 / 14.0; // 14 shaft rotations for 60 motor rotations
+      62.0 / 14.0; // 14 shaft rotations for 60 motor rotations
   public static final Distance ELEVATOR_SPOOL_DIAMETER =
       Inches.of(1.625); // 1.625" spool around which rope is wound
 }

@@ -1,9 +1,11 @@
 package frc.robot.subsystems.wrist;
 
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -76,5 +78,9 @@ public class Wrist extends SubsystemBase {
         () -> {
           currentWristState = state;
         });
+  }
+
+  public Angle getCurrentAngle() {
+    return Radians.of(inputs.absolutePositionRad);
   }
 }

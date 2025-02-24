@@ -41,6 +41,7 @@ public class WristIOSim implements WristIO {
     /* Update inputs */
     inputs.connected = true;
     inputs.positionRad = wristMotorSim.getAngularPositionRad();
+    inputs.absolutePositionRad = wristMotorSim.getAngularPositionRad() % (2 * Math.PI);
     inputs.velocityRadPerSec = wristMotorSim.getAngularVelocityRadPerSec();
     inputs.appliedVolts = appliedVolts;
     inputs.currentAmps = wristMotorSim.getCurrentDrawAmps();
