@@ -68,7 +68,7 @@ public class Scorer extends SubsystemBase {
               } else {
                 setState(ScorerState.SHOOT_CORAL_DEFAULT);
               }
-              if (Constants.currentMode == Constants.Mode.SIM) {
+              if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
                 Arena2025Reefscape.getInstance()
                     .addGamePieceProjectile(coralProjectileSupplier.get());
               }

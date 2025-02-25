@@ -89,7 +89,7 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, operator devices, and commands. */
   public RobotContainer() {
-    switch (Constants.currentMode) {
+    switch (Constants.CURRENT_MODE) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drive =
@@ -279,12 +279,12 @@ public class RobotContainer {
   }
 
   public void resetSimulationField() {
-    if (Constants.currentMode != Constants.Mode.SIM) return;
+    if (Constants.CURRENT_MODE != Constants.Mode.SIM) return;
     Arena2025Reefscape.getInstance().resetFieldForAuto();
   }
 
   public void updateSimulation() {
-    if (Constants.currentMode != Constants.Mode.SIM) return;
+    if (Constants.CURRENT_MODE != Constants.Mode.SIM) return;
 
     Arena2025Reefscape.getInstance().simulationPeriodic();
     Logger.recordOutput("FieldSimulation/RobotPosition", driveSim.getSimulatedDriveTrainPose());
