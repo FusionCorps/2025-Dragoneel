@@ -19,10 +19,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -166,13 +164,13 @@ public class RobotContainer {
 
     elevatorAndWristCommands = new ElevatorAndWristCommands(elevator, wrist);
 
-    elevator.isAtTargetState.onTrue(
-        Commands.run(
-                () -> {
-                  controller.setRumble(RumbleType.kBothRumble, 1.0);
-                })
-            .withTimeout(0.1)
-            .andThen(Commands.runOnce(() -> controller.setRumble(RumbleType.kBothRumble, 0.0))));
+    // elevator.isAtTargetState.onTrue(
+    //     Commands.run(
+    //             () -> {
+    //               controller.setRumble(RumbleType.kBothRumble, 1.0);
+    //             })
+    //         .withTimeout(0.1)
+    //         .andThen(Commands.runOnce(() -> controller.setRumble(RumbleType.kBothRumble, 0.0))));
 
     // Register named commands for auto
     if (drive != null && elevator != null && wrist != null && scorer != null) {
@@ -230,7 +228,7 @@ public class RobotContainer {
           Constants.currentMode == Constants.Mode.SIM
               ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
               : () -> drive.zeroGyro();
-      controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
+      controller.start().onTrue(drive.zeroGyro().ignoringDisable(true));
 
       controller.povLeft().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, true));
       controller.povRight().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, false));

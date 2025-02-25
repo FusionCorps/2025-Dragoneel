@@ -261,7 +261,7 @@ public class DriveCommands {
                 .get()
                 .transformBy(
                     new Transform3d(
-                        0.5, (alignLeft ? -0.3285 : 0.0), 0, new Rotation3d(Rotation2d.kPi)))
+                        0.3, (alignLeft ? -0.33 : 0.0), 0, new Rotation3d(Rotation2d.kPi)))
                 .toPose2d();
           }
         };

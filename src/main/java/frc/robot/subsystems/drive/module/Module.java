@@ -24,7 +24,6 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
@@ -82,11 +81,11 @@ public class Module {
 
   /** Runs the module with the specified setpoint state. */
   public void runSetpoint(SwerveModuleState state) {
-    if (DriverStation.isAutonomousEnabled()) {
-      // Optimize velocity setpoint
-      state.optimize(getAngle());
-      state.cosineScale(inputs.turnPosition);
-    }
+    // if (DriverStation.isAutonomousEnabled()) {
+    // Optimize velocity setpoint
+    state.optimize(getAngle());
+    state.cosineScale(inputs.turnPosition);
+    // }
     // Apply setpoints
     io.setDriveVelocity(RadiansPerSecond.of(state.speedMetersPerSecond / constants.WheelRadius));
     io.setTurnPosition(state.angle);

@@ -20,7 +20,7 @@ public class ElevatorConstants {
     STATION(Rotations.of(0)),
     L1(Rotations.of(3)),
     L2(Rotations.of(10)),
-    L3(Rotations.of(15)),
+    L3(Rotations.of(16.5)),
     L4(Rotations.of(25)),
     NET(Rotations.of(20));
 
@@ -45,7 +45,7 @@ public class ElevatorConstants {
   public static final CurrentLimitsConfigs ELEVATOR_CURRENT_LIMITS_CONFIGS =
       new CurrentLimitsConfigs()
           .withStatorCurrentLimitEnable(true)
-          .withStatorCurrentLimit(80)
+          .withStatorCurrentLimit(100)
           .withSupplyCurrentLimitEnable(true)
           .withSupplyCurrentLimit(70)
           .withSupplyCurrentLowerLimit(40)

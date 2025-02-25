@@ -231,26 +231,27 @@ public class Drive extends SubsystemBase implements VisionConsumer {
     // Calculate module setpoints from robot-centric speeds
     // Applies angle optimization, cosine compensation, wheel slip reduction, and converts to
     // field-centric
-    if (DriverStation.isAutonomousEnabled()) {
-      ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
-      SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-      SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, SPEED_AT_12V);
-      // Log setpoints and setpoint speeds
-      for (int i = 0; i < 4; i++) {
-        modules[i].runSetpoint(setpointStates[i]);
-      }
-      Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
-      Logger.recordOutput("SwerveChassisSpeeds/Setpoints", previousSetpoint.robotRelativeSpeeds());
-    } else {
-      previousSetpoint = setpointGenerator.generateSetpoint(previousSetpoint, speeds, 0.02);
-      // Log setpoints and setpoint speeds
-      Logger.recordOutput("SwerveStates/Setpoints", previousSetpoint.moduleStates());
-      Logger.recordOutput("SwerveChassisSpeeds/Setpoints", previousSetpoint.robotRelativeSpeeds());
-      // Send setpoints to modules
-      for (int i = 0; i < 4; i++) {
-        modules[i].runSetpoint(previousSetpoint.moduleStates()[i]);
-      }
+    // if (DriverStation.isAutonomousEnabled()) {
+    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
+    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, SPEED_AT_12V);
+    // Log setpoints and setpoint speeds
+    for (int i = 0; i < 4; i++) {
+      modules[i].runSetpoint(setpointStates[i]);
     }
+    Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
+    Logger.recordOutput("SwerveChassisSpeeds/Setpoints", previousSetpoint.robotRelativeSpeeds());
+    // } else {
+    //   previousSetpoint = setpointGenerator.generateSetpoint(previousSetpoint, speeds, 0.02);
+    //   // Log setpoints and setpoint speeds
+    //   Logger.recordOutput("SwerveStates/Setpoints", previousSetpoint.moduleStates());
+    //   Logger.recordOutput("SwerveChassisSpeeds/Setpoints",
+    // previousSetpoint.robotRelativeSpeeds());
+    //   // Send setpoints to modules
+    //   for (int i = 0; i < 4; i++) {
+    //     modules[i].runSetpoint(previousSetpoint.moduleStates()[i]);
+    //   }
+    // }
   }
 
   /** Runs the drive in a straight line with the specified drive output. */
