@@ -27,16 +27,16 @@ public class Wrist extends SubsystemBase {
 
   LoggedTunableNumber wristProcessorPosition =
       new LoggedTunableNumber(
-          "/Tuning/Wrist/ProcessorPosition", WristState.PROCESSOR.rotations.in(Rotations));
+          "/Wrist/ProcessorPosition", WristState.PROCESSOR.rotations.in(Rotations));
   LoggedTunableNumber wristL1Position =
-      new LoggedTunableNumber("/Tuning/Wrist/L1Position", WristState.L1.rotations.in(Rotations));
+      new LoggedTunableNumber("/Wrist/L1Position", WristState.L1.rotations.in(Rotations));
   LoggedTunableNumber wristL2_AND_L3Position =
       new LoggedTunableNumber(
-          "/Tuning/Wrist/L2_AND_L3Position", WristState.L2_AND_L3.rotations.in(Rotations));
+          "/Wrist/L2_AND_L3Position", WristState.L2_AND_L3.rotations.in(Rotations));
   LoggedTunableNumber wristL4Position =
-      new LoggedTunableNumber("/Tuning/Wrist/L4Position", WristState.L4.rotations.in(Rotations));
+      new LoggedTunableNumber("/Wrist/L4Position", WristState.L4.rotations.in(Rotations));
   LoggedTunableNumber wristNetPosition =
-      new LoggedTunableNumber("/Tuning/Wrist/NetPosition", WristState.NET.rotations.in(Rotations));
+      new LoggedTunableNumber("/Wrist/NetPosition", WristState.NET.rotations.in(Rotations));
 
   public Wrist(WristIO io) {
     this.io = io;
@@ -52,7 +52,7 @@ public class Wrist extends SubsystemBase {
             0.135,
             -0.06,
             Robot.componentPoses[1].getZ() + 0.525,
-            new Rotation3d(0, inputs.positionRad, 0));
+            new Rotation3d(0, -inputs.absolutePositionRad, 0));
 
     Logger.processInputs("Wrist", inputs);
     wristMotorDisconnectedAlert.set(!inputs.connected);

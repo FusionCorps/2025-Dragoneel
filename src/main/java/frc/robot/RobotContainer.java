@@ -17,6 +17,9 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.controllers.PathFollowingController;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -189,7 +192,6 @@ public class RobotContainer {
     }
 
     // add auto routine selector to the dashboard
-    // TODO: eventually use PathPlanner to build auto chooser
     // autoChooser.addDefaultOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
     autoChooser.addDefaultOption("4 Piece Opposite Processor", AutoBuilder.buildAuto("T2-ILKJ"));
 
@@ -224,10 +226,11 @@ public class RobotContainer {
 
       // in simulation: reset odometry to actual robot pose
       // in real: zero gyro heading
-      final Runnable resetGyro =
-          Constants.currentMode == Constants.Mode.SIM
-              ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
-              : () -> drive.zeroGyro();
+      // final Runnable resetGyro =
+      //     Constants.currentMode == Constants.Mode.SIM
+      //         ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
+      //         : () -> drive.zeroGyro();
+
       controller.start().onTrue(drive.zeroGyro().ignoringDisable(true));
 
       controller.povLeft().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, true));
@@ -241,7 +244,7 @@ public class RobotContainer {
       controller.x().onTrue(elevatorAndWristCommands.goToL3());
       controller.b().onTrue(elevatorAndWristCommands.goToL2());
       controller.a().onTrue(elevatorAndWristCommands.goToL1());
-      controller.povDown().onTrue(elevatorAndWristCommands.goToProcessor());
+      controller.back().onTrue(elevatorAndWristCommands.goToProcessor());
       controller.rightBumper().onTrue(elevatorAndWristCommands.goToStation());
     }
 
@@ -259,8 +262,10 @@ public class RobotContainer {
     }
 
     if (climb != null) {
-      // run climb
-      controller.povUp().whileTrue(climb.runClimbCmd());
+      // extend climb
+      controller.povUp().whileTrue(climb.extendClimbCmd());
+      // retract climb
+      controller.povDown().whileTrue(climb.retractClimbCmd());
     }
   }
 

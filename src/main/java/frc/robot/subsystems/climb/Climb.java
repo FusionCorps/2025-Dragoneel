@@ -34,9 +34,16 @@ public class Climb extends SubsystemBase {
   }
 
   /* Run the climb motor and hold position in brake mode when stopped. */
-  public Command runClimbCmd() {
+  public Command extendClimbCmd() {
     // Note that the end runnable sets the voltage to 0V, but the neutral mode configuration is set
     // to brake mode.
     return runEnd(() -> io.setVoltage(CLIMB_RUN_VOLTS), () -> io.setVoltage(Volts.zero()));
+  }
+
+  public Command retractClimbCmd() {
+    // Note that the end runnable sets the voltage to 0V, but the neutral mode configuration is set
+    // to brake mode.
+    return runEnd(
+        () -> io.setVoltage(CLIMB_RUN_VOLTS.unaryMinus()), () -> io.setVoltage(Volts.zero()));
   }
 }

@@ -102,25 +102,20 @@ public class Elevator extends SubsystemBase {
 
   LoggedTunableNumber elevatorProcessorPosition =
       new LoggedTunableNumber(
-          "/Tuning/Elevator/ProcessorPosition", ElevatorState.PROCESSOR.rotations.in(Rotations));
+          "/Elevator/ProcessorPosition", ElevatorState.PROCESSOR.rotations.in(Rotations));
   LoggedTunableNumber elevatorL1Position =
-      new LoggedTunableNumber(
-          "/Tuning/Elevator/L1Position", ElevatorState.L1.rotations.in(Rotations));
+      new LoggedTunableNumber("/Elevator/L1Position", ElevatorState.L1.rotations.in(Rotations));
   LoggedTunableNumber elevatorL2Position =
-      new LoggedTunableNumber(
-          "/Tuning/Elevator/L2Position", ElevatorState.L2.rotations.in(Rotations));
+      new LoggedTunableNumber("/Elevator/L2Position", ElevatorState.L2.rotations.in(Rotations));
   LoggedTunableNumber elevatorStationPosition =
       new LoggedTunableNumber(
-          "/Tuning/Elevator/StationPosition", ElevatorState.STATION.rotations.in(Rotations));
+          "/Elevator/StationPosition", ElevatorState.STATION.rotations.in(Rotations));
   LoggedTunableNumber elevatorL3Position =
-      new LoggedTunableNumber(
-          "/Tuning/Elevator/L3Position", ElevatorState.L3.rotations.in(Rotations));
+      new LoggedTunableNumber("/Elevator/L3Position", ElevatorState.L3.rotations.in(Rotations));
   LoggedTunableNumber elevatorL4Position =
-      new LoggedTunableNumber(
-          "/Tuning/Elevator/L4Position", ElevatorState.L4.rotations.in(Rotations));
+      new LoggedTunableNumber("/Elevator/L4Position", ElevatorState.L4.rotations.in(Rotations));
   LoggedTunableNumber elevatorNetPosition =
-      new LoggedTunableNumber(
-          "/Tuning/Elevator/NetPosition", ElevatorState.NET.rotations.in(Rotations));
+      new LoggedTunableNumber("/Elevator/NetPosition", ElevatorState.NET.rotations.in(Rotations));
 
   /* Constructor */
   public Elevator(ElevatorIO io) {
