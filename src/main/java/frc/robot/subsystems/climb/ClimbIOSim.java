@@ -23,11 +23,11 @@ public class ClimbIOSim implements ClimbIO {
     climbMotorSim.setInputVoltage(appliedVolts.in(Volts));
     climbMotorSim.update(0.02);
 
-    inputs.climbMotorConnected = true;
-    inputs.climbPositionRad = climbMotorSim.getAngularPositionRad();
-    inputs.climbVelocityRadPerSec = climbMotorSim.getAngularVelocityRadPerSec();
-    inputs.climbAppliedVolts = appliedVolts.in(Volts);
-    inputs.climbCurrentAmps = climbMotorSim.getCurrentDrawAmps();
+    inputs.connected = true;
+    inputs.positionRad = climbMotorSim.getAngularPositionRad();
+    inputs.velocityRadPerSec = climbMotorSim.getAngularVelocityRadPerSec();
+    inputs.appliedVolts = appliedVolts.in(Volts);
+    inputs.currentAmps = climbMotorSim.getCurrentDrawAmps();
   }
 
   @Override

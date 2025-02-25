@@ -51,7 +51,7 @@ public class Vision extends SubsystemBase {
     for (int i = 0; i < inputs.length; i++) {
       disconnectedAlerts[i] =
           new Alert(
-              "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
+              "Vision Camera " + Integer.toString(i) + " is Disconnected.", AlertType.kWarning);
     }
   }
 

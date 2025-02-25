@@ -13,8 +13,7 @@
 
 package frc.robot.commands;
 
-import static frc.robot.subsystems.vision.VisionConstants.blueReefTagPoses;
-import static frc.robot.subsystems.vision.VisionConstants.redReefTagPoses;
+import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -35,8 +34,9 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.drive.DriveConstants;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -47,7 +47,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
-  private static final double ANGLE_KP = 5.0;
+  private static final double ANGLE_KP = 4.0;
   private static final double ANGLE_KD = 0.4;
   private static final double ANGLE_MAX_VELOCITY = 8.0;
   private static final double ANGLE_MAX_ACCELERATION = 20.0;
@@ -55,8 +55,6 @@ public class DriveCommands {
   private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
-
-  private DriveCommands() {}
 
   private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
     // Apply deadband
@@ -101,7 +99,7 @@ public class DriveCommands {
           boolean isFlipped =
               DriverStation.getAlliance().isPresent()
                   && DriverStation.getAlliance().get() == Alliance.Red;
-          drive.runVelocity(
+          drive.driveRobotCentric(
               ChassisSpeeds.fromFieldRelativeSpeeds(
                   speeds,
                   isFlipped
@@ -132,50 +130,35 @@ public class DriveCommands {
     angleController.enableContinuousInput(-Math.PI, Math.PI);
 
     // Construct command
-    return Commands.run(
-            () -> {
-              // Get linear velocity
-              Translation2d linearVelocity =
-                  getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-
-              // Calculate angular speed
-              double omega =
-                  angleController.calculate(
-                      drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
-
-              // Convert to field relative speeds & send command
-              ChassisSpeeds speeds =
-                  new ChassisSpeeds(
-                      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                      omega);
-              boolean isFlipped =
-                  DriverStation.getAlliance().isPresent()
-                      && DriverStation.getAlliance().get() == Alliance.Red;
-              drive.runVelocity(
-                  ChassisSpeeds.fromFieldRelativeSpeeds(
-                      speeds,
-                      isFlipped
-                          ? drive.getRotation().plus(new Rotation2d(Math.PI))
-                          : drive.getRotation()));
-            },
-            drive)
-
+    return drive.startRun(
         // Reset PID controller when command starts
-        .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
-  }
+        () -> angleController.reset(drive.getRotation().getRadians()),
+        () -> {
+          // Get linear velocity
+          Translation2d linearVelocity =
+              getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
-  /** Rotates in-place to center on the currently seen reef tag. */
-  public static Command rotateToTag(Drive drive, Vision vision) {
-    return joystickDriveAtAngle(
-        drive, () -> 0.0, () -> 0.0, () -> drive.getRotation().plus(vision.getTargetX(0)));
-  }
+          // Calculate angular speed
+          double omega =
+              angleController.calculate(
+                  drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
 
-  /** Rotates to center on the currently seen reef tag. Driver can still control linear velocity. */
-  public static Command rotateToTag(
-      Drive drive, Vision vision, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
-    return joystickDriveAtAngle(
-        drive, xSupplier, ySupplier, () -> drive.getRotation().plus(vision.getTargetX(0)));
+          // Convert field relative speeds to internal robot relative speeds & send command
+          ChassisSpeeds speeds =
+              new ChassisSpeeds(
+                  linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                  linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                  omega * drive.getMaxAngularSpeedRadPerSec());
+          boolean isFlipped =
+              DriverStation.getAlliance().isPresent()
+                  && DriverStation.getAlliance().get() == Alliance.Red;
+          drive.driveRobotCentric(
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  speeds,
+                  isFlipped
+                      ? drive.getRotation().plus(new Rotation2d(Math.PI))
+                      : drive.getRotation()));
+        });
   }
 
   /** Field relative drive command using PID for full control to a specified pose. */
@@ -188,46 +171,50 @@ public class DriveCommands {
             ANGLE_KD,
             new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
     angleController.enableContinuousInput(-Math.PI, Math.PI);
+    angleController.setTolerance(Units.degreesToRadians(2.0));
 
-    PIDController xController = new PIDController(3.0, 0.0, 0.0);
-    PIDController yController = new PIDController(3.0, 0.0, 0.0);
+    PIDController xController = new PIDController(4.0, 0.0, 0.5);
+    xController.setTolerance(0.05);
+    PIDController yController = new PIDController(4.0, 0.0, 0.5);
+    yController.setTolerance(0.05);
 
     // Construct command
-    return Commands.run(
-            () -> {
-              double xVel =
-                  xController.calculate(drive.getPose().getX(), poseSupplier.get().getX());
-              double yVel =
-                  yController.calculate(drive.getPose().getY(), poseSupplier.get().getY());
+    return new FunctionalCommand(
+        () -> {
+          // Reset PID controllerS when command starts
+          angleController.reset(drive.getRotation().getRadians());
+          xController.reset();
+          yController.reset();
+        },
+        () -> {
+          double xVel = xController.calculate(drive.getPose().getX(), poseSupplier.get().getX());
+          double yVel = yController.calculate(drive.getPose().getY(), poseSupplier.get().getY());
 
-              // Calculate angular speed
-              double omega =
-                  angleController.calculate(
-                      drive.getRotation().getRadians(),
-                      poseSupplier.get().getRotation().getRadians());
+          // Calculate angular speed
+          double omega =
+              angleController.calculate(
+                  drive.getRotation().getRadians(), poseSupplier.get().getRotation().getRadians());
 
-              // Convert to field relative speeds & send command
-              ChassisSpeeds speeds =
-                  new ChassisSpeeds(
-                      xVel * drive.getMaxLinearSpeedMetersPerSec(),
-                      yVel * drive.getMaxLinearSpeedMetersPerSec(),
-                      omega);
-              drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
-            },
-            drive)
-
-        // Reset PID controllerS when command starts
-        .beforeStarting(
-            () -> {
-              angleController.reset(drive.getRotation().getRadians());
-              xController.reset();
-              yController.reset();
-            })
-        .finallyDo(
-            () -> {
-              xController.close();
-              yController.close();
-            });
+          // Convert to field relative speeds & send command
+          ChassisSpeeds speeds =
+              new ChassisSpeeds(
+                  xVel * drive.getMaxLinearSpeedMetersPerSec(),
+                  yVel * drive.getMaxLinearSpeedMetersPerSec(),
+                  omega * drive.getMaxAngularSpeedRadPerSec());
+          drive.driveRobotCentric(
+              ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
+        },
+        interrupted -> {
+          drive.driveRobotCentric(new ChassisSpeeds());
+          xController.close();
+          yController.close();
+        },
+        () -> {
+          return xController.atSetpoint()
+              && yController.atSetpoint()
+              && angleController.atSetpoint();
+        }, // only end on interrupt
+        drive);
   }
 
   /**
@@ -260,32 +247,39 @@ public class DriveCommands {
    * @param tagPoseSupplier A supplier for the tag pose - should be the actual tag pose, not the
    *     pose of the robot relative to the tag or any offset pose.
    */
-  public static Command driveToReefTag(Drive drive, Supplier<Pose3d> tagPoseSupplierNoOffset) {
-    // applies a 0.7m offset to the tag pose and discards the z (vertical) component
+  public static Command autoAlignToBranch(
+      Drive drive, Supplier<Pose3d> tagPoseSupplierNoOffset, boolean alignLeft) {
+    // applies x/y offsets from the tag pose
     // rotate, because apriltag will always be 180° from robot
     Supplier<Pose2d> tagPoseSupplierIn2DWOffset =
         () -> {
+          Logger.recordOutput("tag", tagPoseSupplierNoOffset.get());
           if (tagPoseSupplierNoOffset.get() == null) {
             return drive.getPose();
-          } else
+          } else {
             return tagPoseSupplierNoOffset
                 .get()
-                .transformBy(new Transform3d(0.7, 0, 0, new Rotation3d(Rotation2d.kPi)))
+                .transformBy(
+                    new Transform3d(
+                        0.3, (alignLeft ? -0.33 : 0.0), 0, new Rotation3d(Rotation2d.kPi)))
                 .toPose2d();
+          }
         };
 
     return driveToPose(drive, tagPoseSupplierIn2DWOffset)
         .alongWith(
             Commands.run(
-                () -> Logger.recordOutput("reefPoseTargetPose", tagPoseSupplierIn2DWOffset.get())));
+                () ->
+                    Logger.recordOutput("targetAutoAlignPose", tagPoseSupplierIn2DWOffset.get())));
   }
 
   /**
    * Field relative drive command using PID for full control, targeting the nearest reef tag
-   * (doesn't have to be seen).
+   * (doesn't have to be seen). Separate commands should be created for aligning to left and right
+   * branches.
    */
-  public static Command driveToNearestReefTagWOdometry(Drive drive) {
-    return driveToReefTag(
+  public static Command autoAlignToNearestBranch(Drive drive, boolean alignLeft) {
+    return autoAlignToBranch(
         drive,
         () ->
             new Pose3d(
@@ -295,7 +289,8 @@ public class DriveCommands {
                         DriverStation.getAlliance().isPresent()
                                 && DriverStation.getAlliance().get() == Alliance.Red
                             ? redReefTagPoses
-                            : blueReefTagPoses)));
+                            : blueReefTagPoses)),
+        alignLeft);
   }
 
   /**
@@ -379,7 +374,7 @@ public class DriveCommands {
             Commands.run(
                 () -> {
                   double speed = limiter.calculate(WHEEL_RADIUS_MAX_VELOCITY);
-                  drive.runVelocity(new ChassisSpeeds(0.0, 0.0, speed));
+                  drive.driveRobotCentric(new ChassisSpeeds(0.0, 0.0, speed));
                 },
                 drive)),
 
@@ -412,7 +407,8 @@ public class DriveCommands {
                       for (int i = 0; i < 4; i++) {
                         wheelDelta += Math.abs(positions[i] - state.positions[i]) / 4.0;
                       }
-                      double wheelRadius = (state.gyroDelta * Drive.DRIVE_BASE_RADIUS) / wheelDelta;
+                      double wheelRadius =
+                          (state.gyroDelta * DriveConstants.DRIVE_BASE_RADIUS) / wheelDelta;
 
                       NumberFormat formatter = new DecimalFormat("#0.000");
                       System.out.println(

@@ -4,7 +4,7 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.Constants.ClimbConstants.CLIMB_MOTOR_ID;
+import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_MOTOR_ID;
 import static frc.robot.util.PhoenixUtil.tryUntilOk;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -31,13 +31,13 @@ public class ClimbIOTalonFX implements ClimbIO {
   public ClimbIOTalonFX() {
     climbMotor = new TalonFX(CLIMB_MOTOR_ID);
     TalonFXConfiguration config = new TalonFXConfiguration();
-    config.CurrentLimits.StatorCurrentLimit = 70;
+    config.CurrentLimits.StatorCurrentLimit = 80;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = 40;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     /* Apply configs */
     tryUntilOk(5, () -> climbMotor.getConfigurator().apply(config, 0.25));
@@ -56,11 +56,11 @@ public class ClimbIOTalonFX implements ClimbIO {
   public void updateInputs(ClimbIOInputs inputs) {
     BaseStatusSignal.refreshAll(climbPosition, climbVelocity, climbAppliedVolts, climbCurrent);
 
-    inputs.climbMotorConnected = climbDebounce.calculate(climbMotor.isConnected());
-    inputs.climbPositionRad = climbPosition.getValue().in(Radians);
-    inputs.climbVelocityRadPerSec = climbVelocity.getValue().in(RadiansPerSecond);
-    inputs.climbAppliedVolts = climbAppliedVolts.getValue().in(Volts);
-    inputs.climbCurrentAmps = climbCurrent.getValue().in(Amps);
+    inputs.connected = climbDebounce.calculate(climbMotor.isConnected());
+    inputs.positionRad = climbPosition.getValue().in(Radians);
+    inputs.velocityRadPerSec = climbVelocity.getValue().in(RadiansPerSecond);
+    inputs.appliedVolts = climbAppliedVolts.getValue().in(Volts);
+    inputs.currentAmps = climbCurrent.getValue().in(Amps);
   }
 
   @Override

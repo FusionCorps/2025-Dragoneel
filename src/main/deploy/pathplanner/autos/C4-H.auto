@@ -5,34 +5,15 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "C4-H"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "ElevatorL4"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.5
+            "pathName": "C4-H"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "ScorerShootCoral"
+            "name": "ShootCoral"
           }
         }
       ]

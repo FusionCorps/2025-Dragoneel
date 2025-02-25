@@ -13,24 +13,14 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.signals.GravityTypeValue;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkFlexConfig;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Voltage;
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.RobotConfig;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
+import frc.robot.subsystems.drive.DriveConstants;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -52,98 +42,25 @@ public final class Constants {
     REPLAY
   }
 
-  public static class ScorerConstants {
-    /* Scorer motor ID */
-    public static final int SCORER_MOTOR_ID = 0;
-
-    public static final SparkFlexConfig SCORER_CONFIG =
-        (SparkFlexConfig)
-            new SparkFlexConfig()
-                .inverted(false)
-                .idleMode(IdleMode.kCoast)
-                .voltageCompensation(RobotController.getBatteryVoltage())
-                .smartCurrentLimit(20);
-
-    /* Scorer motor state */
-    public static enum ScorerState {
-      IDLE(Volts.of(0.0)),
-      OUTTAKE_ALGAE(Volts.of(6.0)),
-      SHOOT_CORAL(Volts.of(-6.0));
-
-      public final Voltage volts;
-
-      private ScorerState(Voltage volts) {
-        this.volts = volts;
-      }
-    }
-  }
-
-  public static class ClimbConstants {
-
-    public static final int CLIMB_MOTOR_ID = 16;
-    public static final Voltage CLIMB_RUN_VOLTS = Volts.of(9.0);
-  }
-
-  public static class ElevatorConstants {
-
-    public static enum ElevatorState {
-      ZERO(Rotations.of(0.0)),
-      L1(Rotations.of(3.0)),
-      L2(Rotations.of(6.0)),
-      STATION(Rotations.of(7.5)),
-      L3(Rotations.of(9.0)),
-      L4(Rotations.of(12.0)),
-      NET(Rotations.of(15.0));
-
-      public final Angle height;
-
-      private ElevatorState(Angle height) {
-        this.height = height;
-      }
-    }
-
-    public static final int mainElevatorMotorID = 13;
-    public static final int followerElevatorMotorID = 14;
-
-    public static final double elevatorGearRatio = 6.0;
-    public static final double elevatorShaftRadiusInches = 0.5;
-
-    public static final TalonFXConfiguration elevatorConfig =
-        new TalonFXConfiguration()
-            .withMotorOutput(
-                new MotorOutputConfigs()
-                    .withInverted(InvertedValue.CounterClockwise_Positive)
-                    .withNeutralMode(NeutralModeValue.Brake))
-            .withCurrentLimits(
-                new CurrentLimitsConfigs()
-                    .withStatorCurrentLimitEnable(true)
-                    .withStatorCurrentLimit(80)
-                    .withSupplyCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(70)
-                    .withSupplyCurrentLowerLimit(40)
-                    .withSupplyCurrentLowerTime(1.0))
-            .withSlot0(
-                new Slot0Configs()
-                    .withGravityType(GravityTypeValue.Elevator_Static)
-                    // TODO: these need to be tuned
-                    .withKP(0)
-                    .withKI(0)
-                    .withKD(0)
-                    .withKS(0)
-                    .withKV(0)
-                    .withKA(0))
-            .withMotionMagic(
-                new MotionMagicConfigs()
-                    // TODO: these need to change
-                    .withMotionMagicCruiseVelocity(0)
-                    .withMotionMagicAcceleration(0)
-                    .withMotionMagicJerk(0))
-            .withSoftwareLimitSwitch(
-                new SoftwareLimitSwitchConfigs()
-                    // TODO: these may need to change
-                    .withForwardSoftLimitEnable(true)
-                    .withForwardSoftLimitThreshold(100)
-                    .withReverseSoftLimitEnable(true)
-                    .withReverseSoftLimitThreshold(0));
-  }
+  // TODO: Update these values in PathPlanner and Choreo and here
+  public static final Mass ROBOT_MASS = Pounds.of(115);
+  public static final double ROBOT_MOI =
+      //   ROBOT_MASS.in(Kilograms) * DriveConstants.FRONT_LEFT.LocationX * (0.011992 /
+      // DriveConstants.driveGains.kA);
+      8.0; // round number on the higher/safer side, higher MOI means slower path rotation which is
+  // OK
+  // default PathPlanner configuration for path following
+  public static final RobotConfig PP_ROBOT_CONFIG_DEFAULT =
+      new RobotConfig(
+          Constants.ROBOT_MASS.in(Kilograms),
+          Constants.ROBOT_MOI,
+          new ModuleConfig(
+              DriveConstants.FRONT_LEFT.WheelRadius,
+              DriveConstants.SPEED_AT_12V.in(MetersPerSecond),
+              DriveConstants.WHEEL_COF,
+              DCMotor.getKrakenX60Foc(1)
+                  .withReduction(DriveConstants.FRONT_LEFT.DriveMotorGearRatio),
+              DriveConstants.FRONT_LEFT.SlipCurrent,
+              1),
+          DriveConstants.MODULE_TRANSLATIONS);
 }

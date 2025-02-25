@@ -1,44 +1,121 @@
 package frc.robot.subsystems.elevator;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.Constants.ElevatorConstants.elevatorGearRatio;
-import static frc.robot.Constants.ElevatorConstants.elevatorShaftRadiusInches;
+import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.ElevatorConstants.ElevatorState;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Robot;
+import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
+import frc.robot.util.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
-import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
-import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
+/**
+ * The Elevator subsystem controls the elevator mechanism of the robot. This is a three-stage
+ * cascade elevator, with the first stage being fixed. The elevator can operate in both closed-loop
+ * and open-loop modes.
+ *
+ * <p>Constructor:
+ *
+ * <ul>
+ *   <li>{@link #Elevator(ElevatorIO)}: Initializes the Elevator subsystem with the given IO
+ *       interface.
+ * </ul>
+ *
+ * <p>Methods:
+ *
+ * <ul>
+ *   <li>{@link #periodic()}: Periodically updates the elevator state, processes inputs, and handles
+ *       alerts and tunable values.
+ *   <li>{@link #goToState(ElevatorState)}: Returns a {@link InstantCommand} to move the elevator to
+ *       the specified state.
+ *   <li>{@link #lowerElevatorOpenLoop()}: Returns a {@link InstantCommand} to lower the elevator in
+ *       open-loop mode.
+ *   <li>{@link #raiseElevatorOpenLoop()}: Returns a {@link InstantCommand} to raise the elevator in
+ *       open-loop mode.
+ * </ul>
+ *
+ * <p>Alerts:
+ *
+ * <ul>
+ *   <li>{@link #mainMotorDisconnectedAlert}: {@link Alert} for main elevator motor disconnection.
+ *   <li>{@link #followerMotorDisconnectedAlert}: {@link Alert} for follower elevator motor
+ *       disconnection.
+ * </ul>
+ *
+ * <p>Tunable Parameters:
+ *
+ * <ul>
+ *   <li>{@link #elevatorProcessorPosition}
+ *   <li>{@link #elevatorL1Position}
+ *   <li>{@link #elevatorL2Position}
+ *   <li>{@link #elevatorStationPosition}
+ *   <li>{@link #elevatorL3Position}
+ *   <li>{@link #elevatorL4Position}
+ *   <li>{@link #elevatorNetPosition}
+ *   <li>{@link #kP}
+ *   <li>{@link #kD}
+ *   <li>{@link #kV}
+ *   <li>{@link #kS}
+ *   <li>{@link #kG}
+ *   <li>{@link #vel}
+ *   <li>{@link #accel}
+ * </ul>
+ */
 public class Elevator extends SubsystemBase {
   /* IO and hardware inputs */
   private final ElevatorIO io;
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
   /* Connection Alerts */
-  private final Alert mainMotorConnectedAlert =
+  private final Alert mainMotorDisconnectedAlert =
       new Alert("Main Elevator Motor Disconnected.", AlertType.kError);
-  private final Alert followerMotorConnectedAlert =
+  private final Alert followerMotorDisconnectedAlert =
       new Alert("Follower Elevator Motor Disconnected.", AlertType.kError);
+  private final Alert forwardLimitSwitchTriggeredAlert =
+      new Alert("Top Limit Switch Triggered.", AlertType.kInfo);
+  private final Alert reverseLimitSwitchTriggeredAlert =
+      new Alert("Bottom Limit Switch Triggered. Elevator zeroed", AlertType.kInfo);
 
   /* State tracker for current height of the elevator */
-  @AutoLogOutput private ElevatorState currentElevatorState = ElevatorState.ZERO;
+  private ElevatorState currentElevatorState = ElevatorState.ZERO;
 
-  /* Visualization mechanism for elevator */
-  @AutoLogOutput private final LoggedMechanism2d elevatorMechanism = new LoggedMechanism2d(1, 72);
-  private final LoggedMechanismRoot2d elevatorHeightIndicatorMover =
-      elevatorMechanism.getRoot("Elevator", 0, 0);
-  private final LoggedMechanismLigament2d elevatorHeightIndicator =
-      elevatorHeightIndicatorMover.append(
-          new LoggedMechanismLigament2d("elevatorIndicator", 2, 90));
+  @AutoLogOutput
+  public Trigger isAtTargetState =
+      new Trigger(() -> getCurrentElevatorPosition().isNear(currentElevatorState.rotations, 0.05));
+
+  boolean isOpenLoop = false;
+
+  LoggedTunableNumber elevatorProcessorPosition =
+      new LoggedTunableNumber(
+          "/Elevator/ProcessorPosition", ElevatorState.PROCESSOR.rotations.in(Rotations));
+  LoggedTunableNumber elevatorL1Position =
+      new LoggedTunableNumber("/Elevator/L1Position", ElevatorState.L1.rotations.in(Rotations));
+  LoggedTunableNumber elevatorL2Position =
+      new LoggedTunableNumber("/Elevator/L2Position", ElevatorState.L2.rotations.in(Rotations));
+  LoggedTunableNumber elevatorStationPosition =
+      new LoggedTunableNumber(
+          "/Elevator/StationPosition", ElevatorState.STATION.rotations.in(Rotations));
+  LoggedTunableNumber elevatorL3Position =
+      new LoggedTunableNumber("/Elevator/L3Position", ElevatorState.L3.rotations.in(Rotations));
+  LoggedTunableNumber elevatorL4Position =
+      new LoggedTunableNumber("/Elevator/L4Position", ElevatorState.L4.rotations.in(Rotations));
+  LoggedTunableNumber elevatorNetPosition =
+      new LoggedTunableNumber("/Elevator/NetPosition", ElevatorState.NET.rotations.in(Rotations));
 
   /* Constructor */
   public Elevator(ElevatorIO io) {
@@ -48,80 +125,118 @@ public class Elevator extends SubsystemBase {
   /* Periodically running code */
   @Override
   public void periodic() {
-    io.setTargetPosition(currentElevatorState.height);
+    if (!isOpenLoop) io.setTargetPosition(currentElevatorState.rotations);
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
-    elevatorHeightIndicatorMover.setPosition(
-        0,
-        // rev * distance/rev / gear ratio
-        Units.radiansToRotations(inputs.mainElevatorPositionRad)
-            * (2.0 * Math.PI * elevatorShaftRadiusInches)
-            / (elevatorGearRatio));
+    double elevatorStage1HeightMeters =
+        // rev_of_motor / gear ratio * circumference_of_drum/rev_of_drum  = height in meters
+        Units.radiansToRotations(inputs.mainPositionRad)
+            / ELEVATOR_GEAR_RATIO
+            * (Math.PI * ELEVATOR_SPOOL_DIAMETER.in(Meters));
 
-    if (!inputs.mainElevatorMotorConnected) {
-      mainMotorConnectedAlert.set(true);
+    double elevatorStage2HeightMeters = elevatorStage1HeightMeters * 2.0;
+
+    Robot.componentPoses[0] = new Pose3d(0.0, 0.0, elevatorStage1HeightMeters, Rotation3d.kZero);
+    Robot.componentPoses[1] = new Pose3d(0.0, 0.0, elevatorStage2HeightMeters, Rotation3d.kZero);
+
+    if (!inputs.mainConnected) {
+      mainMotorDisconnectedAlert.set(true);
     }
 
-    if (!inputs.followerElevatorMotorConnected) {
-      followerMotorConnectedAlert.set(true);
+    if (!inputs.followerConnected) {
+      followerMotorDisconnectedAlert.set(true);
+    }
+
+    if (inputs.forwardLimitSwitchTriggered) {
+      forwardLimitSwitchTriggeredAlert.set(true);
+    }
+
+    if (inputs.reverseLimitSwitchTriggered) {
+      reverseLimitSwitchTriggeredAlert.set(true);
     }
 
     // driver variables to visualize the elevator state
-    SmartDashboard.putBoolean("Elevator HOMED", currentElevatorState == ElevatorState.ZERO);
-    SmartDashboard.putBoolean("Elevator L1", currentElevatorState == ElevatorState.L1);
-    SmartDashboard.putBoolean("Elevator L2", currentElevatorState == ElevatorState.L2);
-    SmartDashboard.putBoolean("Elevator at STATION", currentElevatorState == ElevatorState.STATION);
-    SmartDashboard.putBoolean("Elevator L3", currentElevatorState == ElevatorState.L3);
-    SmartDashboard.putBoolean("Elevator L4", currentElevatorState == ElevatorState.L4);
-    SmartDashboard.putBoolean("Elevator NET", currentElevatorState == ElevatorState.NET);
+    SmartDashboard.putBoolean("ZERO", currentElevatorState == ElevatorState.ZERO);
+    SmartDashboard.putBoolean("L1", currentElevatorState == ElevatorState.L1);
+    SmartDashboard.putBoolean("L2", currentElevatorState == ElevatorState.L2);
+    SmartDashboard.putBoolean("STATION", currentElevatorState == ElevatorState.STATION);
+    SmartDashboard.putBoolean("L3", currentElevatorState == ElevatorState.L3);
+    SmartDashboard.putBoolean("L4", currentElevatorState == ElevatorState.L4);
+    SmartDashboard.putBoolean("NET", currentElevatorState == ElevatorState.NET);
+
+    LoggedTunableNumber.ifChanged(
+        hashCode(),
+        nums -> {
+          ElevatorState.PROCESSOR.rotations = Rotations.of(nums[0]);
+          ElevatorState.L1.rotations = Rotations.of(nums[1]);
+          ElevatorState.L2.rotations = Rotations.of(nums[2]);
+          ElevatorState.STATION.rotations = Rotations.of(nums[3]);
+          ElevatorState.L3.rotations = Rotations.of(nums[4]);
+          ElevatorState.L4.rotations = Rotations.of(nums[5]);
+          ElevatorState.NET.rotations = Rotations.of(nums[6]);
+        },
+        elevatorProcessorPosition,
+        elevatorL1Position,
+        elevatorL2Position,
+        elevatorStationPosition,
+        elevatorL3Position,
+        elevatorL4Position,
+        elevatorNetPosition);
   }
 
-  public Command goToL1() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L1).withName("ElevatorL1");
+  public Command goToState(ElevatorState targetState) {
+    return this.runOnce(
+        () -> {
+          isOpenLoop = false;
+          currentElevatorState = targetState;
+        });
   }
 
-  public Command goToL2() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L2).withName("ElevatorL2");
+  public Command lowerElevatorOpenLoop() {
+    return this.runEnd(
+        () -> {
+          isOpenLoop = true;
+          io.setVoltageOpenLoop(Volts.of(-0.1 * 12.0));
+        },
+        () -> io.holdPosition());
   }
 
-  public Command goToStation() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.STATION)
-        .withName("ElevatorStation");
+  public Command raiseElevatorOpenLoop() {
+    return this.runEnd(
+        () -> {
+          isOpenLoop = true;
+          io.setVoltageOpenLoop(Volts.of(0.1 * 12.0));
+        },
+        () -> io.holdPosition());
   }
 
-  public Command goToL3() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L3).withName("ElevatorL3");
-  }
-
-  public Command goToL4() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.L4).withName("ElevatorL4");
-  }
-
-  public Command goToNet() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.NET).withName("ElevatorNet");
-  }
-
-  public Command goToZero() {
-    return this.runOnce(() -> currentElevatorState = ElevatorState.ZERO).withName("ElevatorZero");
-  }
-
-  /**
-   * This routine should be called when robot is first enabled. It will slowly lower the elevator
-   * until a current spike is detected, then stop the motor and zero its position. This does not
-   * require any external sensors.
-   */
-  public Command runHomingRoutine() {
+  public Command homeElevator() {
     return new FunctionalCommand(
-            () -> {},
-            () -> io.setVoltage(Volts.of(0.1 * -12.0)),
-            (interrupted) -> {
-              io.setVoltage(Volts.zero());
-              currentElevatorState = ElevatorState.ZERO;
-              io.zeroPosition();
-            },
-            () -> inputs.mainElevatorCurrentAmps > 60.0,
-            this)
-        .withName("ElevatorHomingRouting");
+        () -> {},
+        () -> {
+          isOpenLoop = true;
+          io.setVoltageOpenLoop(Volts.of(-0.1 * 12.0));
+        },
+        interrupted -> {
+          isOpenLoop = false;
+          if (interrupted) { // e.g. robot disabled or operator lets go of button
+            io.holdPosition();
+          }
+          if (!interrupted) { // ends normally when bottom limit switch is triggered
+            io.zeroPosition();
+            currentElevatorState = ElevatorState.ZERO;
+          }
+        },
+        () -> inputs.reverseLimitSwitchTriggered);
+  }
+
+  @AutoLogOutput
+  public ElevatorState getCurrentElevatorState() {
+    return currentElevatorState;
+  }
+
+  public Angle getCurrentElevatorPosition() {
+    return Radians.of(inputs.mainPositionRad);
   }
 }

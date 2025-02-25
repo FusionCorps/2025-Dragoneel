@@ -1,16 +1,3 @@
-// Copyright 2021-2025 FRC 6328
-// http://github.com/Mechanical-Advantage
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -18,12 +5,14 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 import java.util.List;
 
 public class VisionConstants {
   // AprilTag layout
   public static AprilTagFieldLayout aprilTagLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+      AprilTagFieldLayout.loadField(
+          AprilTagFields.k2025ReefscapeWelded); // TODO: change this at comp
 
   public static List<Pose2d> blueReefTagPoses =
       List.of(
@@ -44,19 +33,24 @@ public class VisionConstants {
           aprilTagLayout.getTagPose(11).get().toPose2d());
 
   // Camera names, must match names configured on coprocessor
-  public static String camera0Name = "ArducamMiddle";
-  public static String camera1Name = "ArducamLeft";
+  public static String CAM_FL_NAME = "CamLeft";
+  public static String CAM_FR_NAME = "CamRight";
+  public static String CAM_BACK_NAME = "OV9281-3";
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
-  public static Transform3d robotToCamera0 =
-      new Transform3d(0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, 0.0));
-  public static Transform3d robotToCamera1 =
-      new Transform3d(-0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, Math.PI));
-
+  // TODO: find out proper transforms
+  public static Transform3d ROBOT_TO_CAM_FL_TRANSFORM =
+      new Transform3d(
+          0.3175, 0.2921, 0.1778, new Rotation3d(0.0, 0.0, Units.degreesToRadians(-30)));
+  public static Transform3d ROBOT_TO_CAM_FR_TRANSFORM =
+      new Transform3d(
+          0.3175, -0.2921, 0.1778, new Rotation3d(0.0, 0.0, Units.degreesToRadians(30)));
+  public static Transform3d ROBOT_TO_CAM_BACK_TRANSFORM =
+      new Transform3d(-0.05, 0, 0.3, new Rotation3d(0.0, 0.0, Math.PI / 2.0));
   // Basic filtering thresholds
   public static double maxAmbiguity = 0.3;
-  public static double maxZError = 0.75;
+  public static double maxZError = 0.2;
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)
@@ -67,8 +61,9 @@ public class VisionConstants {
   // (Adjust to trust some cameras more than others)
   public static double[] cameraStdDevFactors =
       new double[] {
-        1.0, // Camera 0
-        1.0 // Camera 1
+        1.0, // Camera FL
+        1.0, // Camera FR
+        1.0 // Camera back
       };
 
   // Multipliers to apply for MegaTag 2 observations
