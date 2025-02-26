@@ -19,8 +19,10 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -82,7 +84,7 @@ public class RobotContainer {
 
   private final CommandXboxController controller = new CommandXboxController(0);
 
-  private Supplier<ReefscapeCoralOnFly> coralProjectileSupplier;
+  private Supplier<ReefscapeCoralOnFly> coralProjectileSupplier = () -> null;
 
   /** The container for the robot. Contains subsystems, operator devices, and commands. */
   public RobotContainer() {
@@ -95,8 +97,7 @@ public class RobotContainer {
                 new ModuleIOTalonFXReal(DriveConstants.FRONT_LEFT),
                 new ModuleIOTalonFXReal(DriveConstants.FRONT_RIGHT),
                 new ModuleIOTalonFXReal(DriveConstants.BACK_LEFT),
-                new ModuleIOTalonFXReal(DriveConstants.BACK_RIGHT),
-                pose -> {});
+                new ModuleIOTalonFXReal(DriveConstants.BACK_RIGHT));
         vision =
             new Vision(
                 drive,
@@ -126,8 +127,8 @@ public class RobotContainer {
                 driveSim::setSimulationWorldPose);
         vision =
             new Vision(
-                (a, b, c) -> {},
-                // drive,
+                // (a, b, c) -> {},
+                drive,
                 new VisionIOPhotonVisionSim(CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getPose),
                 new VisionIOPhotonVisionSim(
                     CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM, drive::getPose));
@@ -164,13 +165,13 @@ public class RobotContainer {
 
     elevatorAndWristCommands = new ElevatorAndWristCommands(elevator, wrist);
 
-    // elevator.isAtTargetState.onTrue(
-    //     Commands.run(
-    //             () -> {
-    //               controller.setRumble(RumbleType.kBothRumble, 1.0);
-    //             })
-    //         .withTimeout(0.1)
-    //         .andThen(Commands.runOnce(() -> controller.setRumble(RumbleType.kBothRumble, 0.0))));
+    elevator.isAtTargetState.onTrue(
+        Commands.run(
+                () -> {
+                  controller.setRumble(RumbleType.kBothRumble, 1.0);
+                })
+            .withTimeout(0.1)
+            .andThen(Commands.runOnce(() -> controller.setRumble(RumbleType.kBothRumble, 0.0))));
 
     // Register named commands for auto
     if (drive != null && elevator != null && wrist != null && scorer != null) {
@@ -224,12 +225,12 @@ public class RobotContainer {
 
       // in simulation: reset odometry to actual robot pose
       // in real: zero gyro heading
-      // final Runnable resetGyro =
-      //     Constants.currentMode == Constants.Mode.SIM
-      //         ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
-      //         : () -> drive.zeroGyro();
+      final Runnable resetGyro =
+          Constants.CURRENT_MODE == Constants.Mode.SIM
+              ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
+              : () -> drive.zeroGyro();
 
-      controller.start().onTrue(drive.zeroGyro().ignoringDisable(true));
+      controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
       controller.povLeft().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, true));
       controller.povRight().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, false));
@@ -252,7 +253,10 @@ public class RobotContainer {
 
     /* scoring commands */
     if (scorer != null && elevator != null) {
-      controller.rightTrigger().whileTrue(scorer.shootCoralCmd(elevator::getCurrentElevatorState));
+      controller
+          .rightTrigger()
+          .whileTrue(
+              scorer.shootCoralCmd(elevator::getCurrentElevatorState, coralProjectileSupplier));
       controller.leftTrigger().whileTrue(scorer.shootAlgaeCmd());
     }
 

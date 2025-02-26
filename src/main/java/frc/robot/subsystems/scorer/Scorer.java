@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
@@ -61,20 +62,17 @@ public class Scorer extends SubsystemBase {
   public Command shootCoralCmd(
       Supplier<ElevatorState> elevatorStateSupplier,
       Supplier<ReefscapeCoralOnFly> coralProjectileSupplier) {
-    return this.startEnd(
-            () -> {
-              if (elevatorStateSupplier.get() == ElevatorState.L1) {
-                setState(ScorerState.SHOOT_CORAL_L1);
-              } else {
-                setState(ScorerState.SHOOT_CORAL_DEFAULT);
-              }
-              if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
-                Arena2025Reefscape.getInstance()
-                    .addGamePieceProjectile(coralProjectileSupplier.get());
-              }
-            },
-            () -> setState(ScorerState.IDLE))
-        .withTimeout(Seconds.of(2.0));
+    return shootCoralCmd(elevatorStateSupplier)
+        .alongWith(
+            Commands.runOnce(
+                () -> {
+                  if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
+                    if (coralProjectileSupplier.get() != null) {
+                      Arena2025Reefscape.getInstance()
+                          .addGamePieceProjectile(coralProjectileSupplier.get());
+                    }
+                  }
+                }));
   }
 
   public Command shootCoralCmd(Supplier<ElevatorState> elevatorStateSupplier) {

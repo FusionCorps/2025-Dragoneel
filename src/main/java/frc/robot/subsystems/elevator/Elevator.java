@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
@@ -24,58 +23,6 @@ import frc.robot.util.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-/**
- * The Elevator subsystem controls the elevator mechanism of the robot. This is a three-stage
- * cascade elevator, with the first stage being fixed. The elevator can operate in both closed-loop
- * and open-loop modes.
- *
- * <p>Constructor:
- *
- * <ul>
- *   <li>{@link #Elevator(ElevatorIO)}: Initializes the Elevator subsystem with the given IO
- *       interface.
- * </ul>
- *
- * <p>Methods:
- *
- * <ul>
- *   <li>{@link #periodic()}: Periodically updates the elevator state, processes inputs, and handles
- *       alerts and tunable values.
- *   <li>{@link #goToState(ElevatorState)}: Returns a {@link InstantCommand} to move the elevator to
- *       the specified state.
- *   <li>{@link #lowerElevatorOpenLoop()}: Returns a {@link InstantCommand} to lower the elevator in
- *       open-loop mode.
- *   <li>{@link #raiseElevatorOpenLoop()}: Returns a {@link InstantCommand} to raise the elevator in
- *       open-loop mode.
- * </ul>
- *
- * <p>Alerts:
- *
- * <ul>
- *   <li>{@link #mainMotorDisconnectedAlert}: {@link Alert} for main elevator motor disconnection.
- *   <li>{@link #followerMotorDisconnectedAlert}: {@link Alert} for follower elevator motor
- *       disconnection.
- * </ul>
- *
- * <p>Tunable Parameters:
- *
- * <ul>
- *   <li>{@link #elevatorProcessorPosition}
- *   <li>{@link #elevatorL1Position}
- *   <li>{@link #elevatorL2Position}
- *   <li>{@link #elevatorStationPosition}
- *   <li>{@link #elevatorL3Position}
- *   <li>{@link #elevatorL4Position}
- *   <li>{@link #elevatorNetPosition}
- *   <li>{@link #kP}
- *   <li>{@link #kD}
- *   <li>{@link #kV}
- *   <li>{@link #kS}
- *   <li>{@link #kG}
- *   <li>{@link #vel}
- *   <li>{@link #accel}
- * </ul>
- */
 public class Elevator extends SubsystemBase {
   /* IO and hardware inputs */
   private final ElevatorIO io;
@@ -96,7 +43,10 @@ public class Elevator extends SubsystemBase {
 
   @AutoLogOutput
   public Trigger isAtTargetState =
-      new Trigger(() -> getCurrentElevatorPosition().isNear(currentElevatorState.rotations, 0.05));
+      new Trigger(
+          () ->
+              getCurrentElevatorPosition()
+                  .isNear(currentElevatorState.rotations, Rotations.of(0.25)));
 
   boolean isOpenLoop = false;
 

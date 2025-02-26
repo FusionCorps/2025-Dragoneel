@@ -101,6 +101,15 @@ public class Drive extends SubsystemBase implements VisionConsumer {
       ModuleIO flModuleIO,
       ModuleIO frModuleIO,
       ModuleIO blModuleIO,
+      ModuleIO brModuleIO) {
+    this(gyroIO, flModuleIO, frModuleIO, blModuleIO, brModuleIO, resetPose -> {});
+  }
+
+  public Drive(
+      GyroIO gyroIO,
+      ModuleIO flModuleIO,
+      ModuleIO frModuleIO,
+      ModuleIO blModuleIO,
       ModuleIO brModuleIO,
       Consumer<Pose2d> resetSimulationPose) {
     this.gyroIO = gyroIO;
@@ -129,7 +138,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
         this::getChassisSpeeds,
         this::driveRobotCentric,
         new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.5), new PIDConstants(5.0, 0.0, 0.25)),
+            new PIDConstants(15.0, 0.0, 0.5), new PIDConstants(15.0, 0.0, 0.25)),
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);

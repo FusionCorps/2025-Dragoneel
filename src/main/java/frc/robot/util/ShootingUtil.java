@@ -21,7 +21,7 @@ public class ShootingUtil {
         drive.getChassisSpeeds(),
         drive.getRotation(),
         Robot.componentPoses[2].getMeasureZ().minus(Meters.of(0.05)),
-        MetersPerSecond.of(2.0),
-        wrist.getCurrentAngle().minus(Degrees.of(0.0)));
+        MetersPerSecond.of(1.0),
+        wrist.getCurrentAngle().minus(Degrees.of(90.0)));
   }
 }

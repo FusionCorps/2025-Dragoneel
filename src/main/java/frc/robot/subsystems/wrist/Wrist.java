@@ -21,7 +21,9 @@ public class Wrist extends SubsystemBase {
   private final WristIO io;
   private final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
-  public Trigger isAtStow;
+  public Trigger isAtStow =
+      new Trigger(() -> WristState.ZERO.rotations.isNear(getCurrentAngle(), Rotations.of(0.01)));
+  ;
 
   @AutoLogOutput private WristState currentWristState = WristState.ZERO;
 
@@ -33,9 +35,10 @@ public class Wrist extends SubsystemBase {
           "/Wrist/ProcessorPosition", WristState.PROCESSOR.rotations.in(Rotations));
   LoggedTunableNumber wristL1Position =
       new LoggedTunableNumber("/Wrist/L1Position", WristState.L1.rotations.in(Rotations));
-  LoggedTunableNumber wristL2_AND_L3Position =
-      new LoggedTunableNumber(
-          "/Wrist/L2_AND_L3Position", WristState.L2_AND_L3.rotations.in(Rotations));
+  LoggedTunableNumber wristL2Position =
+      new LoggedTunableNumber("/Wrist/L2Position", WristState.L2.rotations.in(Rotations));
+  LoggedTunableNumber wristL3Position =
+      new LoggedTunableNumber("/Wrist/L3Position", WristState.L3.rotations.in(Rotations));
   LoggedTunableNumber wristL4Position =
       new LoggedTunableNumber("/Wrist/L4Position", WristState.L4.rotations.in(Rotations));
   LoggedTunableNumber wristNetPosition =
@@ -43,9 +46,6 @@ public class Wrist extends SubsystemBase {
 
   public Wrist(WristIO io) {
     this.io = io;
-
-    isAtStow =
-        new Trigger(() -> WristState.ZERO.rotations.isNear(getCurrentAngle(), Rotations.of(0.05)));
   }
 
   @Override
@@ -68,13 +68,15 @@ public class Wrist extends SubsystemBase {
         nums -> {
           WristState.PROCESSOR.rotations = Rotations.of(nums[0]);
           WristState.L1.rotations = Rotations.of(nums[1]);
-          WristState.L2_AND_L3.rotations = Rotations.of(nums[2]);
-          WristState.L4.rotations = Rotations.of(nums[3]);
-          WristState.NET.rotations = Rotations.of(nums[4]);
+          WristState.L2.rotations = Rotations.of(nums[2]);
+          WristState.L3.rotations = Rotations.of(nums[3]);
+          WristState.L4.rotations = Rotations.of(nums[4]);
+          WristState.NET.rotations = Rotations.of(nums[5]);
         },
         wristProcessorPosition,
         wristL1Position,
-        wristL2_AND_L3Position,
+        wristL2Position,
+        wristL3Position,
         wristL4Position,
         wristNetPosition);
   }

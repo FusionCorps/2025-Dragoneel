@@ -52,7 +52,7 @@ public class WristIOSim implements WristIO {
   @Override
   public void setTargetPosition(Angle angle) {
     isOpenLoop = false;
-    targetPosition = angle.unaryMinus();
+    targetPosition = angle;
   }
 
   @Override

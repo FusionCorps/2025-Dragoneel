@@ -41,7 +41,8 @@ public class WristConstants {
     PROCESSOR(Rotations.of(0.15)),
     STATION(Rotations.of(0)),
     L1(Rotations.of(0.24)),
-    L2_AND_L3(Rotations.of(0.165)),
+    L2(Rotations.of(0.165)),
+    L3(Rotations.of(0.165)),
     L4(Rotations.of(0.22)),
     NET(Rotations.of(0.255));
 
