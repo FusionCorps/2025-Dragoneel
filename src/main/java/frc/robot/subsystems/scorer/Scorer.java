@@ -82,11 +82,11 @@ public class Scorer extends SubsystemBase {
             () -> {
               if (elevatorStateSupplier.get() == ElevatorState.L1) {
                 setState(ScorerState.SHOOT_CORAL_L1);
-              } else {
-                setState(ScorerState.SHOOT_CORAL_DEFAULT);
-              }
+              } else if ((elevatorStateSupplier.get() == ElevatorState.L4)) {
+                setState(ScorerState.SHOOT_CORAL_L1);
+              } else setState(ScorerState.SHOOT_CORAL_DEFAULT);
             },
             () -> setState(ScorerState.IDLE))
-        .withTimeout(Seconds.of(0.25));
+        .withTimeout(Seconds.of(2.0));
   }
 }

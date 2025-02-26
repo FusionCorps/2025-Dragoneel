@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.subsystems.wrist.WristConstants.WristState;
 import frc.robot.util.LoggedTunableNumber;
@@ -19,6 +20,8 @@ import org.littletonrobotics.junction.Logger;
 public class Wrist extends SubsystemBase {
   private final WristIO io;
   private final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
+
+  public Trigger isAtStow;
 
   @AutoLogOutput private WristState currentWristState = WristState.ZERO;
 
@@ -40,6 +43,9 @@ public class Wrist extends SubsystemBase {
 
   public Wrist(WristIO io) {
     this.io = io;
+
+    isAtStow =
+        new Trigger(() -> WristState.ZERO.rotations.isNear(getCurrentAngle(), Rotations.of(0.05)));
   }
 
   @Override

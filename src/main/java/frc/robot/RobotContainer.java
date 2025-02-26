@@ -17,9 +17,6 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathfindingCommand;
-import com.pathplanner.lib.controllers.PathFollowingController;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -102,8 +99,8 @@ public class RobotContainer {
                 pose -> {});
         vision =
             new Vision(
-                // drive,
-                (a, b, c) -> {},
+                drive,
+                // (a, b, c) -> {},
                 new VisionIOPhotonVision(CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM),
                 new VisionIOPhotonVision(CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM));
         // climb = new Climb(new ClimbIOTalonFX());
@@ -194,6 +191,7 @@ public class RobotContainer {
     // add auto routine selector to the dashboard
     // autoChooser.addDefaultOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
     autoChooser.addDefaultOption("4 Piece Opposite Processor", AutoBuilder.buildAuto("T2-ILKJ"));
+    autoChooser.addOption("1 piece", AutoBuilder.buildAuto("C4-H"));
 
     // Set up SysId routines
     // TODO: remove these later
@@ -254,10 +252,7 @@ public class RobotContainer {
 
     /* scoring commands */
     if (scorer != null && elevator != null) {
-      controller
-          .rightTrigger()
-          .whileTrue(
-              scorer.shootCoralCmd(elevator::getCurrentElevatorState, coralProjectileSupplier));
+      controller.rightTrigger().whileTrue(scorer.shootCoralCmd(elevator::getCurrentElevatorState));
       controller.leftTrigger().whileTrue(scorer.shootAlgaeCmd());
     }
 

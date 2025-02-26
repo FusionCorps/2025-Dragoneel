@@ -174,9 +174,9 @@ public class DriveCommands {
     angleController.setTolerance(Units.degreesToRadians(2.0));
 
     PIDController xController = new PIDController(4.0, 0.0, 0.5);
-    xController.setTolerance(0.05);
+    xController.setTolerance(0.1);
     PIDController yController = new PIDController(4.0, 0.0, 0.5);
-    yController.setTolerance(0.05);
+    yController.setTolerance(0.1);
 
     // Construct command
     return new FunctionalCommand(
@@ -198,9 +198,9 @@ public class DriveCommands {
           // Convert to field relative speeds & send command
           ChassisSpeeds speeds =
               new ChassisSpeeds(
-                  xVel * drive.getMaxLinearSpeedMetersPerSec(),
-                  yVel * drive.getMaxLinearSpeedMetersPerSec(),
-                  omega * drive.getMaxAngularSpeedRadPerSec());
+                  xVel * drive.getMaxLinearSpeedMetersPerSec() / 2.0,
+                  yVel * drive.getMaxLinearSpeedMetersPerSec() / 2.0,
+                  omega * drive.getMaxAngularSpeedRadPerSec() / 2.0);
           drive.driveRobotCentric(
               ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
         },
@@ -261,7 +261,7 @@ public class DriveCommands {
                 .get()
                 .transformBy(
                     new Transform3d(
-                        0.3, (alignLeft ? -0.33 : 0.0), 0, new Rotation3d(Rotation2d.kPi)))
+                        0.52, (alignLeft ? -0.33 : 0.0), 0, new Rotation3d(Rotation2d.kPi)))
                 .toPose2d();
           }
         };

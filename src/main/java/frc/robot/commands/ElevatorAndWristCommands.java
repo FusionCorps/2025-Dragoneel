@@ -15,6 +15,10 @@ public class ElevatorAndWristCommands {
     this.wrist = wrist;
   }
 
+  private Command stowWrist() {
+    return wrist.goToState(WristState.ZERO);
+  }
+
   public Command goToZero() {
     return elevator.goToState(ElevatorState.ZERO).alongWith(wrist.goToState(WristState.ZERO));
   }

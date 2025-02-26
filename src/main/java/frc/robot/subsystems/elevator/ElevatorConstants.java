@@ -20,7 +20,7 @@ public class ElevatorConstants {
     STATION(Rotations.of(0)),
     L1(Rotations.of(3)),
     L2(Rotations.of(10)),
-    L3(Rotations.of(16.5)),
+    L3(Rotations.of(16.8)),
     L4(Rotations.of(25)),
     NET(Rotations.of(20));
 
