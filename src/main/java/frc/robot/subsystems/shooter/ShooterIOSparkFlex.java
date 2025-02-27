@@ -1,6 +1,6 @@
-package frc.robot.subsystems.scorer;
+package frc.robot.subsystems.shooter;
 
-import static frc.robot.subsystems.scorer.ScorerConstants.*;
+import static frc.robot.subsystems.shooter.ShooterConstants.*;
 import static frc.robot.util.SparkUtil.*;
 
 import com.revrobotics.RelativeEncoder;
@@ -12,7 +12,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Voltage;
 import java.util.function.DoubleSupplier;
 
-public class ScorerIOSparkFlex implements ScorerIO {
+public class ShooterIOSparkFlex implements ShooterIO {
   /* Main scoring motor */
   private final SparkFlex scorerMotor;
 
@@ -22,8 +22,8 @@ public class ScorerIOSparkFlex implements ScorerIO {
   /* Debounce */
   private final Debouncer scorerMotorDebouncer = new Debouncer(0.5);
 
-  public ScorerIOSparkFlex() {
-    scorerMotor = new SparkFlex(SCORER_MOTOR_ID, MotorType.kBrushless);
+  public ShooterIOSparkFlex() {
+    scorerMotor = new SparkFlex(SHOOTER_MOTOR_ID, MotorType.kBrushless);
     scorerMotorEncoder = scorerMotor.getEncoder();
 
     /* Try to apply */
@@ -32,11 +32,11 @@ public class ScorerIOSparkFlex implements ScorerIO {
         5,
         () ->
             scorerMotor.configure(
-                SCORER_CONFIG, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
+                SHOOTER_CONFIG, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
   }
 
   @Override
-  public void updateInputs(ScorerIOInputs inputs) {
+  public void updateInputs(ShooterIOInputs inputs) {
     /* Update inputs */
     sparkStickyFault = false;
     ifOk(scorerMotor, scorerMotorEncoder::getPosition, position -> inputs.positionRad = position);

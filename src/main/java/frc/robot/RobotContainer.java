@@ -41,10 +41,10 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
-import frc.robot.subsystems.scorer.Scorer;
-import frc.robot.subsystems.scorer.ScorerIO;
-import frc.robot.subsystems.scorer.ScorerIOSim;
-import frc.robot.subsystems.scorer.ScorerIOSparkFlex;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOSim;
+import frc.robot.subsystems.shooter.ShooterIOSparkFlex;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -75,7 +75,7 @@ public class RobotContainer {
   private SwerveDriveSimulation driveSim = null;
   private final Vision vision;
   private final Climb climb;
-  private final Scorer scorer;
+  private final Shooter scorer;
   private final Wrist wrist;
 
   private ElevatorAndWristCommands elevatorAndWristCommands = null;
@@ -84,7 +84,7 @@ public class RobotContainer {
 
   private final CommandXboxController controller = new CommandXboxController(0);
 
-  private Supplier<ReefscapeCoralOnFly> coralProjectileSupplier = () -> null;
+  private Supplier<ReefscapeCoralOnFly> simCoralProjectileSupplier = () -> null;
 
   /** The container for the robot. Contains subsystems, operator devices, and commands. */
   public RobotContainer() {
@@ -106,7 +106,7 @@ public class RobotContainer {
                 new VisionIOPhotonVision(CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM));
         // climb = new Climb(new ClimbIOTalonFX());
         climb = null;
-        scorer = new Scorer(new ScorerIOSparkFlex());
+        scorer = new Shooter(new ShooterIOSparkFlex());
         elevator = new Elevator(new ElevatorIOTalonFX());
         wrist = new Wrist(new WristIOSparkFlex());
         break;
@@ -135,13 +135,13 @@ public class RobotContainer {
         elevator = new Elevator(new ElevatorIOSim());
         drive.setCurrentElevatorPositionSupplier(elevator::getCurrentElevatorPosition);
         // climb = new Climb(new ClimbIOSim());
-        scorer = new Scorer(new ScorerIOSim());
+        scorer = new Shooter(new ShooterIOSim());
         wrist = new Wrist(new WristIOSim());
         // elevator = null;
         climb = null;
         // scorer = null;
         // wrist = null;
-        coralProjectileSupplier =
+        simCoralProjectileSupplier =
             () -> ShootingUtil.createCoralProjectile(drive, elevator, wrist, scorer);
         break;
 
@@ -155,10 +155,10 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {},
-                robotPose -> {});
+                simRobotPose -> {});
         vision = new Vision(drive, new VisionIO() {});
         climb = new Climb(new ClimbIO() {});
-        scorer = new Scorer(new ScorerIO() {});
+        scorer = new Shooter(new ShooterIO() {});
         wrist = new Wrist(new WristIO() {});
         break;
     }
@@ -170,23 +170,34 @@ public class RobotContainer {
                 () -> {
                   controller.setRumble(RumbleType.kBothRumble, 1.0);
                 })
-            .withTimeout(0.1)
+            .withTimeout(0.2)
             .andThen(Commands.runOnce(() -> controller.setRumble(RumbleType.kBothRumble, 0.0))));
 
     // Register named commands for auto
     if (drive != null && elevator != null && wrist != null && scorer != null) {
       NamedCommands.registerCommands(
           Map.of(
-              "L1", elevatorAndWristCommands.goToL1(),
-              "L2", elevatorAndWristCommands.goToL2(),
-              "Station", elevatorAndWristCommands.goToStation(),
-              "L3", elevatorAndWristCommands.goToL3(),
-              "L4", elevatorAndWristCommands.goToL4(),
-              "Net", elevatorAndWristCommands.goToNet(),
-              "Processor", elevatorAndWristCommands.goToProcessor(),
+              "L1",
+              elevatorAndWristCommands.goToL1(),
+              "L2",
+              elevatorAndWristCommands.goToL2(),
+              "Station",
+              elevatorAndWristCommands.goToStation(),
+              "L3",
+              elevatorAndWristCommands.goToL3(),
+              "L4",
+              elevatorAndWristCommands.goToL4(),
+              "Net",
+              elevatorAndWristCommands.goToNet(),
+              "Processor",
+              elevatorAndWristCommands.goToProcessor(),
               "ShootCoral",
-                  scorer.shootCoralCmd(elevator::getCurrentElevatorState, coralProjectileSupplier),
-              "ShootAlgae", scorer.shootAlgaeCmd()));
+              scorer.shootCoralInAutoCmd(
+                  wrist.isAtScoringState,
+                  elevator::getCurrentElevatorState,
+                  simCoralProjectileSupplier),
+              "ShootAlgae",
+              scorer.shootAlgaeCmd()));
     }
 
     // add auto routine selector to the dashboard
@@ -256,7 +267,7 @@ public class RobotContainer {
       controller
           .rightTrigger()
           .whileTrue(
-              scorer.shootCoralCmd(elevator::getCurrentElevatorState, coralProjectileSupplier));
+              scorer.shootCoralCmd(elevator::getCurrentElevatorState, simCoralProjectileSupplier));
       controller.leftTrigger().whileTrue(scorer.shootAlgaeCmd());
     }
 

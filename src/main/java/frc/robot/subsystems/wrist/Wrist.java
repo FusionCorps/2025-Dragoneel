@@ -1,5 +1,6 @@
 package frc.robot.subsystems.wrist;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 
@@ -21,11 +22,15 @@ public class Wrist extends SubsystemBase {
   private final WristIO io;
   private final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
-  public Trigger isAtStow =
-      new Trigger(() -> WristState.ZERO.rotations.isNear(getCurrentAngle(), Rotations.of(0.01)));
-  ;
-
   @AutoLogOutput private WristState currentWristState = WristState.ZERO;
+
+  public Trigger isAtZero =
+      new Trigger(() -> WristState.ZERO.rotations.isNear(getCurrentAngle(), Degrees.of(5)));
+  public Trigger isAtScoringState =
+      new Trigger(
+          () ->
+              currentWristState.rotations.isNear(getCurrentAngle(), Degrees.of(5))
+                  && currentWristState != WristState.ZERO);
 
   private final Alert wristMotorDisconnectedAlert =
       new Alert("Wrist Motor Disconnected.", AlertType.kError);

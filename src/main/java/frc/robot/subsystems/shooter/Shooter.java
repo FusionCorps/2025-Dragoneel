@@ -1,4 +1,4 @@
-package frc.robot.subsystems.scorer;
+package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Seconds;
 
@@ -7,21 +7,22 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
-import frc.robot.subsystems.scorer.ScorerConstants.ScorerState;
+import frc.robot.subsystems.shooter.ShooterConstants.ScorerState;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Scorer extends SubsystemBase {
+public class Shooter extends SubsystemBase {
   /* I/O */
-  private final ScorerIO io;
+  private final ShooterIO io;
 
   /* Inputs */
-  private final ScorerIOInputsAutoLogged inputs = new ScorerIOInputsAutoLogged();
+  private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
 
   /* Motor disconnected alert */
   private final Alert motorDisconnectedAlert =
@@ -30,7 +31,7 @@ public class Scorer extends SubsystemBase {
   @AutoLogOutput private ScorerState currentScorerState = ScorerState.IDLE;
 
   /* Construction method  */
-  public Scorer(ScorerIO io) {
+  public Shooter(ShooterIO io) {
     this.io = io;
   }
 
@@ -57,12 +58,12 @@ public class Scorer extends SubsystemBase {
    * Runs the scorer to shoot stored coral. This simultaneously intakes algae. Shoots coral at
    * different speed on L1 vs other levels.
    *
-   * @param elevatorStateSupplier Supplies the current elevator state.
+   * @param currentElevatorStateSupplier Supplies the current elevator state.
    */
   public Command shootCoralCmd(
-      Supplier<ElevatorState> elevatorStateSupplier,
+      Supplier<ElevatorState> currentElevatorStateSupplier,
       Supplier<ReefscapeCoralOnFly> coralProjectileSupplier) {
-    return shootCoralCmd(elevatorStateSupplier)
+    return shootCoralCmd(currentElevatorStateSupplier)
         .alongWith(
             Commands.runOnce(
                 () -> {
@@ -75,16 +76,49 @@ public class Scorer extends SubsystemBase {
                 }));
   }
 
-  public Command shootCoralCmd(Supplier<ElevatorState> elevatorStateSupplier) {
-    return this.startEnd(
+  public Command shootCoralCmd(Supplier<ElevatorState> currentElevatorStateSupplier) {
+    return startEnd(
             () -> {
-              if (elevatorStateSupplier.get() == ElevatorState.L1) {
+              if (currentElevatorStateSupplier.get() == ElevatorState.L1) {
                 setState(ScorerState.SHOOT_CORAL_L1);
-              } else if ((elevatorStateSupplier.get() == ElevatorState.L4)) {
+              } else if ((currentElevatorStateSupplier.get() == ElevatorState.L4)) {
                 setState(ScorerState.SHOOT_CORAL_L1);
               } else setState(ScorerState.SHOOT_CORAL_DEFAULT);
             },
             () -> setState(ScorerState.IDLE))
         .withTimeout(Seconds.of(2.0));
+  }
+
+  public Command shootCoralInAutoCmd(
+      Trigger wristAtState,
+      Supplier<ElevatorState> currentElevatorStateSupplier,
+      Supplier<ReefscapeCoralOnFly> coralProjectileSupplier) {
+    return shootCoralInAutoCmd(wristAtState, currentElevatorStateSupplier)
+        .alongWith(
+            Commands.runOnce(
+                () -> {
+                  if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
+                    if (coralProjectileSupplier.get() != null) {
+                      Arena2025Reefscape.getInstance()
+                          .addGamePieceProjectile(coralProjectileSupplier.get());
+                    }
+                  }
+                }));
+  }
+
+  public Command shootCoralInAutoCmd(
+      Trigger wristAtState, Supplier<ElevatorState> currentElevatorStateSupplier) {
+    return Commands.waitUntil(wristAtState)
+        .andThen(
+            startEnd(
+                    () -> {
+                      if (currentElevatorStateSupplier.get() == ElevatorState.L1) {
+                        setState(ScorerState.SHOOT_CORAL_L1);
+                      } else if ((currentElevatorStateSupplier.get() == ElevatorState.L4)) {
+                        setState(ScorerState.SHOOT_CORAL_L1);
+                      } else setState(ScorerState.SHOOT_CORAL_DEFAULT);
+                    },
+                    () -> setState(ScorerState.IDLE))
+                .withTimeout(Seconds.of(2.0)));
   }
 }

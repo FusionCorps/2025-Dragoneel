@@ -16,14 +16,13 @@ public class ElevatorAndWristCommands {
     this.wrist = wrist;
   }
 
-  private Command stowWrist() {
-    return wrist.goToState(WristState.ZERO);
-  }
-
+  /*
+   * Stow the wrist, then move the elevator, then move the wrist.
+   */
   private Command goToState(WristState wristState, ElevatorState elevatorState) {
     return Commands.sequence(
-        stowWrist(),
-        Commands.waitUntil(wrist.isAtStow),
+        wrist.goToState(WristState.ZERO),
+        Commands.waitUntil(wrist.isAtZero),
         elevator.goToState(elevatorState),
         Commands.waitUntil(elevator.isAtTargetState),
         wrist.goToState(wristState));

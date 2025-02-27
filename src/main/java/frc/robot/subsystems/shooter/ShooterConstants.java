@@ -1,4 +1,4 @@
-package frc.robot.subsystems.scorer;
+package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Volts;
 
@@ -7,11 +7,11 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
 
-public class ScorerConstants {
+public class ShooterConstants {
   /* Scorer motor ID */
-  public static final int SCORER_MOTOR_ID = 16;
+  public static final int SHOOTER_MOTOR_ID = 16;
 
-  public static final SparkFlexConfig SCORER_CONFIG =
+  public static final SparkFlexConfig SHOOTER_CONFIG =
       (SparkFlexConfig)
           new SparkFlexConfig()
               .inverted(true)

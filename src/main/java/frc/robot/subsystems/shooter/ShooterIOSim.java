@@ -1,4 +1,4 @@
-package frc.robot.subsystems.scorer;
+package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Volts;
 
@@ -7,7 +7,7 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
-public class ScorerIOSim implements ScorerIO {
+public class ShooterIOSim implements ShooterIO {
   /* Motor simulator */
   private final DCMotorSim scorerMotorSim;
 
@@ -16,7 +16,7 @@ public class ScorerIOSim implements ScorerIO {
 
   private Voltage appliedVolts = Volts.of(0.0);
 
-  public ScorerIOSim() {
+  public ShooterIOSim() {
     scorerMotorSim =
         new DCMotorSim(
             LinearSystemId.createDCMotorSystem(scorerMotorGearbox, 0.0001, 1.0),
@@ -24,7 +24,7 @@ public class ScorerIOSim implements ScorerIO {
   }
 
   @Override
-  public void updateInputs(ScorerIOInputs inputs) {
+  public void updateInputs(ShooterIOInputs inputs) {
     scorerMotorSim.setInputVoltage(appliedVolts.in(Volts));
     scorerMotorSim.update(0.02);
 
