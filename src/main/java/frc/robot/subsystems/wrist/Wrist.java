@@ -24,8 +24,11 @@ public class Wrist extends SubsystemBase {
 
   @AutoLogOutput private WristState currentWristState = WristState.ZERO;
 
+  @AutoLogOutput
   public Trigger isAtZero =
-      new Trigger(() -> WristState.ZERO.rotations.isNear(getCurrentAngle(), Degrees.of(5)));
+      new Trigger(() -> WristState.ZERO.rotations.isNear(getCurrentAngle(), Degrees.of(15)));
+
+  @AutoLogOutput
   public Trigger isAtScoringState =
       new Trigger(
           () ->

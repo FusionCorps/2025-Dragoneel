@@ -12,6 +12,8 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.ClosedLoopConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.util.Units;
@@ -85,5 +87,21 @@ public class WristIOSparkFlex implements WristIO {
   public void setTargetPosition(Angle angle) {
     setpoint = angle.in(Rotations);
     pid.setReference(setpoint, ControlType.kPosition);
+  }
+
+  boolean changed = false;
+
+  @Override
+  public void toggleSpeed() {
+    if (changed)
+      wristMotor.configureAsync(
+          new SparkFlexConfig().apply(new ClosedLoopConfig().p(1.0)),
+          ResetMode.kNoResetSafeParameters,
+          PersistMode.kPersistParameters);
+    else
+      wristMotor.configureAsync(
+          new SparkFlexConfig().apply(new ClosedLoopConfig().p(6.0)),
+          ResetMode.kNoResetSafeParameters,
+          PersistMode.kPersistParameters);
   }
 }

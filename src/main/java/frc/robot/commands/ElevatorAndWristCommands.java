@@ -53,7 +53,7 @@ public class ElevatorAndWristCommands {
   }
 
   public Command goToL4() {
-    return goToState(WristState.L1, ElevatorState.L4);
+    return goToState(WristState.L4, ElevatorState.L4);
   }
 
   public Command goToNet() {

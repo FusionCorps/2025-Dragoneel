@@ -14,24 +14,24 @@ import java.util.function.DoubleSupplier;
 
 public class ShooterIOSparkFlex implements ShooterIO {
   /* Main scoring motor */
-  private final SparkFlex scorerMotor;
+  private final SparkFlex shooterMotor;
 
   /* Encoder */
-  private final RelativeEncoder scorerMotorEncoder;
+  private final RelativeEncoder shooterMotorEncoder;
 
   /* Debounce */
-  private final Debouncer scorerMotorDebouncer = new Debouncer(0.5);
+  private final Debouncer shooterMotorDebouncer = new Debouncer(0.5);
 
   public ShooterIOSparkFlex() {
-    scorerMotor = new SparkFlex(SHOOTER_MOTOR_ID, MotorType.kBrushless);
-    scorerMotorEncoder = scorerMotor.getEncoder();
+    shooterMotor = new SparkFlex(SHOOTER_MOTOR_ID, MotorType.kBrushless);
+    shooterMotorEncoder = shooterMotor.getEncoder();
 
     /* Try to apply */
     tryUntilOk(
-        scorerMotor,
+        shooterMotor,
         5,
         () ->
-            scorerMotor.configure(
+            shooterMotor.configure(
                 SHOOTER_CONFIG, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
   }
 
@@ -39,23 +39,23 @@ public class ShooterIOSparkFlex implements ShooterIO {
   public void updateInputs(ShooterIOInputs inputs) {
     /* Update inputs */
     sparkStickyFault = false;
-    ifOk(scorerMotor, scorerMotorEncoder::getPosition, position -> inputs.positionRad = position);
+    ifOk(shooterMotor, shooterMotorEncoder::getPosition, position -> inputs.positionRad = position);
     ifOk(
-        scorerMotor,
-        scorerMotorEncoder::getVelocity,
+        shooterMotor,
+        shooterMotorEncoder::getVelocity,
         velocity -> inputs.velocityRadPerSec = velocity);
     ifOk(
-        scorerMotor,
-        new DoubleSupplier[] {scorerMotor::getAppliedOutput, scorerMotor::getBusVoltage},
+        shooterMotor,
+        new DoubleSupplier[] {shooterMotor::getAppliedOutput, shooterMotor::getBusVoltage},
         (doubles) -> inputs.appliedVolts = doubles[0] * doubles[1]);
-    ifOk(scorerMotor, scorerMotor::getOutputCurrent, current -> inputs.currentAmps = current);
+    ifOk(shooterMotor, shooterMotor::getOutputCurrent, current -> inputs.currentAmps = current);
 
-    inputs.connected = scorerMotorDebouncer.calculate(!sparkStickyFault);
+    inputs.connected = shooterMotorDebouncer.calculate(!sparkStickyFault);
   }
 
   @Override
   public void setVoltage(Voltage voltage) {
     /* Set voltage and hope it works */
-    scorerMotor.setVoltage(voltage);
+    shooterMotor.setVoltage(voltage);
   }
 }

@@ -1,5 +1,5 @@
 {
- "name":"H-TStat.traj",
+ "name":"H-TStat",
  "version":1,
  "snapshot":{
   "waypoints":[
@@ -14,7 +14,7 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"H.x", "val":5.8}, "y":{"exp":"H.y", "val":4.01}, "heading":{"exp":"-3.141592653589793 rad", "val":-3.141592653589793}, "intervals":32, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"H.x", "val":5.9}, "y":{"exp":"H.y", "val":4.0}, "heading":{"exp":"-3.141592653589793 rad", "val":-3.141592653589793}, "intervals":32, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"6.858359336853027 m", "val":6.858359336853027}, "y":{"exp":"5.055971145629883 m", "val":5.055971145629883}, "heading":{"exp":"-2.050761871093337 rad", "val":-2.050761871093337}, "intervals":72, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
     {"x":{"exp":"TStat.x", "val":1.2}, "y":{"exp":"TStat.y", "val":7.0}, "heading":{"exp":"-0.9599310885968813 rad", "val":-0.9599310885968813}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[

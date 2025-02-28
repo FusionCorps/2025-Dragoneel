@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
-import frc.robot.subsystems.shooter.ShooterConstants.ScorerState;
+import frc.robot.subsystems.shooter.ShooterConstants.ShooterState;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
@@ -26,9 +26,9 @@ public class Shooter extends SubsystemBase {
 
   /* Motor disconnected alert */
   private final Alert motorDisconnectedAlert =
-      new Alert("Scorer Motor Disconnnected", AlertType.kError);
+      new Alert("Shooter Motor Disconnnected", AlertType.kError);
 
-  @AutoLogOutput private ScorerState currentScorerState = ScorerState.IDLE;
+  @AutoLogOutput private ShooterState currentShooterState = ShooterState.IDLE;
 
   /* Construction method  */
   public Shooter(ShooterIO io) {
@@ -38,20 +38,20 @@ public class Shooter extends SubsystemBase {
   /* Periodic method */
   @Override
   public void periodic() {
-    io.setVoltage(currentScorerState.volts);
+    io.setVoltage(currentShooterState.volts);
 
     io.updateInputs(inputs);
-    Logger.processInputs("Scorer", inputs);
+    Logger.processInputs("Shooter", inputs);
     motorDisconnectedAlert.set(!inputs.connected);
   }
 
-  public void setState(ScorerState state) {
-    currentScorerState = state;
+  public void setState(ShooterState state) {
+    currentShooterState = state;
   }
 
   /** Runs the scorer to outtake algae. */
   public Command shootAlgaeCmd() {
-    return startEnd(() -> setState(ScorerState.SHOOT_ALGAE), () -> setState(ScorerState.IDLE));
+    return startEnd(() -> setState(ShooterState.SHOOT_ALGAE), () -> setState(ShooterState.IDLE));
   }
 
   /**
@@ -78,15 +78,14 @@ public class Shooter extends SubsystemBase {
 
   public Command shootCoralCmd(Supplier<ElevatorState> currentElevatorStateSupplier) {
     return startEnd(
-            () -> {
-              if (currentElevatorStateSupplier.get() == ElevatorState.L1) {
-                setState(ScorerState.SHOOT_CORAL_L1);
-              } else if ((currentElevatorStateSupplier.get() == ElevatorState.L4)) {
-                setState(ScorerState.SHOOT_CORAL_L1);
-              } else setState(ScorerState.SHOOT_CORAL_DEFAULT);
-            },
-            () -> setState(ScorerState.IDLE))
-        .withTimeout(Seconds.of(2.0));
+        () -> {
+          if (currentElevatorStateSupplier.get() == ElevatorState.L1) {
+            setState(ShooterState.SHOOT_CORAL_L1);
+          } else if ((currentElevatorStateSupplier.get() == ElevatorState.L4)) {
+            setState(ShooterState.SHOOT_CORAL_L1);
+          } else setState(ShooterState.SHOOT_CORAL_DEFAULT);
+        },
+        () -> setState(ShooterState.IDLE));
   }
 
   public Command shootCoralInAutoCmd(
@@ -107,18 +106,18 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command shootCoralInAutoCmd(
-      Trigger wristAtState, Supplier<ElevatorState> currentElevatorStateSupplier) {
-    return Commands.waitUntil(wristAtState)
+      Trigger wristAtScoringState, Supplier<ElevatorState> currentElevatorStateSupplier) {
+    return Commands.waitUntil(wristAtScoringState)
         .andThen(
             startEnd(
                     () -> {
                       if (currentElevatorStateSupplier.get() == ElevatorState.L1) {
-                        setState(ScorerState.SHOOT_CORAL_L1);
+                        setState(ShooterState.SHOOT_CORAL_L1);
                       } else if ((currentElevatorStateSupplier.get() == ElevatorState.L4)) {
-                        setState(ScorerState.SHOOT_CORAL_L1);
-                      } else setState(ScorerState.SHOOT_CORAL_DEFAULT);
+                        setState(ShooterState.SHOOT_CORAL_L1);
+                      } else setState(ShooterState.SHOOT_CORAL_DEFAULT);
                     },
-                    () -> setState(ScorerState.IDLE))
-                .withTimeout(Seconds.of(2.0)));
+                    () -> setState(ShooterState.IDLE))
+                .withTimeout(Seconds.of(4.0)));
   }
 }

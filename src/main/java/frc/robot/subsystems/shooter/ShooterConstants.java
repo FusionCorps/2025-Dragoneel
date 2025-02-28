@@ -20,16 +20,16 @@ public class ShooterConstants {
               .smartCurrentLimit(120);
 
   /* Scorer motor state */
-  public static enum ScorerState {
+  public static enum ShooterState {
     IDLE(Volts.of(0.0)),
     SHOOT_ALGAE(Volts.of(-0.25 * 12.0)),
-    SHOOT_CORAL_DEFAULT(Volts.of(0.40 * 12.0)),
+    SHOOT_CORAL_DEFAULT(Volts.of(0.35 * 12.0)),
     SHOOT_CORAL_L4(Volts.of(0.33 * 12.0)),
     SHOOT_CORAL_L1(Volts.of(0.15 * 12.0));
 
     public final Voltage volts;
 
-    private ScorerState(Voltage volts) {
+    private ShooterState(Voltage volts) {
       this.volts = volts;
     }
   }

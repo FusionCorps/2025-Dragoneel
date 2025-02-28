@@ -13,15 +13,14 @@ import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -29,14 +28,13 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.DigitalInput;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
   final TalonFX mainElevatorMotor = new TalonFX(MAIN_ELEVATOR_MOTOR_ID);
   final TalonFX followerElevatorMotor = new TalonFX(FOLLOWER_ELEVATOR_MOTOR_ID);
 
-  private DigitalInput forwardLimitSwitch, reverseLimitSwitch;
-  private boolean switchesDisconnected = false;
+  // private DigitalInput forwardLimitSwitch, reverseLimitSwitch;
+  // private boolean switchesDisconnected = false;
 
   private final StatusSignal<Angle> mainElevatorMotorPosition;
   private final StatusSignal<AngularVelocity> mainElevatorMotorVelocity;
@@ -48,10 +46,14 @@ public class ElevatorIOTalonFX implements ElevatorIO {
   private final StatusSignal<Voltage> followerElevatorMotorAppliedVoltage;
   private final StatusSignal<Current> followerElevatorMotorCurrent;
 
+  boolean changed = false;
+
   private final Debouncer mainElevatorMotorDebouncer = new Debouncer(0.5);
   private final Debouncer followerElevatorMotorDebouncer = new Debouncer(0.5);
 
-  private final MotionMagicVoltage posRequest = new MotionMagicVoltage(0);
+  private final DynamicMotionMagicVoltage posRequest =
+      new DynamicMotionMagicVoltage(
+          0, ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY, ELEVATOR_MOTION_MAGIC_ACCELERATION, 0);
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
   Alert forwardLimitSwitchDisconnectedAlert =
@@ -82,22 +84,24 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
     elevatorConfig.SoftwareLimitSwitch = ELEVATOR_SOFT_LIMITS_CONFIGS;
 
-    tryUntilOk(5, () -> mainElevatorMotor.getConfigurator().apply(elevatorConfig, 0.5));
-    tryUntilOk(5, () -> followerElevatorMotor.getConfigurator().apply(elevatorConfig, 0.5));
+    tryUntilOk(5, () -> mainElevatorMotor.getConfigurator().apply(elevatorConfig, 0.75));
+    tryUntilOk(5, () -> followerElevatorMotor.getConfigurator().apply(elevatorConfig, 0.75));
 
     followerElevatorMotor.setControl(new Follower(MAIN_ELEVATOR_MOTOR_ID, false));
 
-    try {
-      forwardLimitSwitch = new DigitalInput(ELEVATOR_FORWARD_LIMIT_SWITCH_DIO_PORT);
-      reverseLimitSwitch = new DigitalInput(ELEVATOR_REVERSE_LIMIT_SWITCH_DIO_PORT);
-    } catch (Exception e) {
-      forwardLimitSwitch = null;
-      reverseLimitSwitch = null;
-      switchesDisconnected = true;
-    }
+    // try {
+    //   forwardLimitSwitch = new DigitalInput(ELEVATOR_FORWARD_LIMIT_SWITCH_DIO_PORT);
+    //   reverseLimitSwitch = new DigitalInput(ELEVATOR_REVERSE_LIMIT_SWITCH_DIO_PORT);
+    // } catch (Exception e) {
+    //   forwardLimitSwitch = null;
+    //   reverseLimitSwitch = null;
+    //   switchesDisconnected = true;
+    // }
     // mainElevatorMotor.setPosition(0);
     // followerElevatorMotor.setPosition(0);
 
+    mainElevatorMotor.setPosition(0);
+    followerElevatorMotor.setPosition(0);
     mainElevatorMotorPosition = mainElevatorMotor.getPosition();
     mainElevatorMotorVelocity = mainElevatorMotor.getVelocity();
     mainElevatorMotorAppliedVoltage = mainElevatorMotor.getMotorVoltage();
@@ -153,32 +157,31 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
     inputs.positionSetpointRad = posRequest.getPositionMeasure().in(Radians);
 
-    if (switchesDisconnected) {
-      forwardLimitSwitchDisconnectedAlert.set(true);
-      reverseLimitSwitchDisconnectedAlert.set(true);
-      inputs.forwardLimitSwitchTriggered = false;
-      inputs.reverseLimitSwitchTriggered = false;
-    } else {
-      inputs.forwardLimitSwitchTriggered = forwardLimitSwitch.get();
-      inputs.reverseLimitSwitchTriggered = reverseLimitSwitch.get();
-      if (inputs.reverseLimitSwitchTriggered) {
-        if (inputs.mainPositionRad != 0.0 && MathUtil.isNear(0, inputs.mainVelocityRadPerSec, 0.1))
-          mainElevatorMotor.setPosition(0.0);
-        if (inputs.followerPositionRad != 0.0
-            && MathUtil.isNear(0, inputs.followerVelocityRadPerSec, 0.1))
-          followerElevatorMotor.setPosition(0.0);
-      }
-    }
+    // if (switchesDisconnected) {
+    //   forwardLimitSwitchDisconnectedAlert.set(true);
+    //   reverseLimitSwitchDisconnectedAlert.set(true);
+    //   inputs.forwardLimitSwitchTriggered = false;
+    //   inputs.reverseLimitSwitchTriggered = false;
+    // } else {
+    //   inputs.forwardLimitSwitchTriggered = forwardLimitSwitch.get();
+    //   inputs.reverseLimitSwitchTriggered = reverseLimitSwitch.get();
+    //   if (inputs.reverseLimitSwitchTriggered) {
+    //     if (inputs.mainPositionRad != 0.0 && MathUtil.isNear(0, inputs.mainVelocityRadPerSec,
+    // 0.1))
+    //       mainElevatorMotor.setPosition(0.0);
+    //     if (inputs.followerPositionRad != 0.0
+    //         && MathUtil.isNear(0, inputs.followerVelocityRadPerSec, 0.1))
+    //       followerElevatorMotor.setPosition(0.0);
+    //   }
+    // }
   }
 
   @Override
   public void setTargetPosition(Angle motorTargetRotations) {
-    mainElevatorMotor.setControl(
-        posRequest
-            .withPosition(motorTargetRotations.in(Rotations))
-            .withLimitForwardMotion(forwardLimitSwitch.get())
-            .withLimitReverseMotion(reverseLimitSwitch.get())
-            .withIgnoreHardwareLimits(switchesDisconnected));
+    mainElevatorMotor.setControl(posRequest.withPosition(motorTargetRotations.in(Rotations)));
+    // .withLimitForwardMotion(forwardLimitSwitch.get())
+    // .withLimitReverseMotion(reverseLimitSwitch.get())
+    // .withIgnoreHardwareLimits(switchesDisconnected));
   }
 
   @Override
@@ -196,5 +199,17 @@ public class ElevatorIOTalonFX implements ElevatorIO {
   public void holdPosition() {
     mainElevatorMotor.setControl(
         posRequest.withPosition(mainElevatorMotorPosition.refresh().getValue()));
+  }
+
+  @Override
+  public void changemotionmagic() {
+    if (changed) {
+      posRequest.Acceleration = ELEVATOR_MOTION_MAGIC_ACCELERATION;
+      posRequest.Velocity = ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY;
+    } else {
+      posRequest.Acceleration = ELEVATOR_MOTION_MAGIC_ACCELERATION / 15.0;
+      posRequest.Velocity = ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY / 5.0;
+    }
+    changed = !changed;
   }
 }

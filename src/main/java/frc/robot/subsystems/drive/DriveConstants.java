@@ -45,7 +45,7 @@ public class DriveConstants {
   // This affects the PID/FF gains for the steer motors
   private static final Slot0Configs steerGains =
       new Slot0Configs()
-          .withKP(100)
+          .withKP(90)
           .withKI(0)
           .withKD(0.0)
           .withKS(0.0)
@@ -108,8 +108,8 @@ public class DriveConstants {
 
   // Theoretical free speed (m/s) at 12 V applied output
   // TODO: needs to be tuned
-  public static final LinearVelocity SPEED_AT_12V = MetersPerSecond.of(4.32816);
-  public static final AngularVelocity MODULE_ANGULAR_VEL_AT_12V = RotationsPerSecond.of(60);
+  public static LinearVelocity SPEED_AT_12V = MetersPerSecond.of(4.32816);
+  public static AngularVelocity MODULE_ANGULAR_VEL_AT_12V = RotationsPerSecond.of(60);
 
   // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns
   private static final double kCoupleRatio = 3;
@@ -169,7 +169,7 @@ public class DriveConstants {
   private static final int kFrontLeftDriveMotorId = 1;
   private static final int kFrontLeftSteerMotorId = 2;
   private static final int kFrontLeftEncoderId = 3;
-  private static final Angle kFrontLeftEncoderOffset = Rotations.of(-0.48681640625);
+  private static final Angle kFrontLeftEncoderOffset = Rotations.of(-0.486328125);
   private static final boolean kFrontLeftSteerMotorInverted = true;
   private static final boolean kFrontLeftEncoderInverted = false;
 
@@ -180,7 +180,7 @@ public class DriveConstants {
   private static final int kFrontRightDriveMotorId = 4;
   private static final int kFrontRightSteerMotorId = 5;
   private static final int kFrontRightEncoderId = 6;
-  private static final Angle kFrontRightEncoderOffset = Rotations.of(0.37060546875);
+  private static final Angle kFrontRightEncoderOffset = Rotations.of(0.370361328125);
   private static final boolean kFrontRightSteerMotorInverted = true;
   private static final boolean kFrontRightEncoderInverted = false;
 
@@ -191,7 +191,7 @@ public class DriveConstants {
   private static final int kBackLeftDriveMotorId = 7;
   private static final int kBackLeftSteerMotorId = 8;
   private static final int kBackLeftEncoderId = 9;
-  private static final Angle kBackLeftEncoderOffset = Rotations.of(0.07861328125);
+  private static final Angle kBackLeftEncoderOffset = Rotations.of(0.076416015625);
   private static final boolean kBackLeftSteerMotorInverted = true;
   private static final boolean kBackLeftEncoderInverted = false;
 
@@ -202,7 +202,7 @@ public class DriveConstants {
   private static final int kBackRightDriveMotorId = 10;
   private static final int kBackRightSteerMotorId = 11;
   private static final int kBackRightEncoderId = 12;
-  private static final Angle kBackRightEncoderOffset = Rotations.of(-0.123291015625);
+  private static final Angle kBackRightEncoderOffset = Rotations.of(-0.123046875);
   private static final boolean kBackRightSteerMotorInverted = true;
   private static final boolean kBackRightEncoderInverted = false;
 
@@ -290,11 +290,7 @@ public class DriveConstants {
           .withGyro(COTS.ofPigeon2())
           .withRobotMass(Constants.ROBOT_MASS)
           .withSwerveModule(
-              COTS.ofMark4n(
-                  DCMotor.getKrakenX60Foc(1),
-                  DCMotor.getFalcon500Foc(1),
-                  COTS.WHEELS.VEX_GRIP_V2.cof,
-                  1));
+              COTS.ofMark4n(DCMotor.getKrakenX60Foc(1), DCMotor.getFalcon500Foc(1), 1.9, 1));
 
   public static final InterpolatingDoubleTreeMap DRIVE_TRANSLATIONAL_MAX_SPEED_MAP_METER_PER_SEC =
       InterpolatingDoubleTreeMap.ofEntries(

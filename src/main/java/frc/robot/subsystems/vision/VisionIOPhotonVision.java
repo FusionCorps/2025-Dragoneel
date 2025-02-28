@@ -50,9 +50,10 @@ public class VisionIOPhotonVision implements VisionIO {
     Set<Short> tagIds = new HashSet<>();
     List<PoseObservation> poseObservations = new LinkedList<>();
     for (var result : camera.getAllUnreadResults()) {
-      inputs.bestReefTagId = result.hasTargets() ? result.getBestTarget().getFiducialId() : 0;
       // Update latest target observation
       if (result.hasTargets()) {
+        inputs.bestReefTagId = result.getBestTarget().getFiducialId();
+        inputs.bestReefTrans = result.getBestTarget().getBestCameraToTarget();
         inputs.latestTargetObservation =
             new TargetObservation(
                 Rotation2d.fromDegrees(result.getBestTarget().getYaw()),

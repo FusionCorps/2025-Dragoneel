@@ -171,6 +171,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
                 state -> Logger.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 voltage -> runCharacterization(voltage.in(Volts)), null, this));
+    setPose(new Pose2d());
   }
 
   @Override
@@ -372,18 +373,18 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
   /** Returns the maximum linear speed in meters per sec. */
   public double getMaxLinearSpeedMetersPerSec() {
-    // return DriveConstants.SPEED_AT_12V.in(MetersPerSecond);
+    return DriveConstants.SPEED_AT_12V.in(MetersPerSecond);
     // return 3.0;
-    return DriveConstants.DRIVE_TRANSLATIONAL_MAX_SPEED_MAP_METER_PER_SEC.get(
-        currentElevatorPositionSupplier.get().in(Rotations));
+    // return DriveConstants.DRIVE_TRANSLATIONAL_MAX_SPEED_MAP_METER_PER_SEC.get(
+    //     currentElevatorPositionSupplier.get().in(Rotations));
   }
 
   /** Returns the maximum angular speed in radians per sec. */
   public double getMaxAngularSpeedRadPerSec() {
-    // return getMaxLinearSpeedMetersPerSec() / DriveConstants.DRIVE_BASE_RADIUS;
+    return getMaxLinearSpeedMetersPerSec() / DriveConstants.DRIVE_BASE_RADIUS;
     // return 2 * Math.PI;
-    return DriveConstants.DRIVE_ROTATIONAL_MAX_SPEED_MAP_RAD_PER_SEC.get(
-        currentElevatorPositionSupplier.get().in(Rotations));
+    // return DriveConstants.DRIVE_ROTATIONAL_MAX_SPEED_MAP_RAD_PER_SEC.get(
+    //     currentElevatorPositionSupplier.get().in(Rotations));
   }
 
   /** Sets the gyro angle to 0° and sets current gyro angle to forward. */

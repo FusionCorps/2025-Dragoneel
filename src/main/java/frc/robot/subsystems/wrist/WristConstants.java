@@ -27,7 +27,7 @@ public class WristConstants {
                       .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
                       .positionWrappingInputRange(-0.5, 0.5)
                       .positionWrappingEnabled(true)
-                      .pid(2.0, 0, 0))
+                      .pid(6.0, 0, 0))
       // .apply(
       //     new SoftLimitConfig()
       //         .reverseSoftLimitEnabled(true)
@@ -42,9 +42,11 @@ public class WristConstants {
     STATION(Rotations.of(0)),
     L1(Rotations.of(0.24)),
     L2(Rotations.of(0.165)),
+    L2_ALGAE(Rotations.of(0.125)),
     L3(Rotations.of(0.165)),
+    L3_ALGAE(Rotations.of(0.125)),
     L4(Rotations.of(0.22)),
-    NET(Rotations.of(0.255));
+    NET(Rotations.of(0.26));
 
     public Angle rotations;
 

@@ -17,10 +17,10 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -29,6 +29,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorAndWristCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
+import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.gyro.GyroIO;
@@ -50,6 +51,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.wrist.Wrist;
+import frc.robot.subsystems.wrist.WristConstants.WristState;
 import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
@@ -75,7 +77,7 @@ public class RobotContainer {
   private SwerveDriveSimulation driveSim = null;
   private final Vision vision;
   private final Climb climb;
-  private final Shooter scorer;
+  private final Shooter shooter;
   private final Wrist wrist;
 
   private ElevatorAndWristCommands elevatorAndWristCommands = null;
@@ -104,11 +106,14 @@ public class RobotContainer {
                 // (a, b, c) -> {},
                 new VisionIOPhotonVision(CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM),
                 new VisionIOPhotonVision(CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM));
-        // climb = new Climb(new ClimbIOTalonFX());
-        climb = null;
-        scorer = new Shooter(new ShooterIOSparkFlex());
+        climb = new Climb(new ClimbIOTalonFX());
+        // climb = null;
+        shooter = new Shooter(new ShooterIOSparkFlex());
+        // shooter = null;
         elevator = new Elevator(new ElevatorIOTalonFX());
+        // elevator = null;
         wrist = new Wrist(new WristIOSparkFlex());
+        // wrist = null;
         break;
 
       case SIM:
@@ -135,14 +140,14 @@ public class RobotContainer {
         elevator = new Elevator(new ElevatorIOSim());
         drive.setCurrentElevatorPositionSupplier(elevator::getCurrentElevatorPosition);
         // climb = new Climb(new ClimbIOSim());
-        scorer = new Shooter(new ShooterIOSim());
+        shooter = new Shooter(new ShooterIOSim());
         wrist = new Wrist(new WristIOSim());
         // elevator = null;
         climb = null;
-        // scorer = null;
+        // shooter = null;
         // wrist = null;
         simCoralProjectileSupplier =
-            () -> ShootingUtil.createCoralProjectile(drive, elevator, wrist, scorer);
+            () -> ShootingUtil.createCoralProjectile(drive, elevator, wrist, shooter);
         break;
 
       default:
@@ -158,23 +163,17 @@ public class RobotContainer {
                 simRobotPose -> {});
         vision = new Vision(drive, new VisionIO() {});
         climb = new Climb(new ClimbIO() {});
-        scorer = new Shooter(new ShooterIO() {});
+        shooter = new Shooter(new ShooterIO() {});
         wrist = new Wrist(new WristIO() {});
         break;
     }
 
-    elevatorAndWristCommands = new ElevatorAndWristCommands(elevator, wrist);
-
-    elevator.isAtTargetState.onTrue(
-        Commands.run(
-                () -> {
-                  controller.setRumble(RumbleType.kBothRumble, 1.0);
-                })
-            .withTimeout(0.2)
-            .andThen(Commands.runOnce(() -> controller.setRumble(RumbleType.kBothRumble, 0.0))));
+    if (elevator != null && wrist != null) {
+      elevatorAndWristCommands = new ElevatorAndWristCommands(elevator, wrist);
+    }
 
     // Register named commands for auto
-    if (drive != null && elevator != null && wrist != null && scorer != null) {
+    if (drive != null && elevator != null && wrist != null && shooter != null) {
       NamedCommands.registerCommands(
           Map.of(
               "L1",
@@ -192,18 +191,22 @@ public class RobotContainer {
               "Processor",
               elevatorAndWristCommands.goToProcessor(),
               "ShootCoral",
-              scorer.shootCoralInAutoCmd(
+              shooter.shootCoralInAutoCmd(
                   wrist.isAtScoringState,
                   elevator::getCurrentElevatorState,
                   simCoralProjectileSupplier),
               "ShootAlgae",
-              scorer.shootAlgaeCmd()));
+              shooter.shootAlgaeCmd()));
     }
 
     // add auto routine selector to the dashboard
     // autoChooser.addDefaultOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
     autoChooser.addDefaultOption("4 Piece Opposite Processor", AutoBuilder.buildAuto("T2-ILKJ"));
+    autoChooser.addOption("1 piece bottom to E", AutoBuilder.buildAuto("B1-E"));
+    autoChooser.addOption("Move straight", AutoBuilder.buildAuto("T1-Leave2M"));
     autoChooser.addOption("1 piece", AutoBuilder.buildAuto("C4-H"));
+    autoChooser.addOption("wheel", DriveCommands.wheelRadiusCharacterization(drive));
+    autoChooser.addOption("feedforward", DriveCommands.feedforwardCharacterization(drive));
 
     // Set up SysId routines
     // TODO: remove these later
@@ -222,6 +225,8 @@ public class RobotContainer {
     configureButtonBindings();
   }
 
+  boolean fast = false;
+
   /** {@link CommandXboxController} button bindings for each subsystem are defined here. */
   private void configureButtonBindings() {
     /* drive commands */
@@ -236,39 +241,56 @@ public class RobotContainer {
 
       // in simulation: reset odometry to actual robot pose
       // in real: zero gyro heading
-      final Runnable resetGyro =
-          Constants.CURRENT_MODE == Constants.Mode.SIM
-              ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
-              : () -> drive.zeroGyro();
+      // final Runnable resetGyro =
+      //     Constants.CURRENT_MODE == Constants.Mode.SIM
+      //         ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
+      //         : () -> drive.zeroGyro();
 
-      controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
+      controller.start().onTrue(drive.zeroGyro().ignoringDisable(true));
 
+      // controller.povLeft().whileTrue(DriveCommands.autoAlignNew(drive, vision, true));
+      // controller.povRight().whileTrue(DriveCommands.autoAlignNew(drive, vision, false));
       controller.povLeft().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, true));
       controller.povRight().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, false));
+
+      controller.leftTrigger().onTrue(DriveCommands.slow());
     }
 
     /* elevator and wrist movement commands */
     if (elevatorAndWristCommands != null) {
-      controller.leftBumper().onTrue(elevatorAndWristCommands.goToNet());
+      // controller.leftStick().onTrue(elevator.toggleElevatorSpeed().alongWith())
       controller.y().onTrue(elevatorAndWristCommands.goToL4());
+      controller
+          .y()
+          .debounce(2.0, DebounceType.kFalling)
+          .onTrue(elevatorAndWristCommands.goToNet().alongWith(rumbleCommand()));
       controller.x().onTrue(elevatorAndWristCommands.goToL3());
+      controller.x().debounce(2.0).onTrue(wrist.goToState(WristState.L3_ALGAE).alongWith(rumbleCommand()));
       controller.b().onTrue(elevatorAndWristCommands.goToL2());
+      controller
+          .b()
+          .debounce(2.0, DebounceType.kFalling)
+          .onTrue(wrist.goToState(WristState.L2_ALGAE).alongWith(rumbleCommand()));
       controller.a().onTrue(elevatorAndWristCommands.goToL1());
-      controller.back().onTrue(elevatorAndWristCommands.goToProcessor());
+      controller
+          .a()
+          .debounce(2.0, DebounceType.kFalling)
+          .onTrue(elevatorAndWristCommands.goToProcessor().alongWith(rumbleCommand()));
+
       controller.rightBumper().onTrue(elevatorAndWristCommands.goToStation());
     }
 
-    if (elevator != null) {
-      SmartDashboard.putData("Home Elevator Command", elevator.homeElevator());
-    }
+    // if (elevator != null) {
+    //   // SmartDashboard.putData("Home Elevator Command", elevator.homeElevator());
+    // }
 
     /* scoring commands */
-    if (scorer != null && elevator != null) {
+    if (shooter != null && elevator != null) {
       controller
           .rightTrigger()
           .whileTrue(
-              scorer.shootCoralCmd(elevator::getCurrentElevatorState, simCoralProjectileSupplier));
-      controller.leftTrigger().whileTrue(scorer.shootAlgaeCmd());
+              shooter.shootCoralCmd(elevator::getCurrentElevatorState, simCoralProjectileSupplier));
+      controller.back().whileTrue(shooter.shootAlgaeCmd());
     }
 
     if (climb != null) {
@@ -304,5 +326,14 @@ public class RobotContainer {
     Logger.recordOutput(
         "FieldSimulation/Algae",
         Arena2025Reefscape.getInstance().getGamePiecesArrayByType("Algae"));
+  }
+
+  public Command rumbleCommand() {
+    return Commands.run(
+      () -> {
+        controller.setRumble(RumbleType.kBothRumble, 1.0);
+      })
+  .withTimeout(0.5)
+  .andThen(Commands.runOnce(() -> controller.setRumble(RumbleType.kBothRumble, 0.0)));
   }
 }

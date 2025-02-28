@@ -9,31 +9,33 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 public class ShooterIOSim implements ShooterIO {
   /* Motor simulator */
-  private final DCMotorSim scorerMotorSim;
+  private final DCMotorSim shooterMotorSim;
 
   /* Gearbox */
-  private final DCMotor scorerMotorGearbox = DCMotor.getNeoVortex(1);
+  private final DCMotor shooterMotorGearbox = DCMotor.getNeoVortex(1);
 
   private Voltage appliedVolts = Volts.of(0.0);
 
   public ShooterIOSim() {
-    scorerMotorSim =
+    shooterMotorSim =
         new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(scorerMotorGearbox, 0.0001, 1.0),
-            scorerMotorGearbox);
+            LinearSystemId.createDCMotorSystem(shooterMotorGearbox, 0.0001, 1.0),
+            shooterMotorGearbox);
+
+    // new PhotonPoseEstimator(null, null, null).
   }
 
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
-    scorerMotorSim.setInputVoltage(appliedVolts.in(Volts));
-    scorerMotorSim.update(0.02);
+    shooterMotorSim.setInputVoltage(appliedVolts.in(Volts));
+    shooterMotorSim.update(0.02);
 
     /* Update inputs */
     inputs.connected = true;
-    inputs.positionRad = scorerMotorSim.getAngularPositionRad();
-    inputs.velocityRadPerSec = scorerMotorSim.getAngularVelocityRadPerSec();
+    inputs.positionRad = shooterMotorSim.getAngularPositionRad();
+    inputs.velocityRadPerSec = shooterMotorSim.getAngularVelocityRadPerSec();
     inputs.appliedVolts = appliedVolts.in(Volts);
-    inputs.currentAmps = scorerMotorSim.getCurrentDrawAmps();
+    inputs.currentAmps = shooterMotorSim.getCurrentDrawAmps();
   }
 
   @Override

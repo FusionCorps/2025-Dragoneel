@@ -22,4 +22,6 @@ public interface WristIO {
   default void setVoltageOpenLoop(Voltage voltage) {}
 
   default void setTargetPosition(Angle angle) {}
+
+  default void toggleSpeed() {}
 }

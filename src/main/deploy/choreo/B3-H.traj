@@ -1,5 +1,5 @@
 {
- "name":"B3-H.traj",
+ "name":"B3-H",
  "version":1,
  "snapshot":{
   "waypoints":[
@@ -17,7 +17,7 @@
   "waypoints":[
     {"x":{"exp":"B3.x", "val":7.25}, "y":{"exp":"B3.y", "val":3.0}, "heading":{"exp":"-3.141592653589793 rad", "val":-3.141592653589793}, "intervals":17, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"6.475229263305664 m", "val":6.475229263305664}, "y":{"exp":"3.624037265777588 m", "val":3.624037265777588}, "heading":{"exp":"3.141592653589793 rad", "val":3.141592653589793}, "intervals":15, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":{"exp":"H.x", "val":5.8}, "y":{"exp":"H.y", "val":4.01}, "heading":{"exp":"-3.141592653589793 rad", "val":-3.141592653589793}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"H.x", "val":5.9}, "y":{"exp":"H.y", "val":4.0}, "heading":{"exp":"-3.141592653589793 rad", "val":-3.141592653589793}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},

@@ -10,6 +10,7 @@ import static frc.robot.util.PhoenixUtil.tryUntilOk;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -28,6 +29,8 @@ public class ClimbIOTalonFX implements ClimbIO {
   private final StatusSignal<Voltage> climbAppliedVolts;
   private final StatusSignal<Current> climbCurrent;
 
+  MotionMagicVoltage req = new MotionMagicVoltage(0);
+
   public ClimbIOTalonFX() {
     climbMotor = new TalonFX(CLIMB_MOTOR_ID);
     TalonFXConfiguration config = new TalonFXConfiguration();
@@ -39,13 +42,22 @@ public class ClimbIOTalonFX implements ClimbIO {
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
+    config.MotionMagic.MotionMagicCruiseVelocity = 20;
+    config.MotionMagic.MotionMagicAcceleration = 20;
+
+    config.Slot0.kS = 0.5;
+    config.Slot0.kV = 2.0;
+    config.Slot0.kP = 3.0;
+
     /* Apply configs */
-    tryUntilOk(5, () -> climbMotor.getConfigurator().apply(config, 0.25));
+    tryUntilOk(5, () -> climbMotor.getConfigurator().apply(config, 0.75));
 
     climbPosition = climbMotor.getPosition();
     climbVelocity = climbMotor.getVelocity();
     climbAppliedVolts = climbMotor.getMotorVoltage();
     climbCurrent = climbMotor.getStatorCurrent();
+
+    climbMotor.setPosition(0);
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         50, climbPosition, climbVelocity, climbAppliedVolts, climbCurrent);
@@ -66,5 +78,10 @@ public class ClimbIOTalonFX implements ClimbIO {
   @Override
   public void setVoltage(Voltage voltage) {
     climbMotor.setVoltage(voltage.in(Volts));
+  }
+
+  @Override
+  public void setTargetPosition(double rot) {
+    climbMotor.setControl(req.withPosition(rot));
   }
 }

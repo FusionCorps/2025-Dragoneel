@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
@@ -46,7 +45,7 @@ public class Elevator extends SubsystemBase {
       new Trigger(
           () ->
               getCurrentElevatorPosition()
-                  .isNear(currentElevatorState.rotations, Rotations.of(0.25)));
+                  .isNear(currentElevatorState.rotations, Rotations.of(5.0)));
 
   boolean isOpenLoop = false;
 
@@ -76,6 +75,7 @@ public class Elevator extends SubsystemBase {
   @Override
   public void periodic() {
     if (!isOpenLoop) io.setTargetPosition(currentElevatorState.rotations);
+
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
@@ -98,13 +98,13 @@ public class Elevator extends SubsystemBase {
       followerMotorDisconnectedAlert.set(true);
     }
 
-    if (inputs.forwardLimitSwitchTriggered) {
-      forwardLimitSwitchTriggeredAlert.set(true);
-    }
+    // if (inputs.forwardLimitSwitchTriggered) {
+    //   forwardLimitSwitchTriggeredAlert.set(true);
+    // }
 
-    if (inputs.reverseLimitSwitchTriggered) {
-      reverseLimitSwitchTriggeredAlert.set(true);
-    }
+    // if (inputs.reverseLimitSwitchTriggered) {
+    //   reverseLimitSwitchTriggeredAlert.set(true);
+    // }
 
     // driver variables to visualize the elevator state
     SmartDashboard.putBoolean("ZERO", currentElevatorState == ElevatorState.ZERO);
@@ -161,24 +161,28 @@ public class Elevator extends SubsystemBase {
         () -> io.holdPosition());
   }
 
-  public Command homeElevator() {
-    return new FunctionalCommand(
-        () -> {},
-        () -> {
-          isOpenLoop = true;
-          io.setVoltageOpenLoop(Volts.of(-0.1 * 12.0));
-        },
-        interrupted -> {
-          isOpenLoop = false;
-          if (interrupted) { // e.g. robot disabled or operator lets go of button
-            io.holdPosition();
-          }
-          if (!interrupted) { // ends normally when bottom limit switch is triggered
-            io.zeroPosition();
-            currentElevatorState = ElevatorState.ZERO;
-          }
-        },
-        () -> inputs.reverseLimitSwitchTriggered);
+  // public Command homeElevator() {
+  //   return new FunctionalCommand(
+  //       () -> {},
+  //       () -> {
+  //         isOpenLoop = true;
+  //         io.setVoltageOpenLoop(Volts.of(-0.1 * 12.0));
+  //       },
+  //       interrupted -> {
+  //         isOpenLoop = false;
+  //         if (interrupted) { // e.g. robot disabled or operator lets go of button
+  //           io.holdPosition();
+  //         }
+  //         if (!interrupted) { // ends normally when bottom limit switch is triggered
+  //           io.zeroPosition();
+  //           currentElevatorState = ElevatorState.ZERO;
+  //         }
+  //       },
+  //       () -> inputs.reverseLimitSwitchTriggered);
+  // }
+
+  public Command toggleElevatorSpeed() {
+    return runOnce(() -> io.changemotionmagic());
   }
 
   @AutoLogOutput

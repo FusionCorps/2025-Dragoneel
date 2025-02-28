@@ -1,5 +1,5 @@
 {
- "name":"C4-F.traj",
+ "name":"C4-F",
  "version":1,
  "snapshot":{
   "waypoints":[
@@ -16,7 +16,7 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"C4.x", "val":7.25}, "y":{"exp":"C4.y", "val":4.0}, "heading":{"exp":"-3.141592653589793 rad", "val":-3.141592653589793}, "intervals":26, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"C4.x", "val":7.19}, "y":{"exp":"C4.y", "val":4.0}, "heading":{"exp":"-3.141592653589793 rad", "val":-3.141592653589793}, "intervals":26, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"6.542046546936035 m", "val":6.542046546936035}, "y":{"exp":"3.094066619873047 m", "val":3.094066619873047}, "heading":{"exp":"2.617993877991494 rad", "val":2.617993877991494}, "intervals":28, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
     {"x":{"exp":"F.x", "val":5.15}, "y":{"exp":"F.y", "val":2.9}, "heading":{"exp":"2.0943951023931953 rad", "val":2.0943951023931953}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[

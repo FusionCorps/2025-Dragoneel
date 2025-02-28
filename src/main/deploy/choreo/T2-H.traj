@@ -1,5 +1,5 @@
 {
- "name":"T2-H.traj",
+ "name":"T2-H",
  "version":1,
  "snapshot":{
   "waypoints":[
@@ -14,7 +14,7 @@
  "params":{
   "waypoints":[
     {"x":{"exp":"T2.x", "val":7.25}, "y":{"exp":"T2.y", "val":6.0}, "heading":{"exp":"-3.141592653589793 rad", "val":-3.141592653589793}, "intervals":30, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"H.x", "val":5.8}, "y":{"exp":"H.y", "val":4.01}, "heading":{"exp":"-3.141592653589793 rad", "val":-3.141592653589793}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"H.x", "val":5.9}, "y":{"exp":"H.y", "val":4.0}, "heading":{"exp":"-3.141592653589793 rad", "val":-3.141592653589793}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
