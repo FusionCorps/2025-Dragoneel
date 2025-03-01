@@ -15,13 +15,12 @@ public class ElevatorConstants {
   // public static final int ELEVATOR_REVERSE_LIMIT_SWITCH_DIO_PORT = 1;
 
   public static enum ElevatorState {
-    ZERO(Rotations.of(0.0)),
     PROCESSOR(Rotations.of(0.0)),
     STATION(Rotations.of(0)),
     L1(Rotations.of(3)),
     L2(Rotations.of(10)),
     L3(Rotations.of(16.8)),
-    L4(Rotations.of(25)),
+    L4(Rotations.of(26)),
     NET(Rotations.of(20));
 
     public Angle rotations;
@@ -54,7 +53,7 @@ public class ElevatorConstants {
   public static final SoftwareLimitSwitchConfigs ELEVATOR_SOFT_LIMITS_CONFIGS =
       new SoftwareLimitSwitchConfigs()
           .withForwardSoftLimitEnable(true)
-          .withForwardSoftLimitThreshold(Rotations.of(26.0))
+          .withForwardSoftLimitThreshold(Rotations.of(27.0))
           .withReverseSoftLimitEnable(true)
           .withReverseSoftLimitThreshold(Rotations.of(0));
 

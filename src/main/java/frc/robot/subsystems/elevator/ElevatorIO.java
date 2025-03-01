@@ -20,9 +20,6 @@ public interface ElevatorIO {
     double followerCurrentAmps = 0.0;
 
     double positionSetpointRad = 0.0;
-
-    // boolean reverseLimitSwitchTriggered = false;
-    // boolean forwardLimitSwitchTriggered = false;
   }
 
   default void updateInputs(ElevatorIOInputs inputs) {}
@@ -36,5 +33,5 @@ public interface ElevatorIO {
 
   default void zeroPosition() {}
 
-  default void changemotionmagic() {}
+  default void toggleMotorProfile() {}
 }

@@ -19,6 +19,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.ScoringModeState;
+import frc.robot.Constants.ScoringModeType;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -35,6 +38,9 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
+
+  @AutoLogOutput public static ScoringModeState currentScoringMode = ScoringModeState.STATION;
+  @AutoLogOutput public static ScoringModeType currentScoringType = ScoringModeType.CORAL;
 
   // Order: 2nd stage, 3rd stage, wrist
   public static Pose3d[] componentPoses = new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d()};
@@ -111,6 +117,11 @@ public class Robot extends LoggedRobot {
 
     // Record component poses
     Logger.recordOutput("ComponentPoses", componentPoses);
+    // if (currentScoringType == currentScoringType.CORAL) {
+    //   Logger.record
+    // }
+    // Logger.recordOutput("Current Scoring Type", (currentScoringType == currentScoringType.CORAL)
+    // ? Color.kWhite.toHexString(), Color.kAliceBlue.toHexString());
   }
 
   /** This function is called once when the robot is disabled. */

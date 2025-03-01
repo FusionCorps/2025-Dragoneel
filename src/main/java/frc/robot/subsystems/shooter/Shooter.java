@@ -1,7 +1,5 @@
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Seconds;
-
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -9,8 +7,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.Constants.ScoringModeType;
+import frc.robot.Robot;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.shooter.ShooterConstants.ShooterState;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
@@ -77,15 +78,20 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command shootCoralCmd(Supplier<ElevatorState> currentElevatorStateSupplier) {
-    return startEnd(
-        () -> {
-          if (currentElevatorStateSupplier.get() == ElevatorState.L1) {
-            setState(ShooterState.SHOOT_CORAL_L1);
-          } else if ((currentElevatorStateSupplier.get() == ElevatorState.L4)) {
-            setState(ShooterState.SHOOT_CORAL_L1);
-          } else setState(ShooterState.SHOOT_CORAL_DEFAULT);
-        },
-        () -> setState(ShooterState.IDLE));
+    return Commands.defer(
+        () ->
+            startEnd(
+                () -> {
+                  if (currentElevatorStateSupplier.get() == ElevatorState.L1) {
+                    setState(ShooterState.SHOOT_CORAL_L1);
+                  } else if ((currentElevatorStateSupplier.get() == ElevatorState.L4)) {
+                    setState(ShooterState.SHOOT_CORAL_L4);
+                  } else if (Robot.currentScoringType == ScoringModeType.ALGAE)
+                    setState(ShooterState.SHOOT_ALGAE);
+                  else setState(ShooterState.SHOOT_CORAL_DEFAULT);
+                },
+                () -> setState(ShooterState.IDLE)),
+        Set.of(this));
   }
 
   public Command shootCoralInAutoCmd(
@@ -107,17 +113,57 @@ public class Shooter extends SubsystemBase {
 
   public Command shootCoralInAutoCmd(
       Trigger wristAtScoringState, Supplier<ElevatorState> currentElevatorStateSupplier) {
+    // return Commands.waitUntil(wristAtScoringState)
+    //     .andThen(
+    //         startEnd(
+    //                 () -> {
+    //                   if (currentElevatorStateSupplier.get() == ElevatorState.L1) {
+    //                     setState(ShooterState.SHOOT_CORAL_L1);
+    //                   } else if ((currentElevatorStateSupplier.get() == ElevatorState.L4)) {
+    //                     setState(ShooterState.SHOOT_CORAL_L1);
+    //                   } else setState(ShooterState.SHOOT_CORAL_DEFAULT);
+    //                 },
+    //                 () -> setState(ShooterState.IDLE))
+    //             .withTimeout(Seconds.of(5.0)));
+
     return Commands.waitUntil(wristAtScoringState)
         .andThen(
-            startEnd(
-                    () -> {
-                      if (currentElevatorStateSupplier.get() == ElevatorState.L1) {
-                        setState(ShooterState.SHOOT_CORAL_L1);
-                      } else if ((currentElevatorStateSupplier.get() == ElevatorState.L4)) {
-                        setState(ShooterState.SHOOT_CORAL_L1);
-                      } else setState(ShooterState.SHOOT_CORAL_DEFAULT);
-                    },
-                    () -> setState(ShooterState.IDLE))
-                .withTimeout(Seconds.of(4.0)));
+            Commands.sequence(
+                runOnce(() -> setState(ShooterState.SHOOT_CORAL_L4)),
+                Commands.waitSeconds(0.1),
+                runOnce(() -> setState(ShooterState.IDLE)),
+                Commands.waitSeconds(0.3),
+                runOnce(() -> setState(ShooterState.SHOOT_CORAL_L4)),
+                Commands.waitSeconds(0.2),
+                runOnce(() -> setState(ShooterState.IDLE)),
+                Commands.waitSeconds(0.3),
+                runOnce(() -> setState(ShooterState.SHOOT_CORAL_L4)),
+                Commands.waitSeconds(0.75),
+                runOnce(() -> setState(ShooterState.IDLE)),
+                Commands.waitSeconds(0.3),
+                runOnce(() -> setState(ShooterState.SHOOT_CORAL_L4)),
+                Commands.waitSeconds(0.75),
+                runOnce(() -> setState(ShooterState.IDLE)),
+                Commands.waitSeconds(0.3),
+                runOnce(() -> setState(ShooterState.SHOOT_CORAL_L4)),
+                Commands.waitSeconds(0.75),
+                runOnce(() -> setState(ShooterState.IDLE)),
+                Commands.waitSeconds(0.3),
+                runOnce(() -> setState(ShooterState.SHOOT_CORAL_L4)),
+                Commands.waitSeconds(0.75),
+                runOnce(() -> setState(ShooterState.IDLE)),
+                Commands.waitSeconds(0.3),
+                runOnce(() -> setState(ShooterState.SHOOT_CORAL_L4)),
+                Commands.waitSeconds(0.75),
+                runOnce(() -> setState(ShooterState.IDLE)),
+                Commands.waitSeconds(0.3),
+                runOnce(() -> setState(ShooterState.SHOOT_CORAL_L4)),
+                Commands.waitSeconds(0.75),
+                runOnce(() -> setState(ShooterState.IDLE)),
+                Commands.waitSeconds(0.3),
+                runOnce(() -> setState(ShooterState.SHOOT_CORAL_L4)),
+                Commands.waitSeconds(0.75),
+                runOnce(() -> setState(ShooterState.IDLE)),
+                Commands.waitSeconds(0.3)));
   }
 }

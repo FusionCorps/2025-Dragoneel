@@ -73,7 +73,7 @@ public class DriveCommands {
         .getTranslation();
   }
 
-  public static Command slow() {
+  public static Command toggleSpeed() {
     return Commands.runOnce(
         () -> {
           maxSpeed = !maxSpeed;
@@ -103,9 +103,9 @@ public class DriveCommands {
           // Convert to field relative speeds & send command
           ChassisSpeeds speeds =
               new ChassisSpeeds(
-                  linearVelocity.getX() * (maxSpeed ? drive.getMaxLinearSpeedMetersPerSec() : 0.75),
-                  linearVelocity.getY() * (maxSpeed ? drive.getMaxLinearSpeedMetersPerSec() : 0.75),
-                  omega * (maxSpeed ? drive.getMaxAngularSpeedRadPerSec() : 0.5));
+                  linearVelocity.getX() * (maxSpeed ? drive.getMaxLinearSpeedMetersPerSec() : 1.0),
+                  linearVelocity.getY() * (maxSpeed ? drive.getMaxLinearSpeedMetersPerSec() : 1.0),
+                  omega * (maxSpeed ? drive.getMaxAngularSpeedRadPerSec() : 0.5 * Math.PI));
           boolean isFlipped =
               DriverStation.getAlliance().isPresent()
                   && DriverStation.getAlliance().get() == Alliance.Red;

@@ -44,7 +44,9 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
@@ -56,6 +58,7 @@ import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.vision.Vision.VisionConsumer;
 import frc.robot.util.LocalADStarAK;
 import java.io.IOException;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -95,6 +98,8 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
   private final Consumer<Pose2d> resetSimulationPose;
   private Supplier<Angle> currentElevatorPositionSupplier = () -> Rotations.zero();
+
+  Alert inCoast = new Alert("Drive in coast mode", AlertType.kWarning);
 
   public Drive(
       GyroIO gyroIO,
@@ -172,6 +177,9 @@ public class Drive extends SubsystemBase implements VisionConsumer {
             new SysIdRoutine.Mechanism(
                 voltage -> runCharacterization(voltage.in(Volts)), null, this));
     setPose(new Pose2d());
+
+    SmartDashboard.putData("Coast", setNeutralMode(true));
+    SmartDashboard.putData("Brake", setNeutralMode(false));
   }
 
   @Override
@@ -394,5 +402,23 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
   public void setCurrentElevatorPositionSupplier(Supplier<Angle> currentElevatorPositionSupplier) {
     this.currentElevatorPositionSupplier = currentElevatorPositionSupplier;
+  }
+
+  public Command setNeutralMode(boolean coast) {
+    return Commands.defer(
+            () ->
+                Commands.runOnce(
+                    () -> {
+                      if (coast) {
+                        inCoast.set(true);
+                        for (var module : modules) module.setNeutral(true);
+                      } else {
+                        inCoast.set(false);
+                        for (var module : modules) module.setNeutral(false);
+                      }
+                      ;
+                    }),
+            Set.of(this))
+        .ignoringDisable(true);
   }
 }

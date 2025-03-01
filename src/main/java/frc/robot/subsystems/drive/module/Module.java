@@ -152,4 +152,8 @@ public class Module {
   public double getFFCharacterizationVelocity() {
     return Units.radiansToRotations(inputs.driveVelocityRadPerSec);
   }
+
+  public void setNeutral(boolean coast) {
+    io.setNeutral(coast);
+  }
 }

@@ -27,26 +27,24 @@ public class WristConstants {
                       .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
                       .positionWrappingInputRange(-0.5, 0.5)
                       .positionWrappingEnabled(true)
-                      .pid(6.0, 0, 0))
-      // .apply(
-      //     new SoftLimitConfig()
-      //         .reverseSoftLimitEnabled(true)
-      //         .reverseSoftLimit(0)
-      //         .forwardSoftLimitEnabled(true)
-      //         .forwardSoftLimit(0.35)
-      ;
+                      .pid(6.0, 0, 0));
+  // .apply(
+  //     new SoftLimitConfig()
+  //         .reverseSoftLimitEnabled(true)
+  //         .reverseSoftLimit(0)
+  //         .forwardSoftLimitEnabled(true)
+  //         .forwardSoftLimit(0.35)
 
   public static enum WristState {
-    ZERO(Rotations.zero()),
     PROCESSOR(Rotations.of(0.15)),
     STATION(Rotations.of(0)),
     L1(Rotations.of(0.24)),
-    L2(Rotations.of(0.165)),
+    L2_CORAL(Rotations.of(0.165)),
     L2_ALGAE(Rotations.of(0.125)),
-    L3(Rotations.of(0.165)),
+    L3_CORAL(Rotations.of(0.165)),
     L3_ALGAE(Rotations.of(0.125)),
-    L4(Rotations.of(0.22)),
-    NET(Rotations.of(0.26));
+    L4(Rotations.of(0.195)),
+    NET(Rotations.of(0.35));
 
     public Angle rotations;
 

@@ -202,7 +202,7 @@ public class DriveConstants {
   private static final int kBackRightDriveMotorId = 10;
   private static final int kBackRightSteerMotorId = 11;
   private static final int kBackRightEncoderId = 12;
-  private static final Angle kBackRightEncoderOffset = Rotations.of(-0.123046875);
+  private static final Angle kBackRightEncoderOffset = Rotations.of(0.08251953125);
   private static final boolean kBackRightSteerMotorInverted = true;
   private static final boolean kBackRightEncoderInverted = false;
 
@@ -294,7 +294,8 @@ public class DriveConstants {
 
   public static final InterpolatingDoubleTreeMap DRIVE_TRANSLATIONAL_MAX_SPEED_MAP_METER_PER_SEC =
       InterpolatingDoubleTreeMap.ofEntries(
-          Map.entry(ElevatorState.ZERO.rotations.in(Rotations), SPEED_AT_12V.in(MetersPerSecond)),
+          Map.entry(
+              ElevatorState.STATION.rotations.in(Rotations), SPEED_AT_12V.in(MetersPerSecond)),
           Map.entry(ElevatorState.L1.rotations.in(Rotations), 4.0),
           Map.entry(ElevatorState.L2.rotations.in(Rotations), 3.0),
           Map.entry(ElevatorState.L3.rotations.in(Rotations), 1.5),
@@ -302,7 +303,7 @@ public class DriveConstants {
 
   public static final InterpolatingDoubleTreeMap DRIVE_ROTATIONAL_MAX_SPEED_MAP_RAD_PER_SEC =
       InterpolatingDoubleTreeMap.ofEntries(
-          Map.entry(ElevatorState.ZERO.rotations.in(Rotations), 2.0 * Math.PI),
+          Map.entry(ElevatorState.STATION.rotations.in(Rotations), 2.0 * Math.PI),
           Map.entry(ElevatorState.L1.rotations.in(Rotations), 1.75 * Math.PI),
           Map.entry(ElevatorState.L2.rotations.in(Rotations), 1.5 * Math.PI),
           Map.entry(ElevatorState.L3.rotations.in(Rotations), 1.0 * Math.PI),

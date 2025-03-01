@@ -28,7 +28,7 @@ import frc.robot.subsystems.drive.DriveConstants;
  * (log replay from a file).
  */
 public final class Constants {
-  public static final Mode SIM_MODE = Mode.REPLAY;
+  public static final Mode SIM_MODE = Mode.SIM;
   public static final Mode CURRENT_MODE = RobotBase.isReal() ? Mode.REAL : SIM_MODE;
 
   public static enum Mode {
@@ -40,6 +40,23 @@ public final class Constants {
 
     /** Replaying from a log file. */
     REPLAY
+  }
+
+  public static enum ScoringModeState {
+    STATION,
+    L1,
+    PROCESSOR,
+    L2_CORAL,
+    L2_ALGAE,
+    L3_CORAL,
+    L3_ALGAE,
+    NET,
+    L4
+  }
+
+  public static enum ScoringModeType {
+    CORAL,
+    ALGAE
   }
 
   // TODO: Update these values in PathPlanner and Choreo and here

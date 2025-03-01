@@ -134,6 +134,8 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
             : SensorDirectionValue.CounterClockwise_Positive;
     cancoder.getConfigurator().apply(cancoderConfig);
 
+    // if (this.constants.DriveMotorId == 10) driveTalon.setNeutralMode(NeutralModeValue.Coast);
+
     // Create drive status signals
     drivePosition = driveTalon.getPosition();
     driveVelocity = driveTalon.getVelocity();
@@ -231,5 +233,11 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
           case TorqueCurrentFOC -> positionTorqueCurrentRequest.withPosition(
               rotation.getRotations());
         });
+  }
+
+  @Override
+  public void setNeutral(boolean coast) {
+    if (coast) driveTalon.setNeutralMode(NeutralModeValue.Coast);
+    else driveTalon.setNeutralMode(NeutralModeValue.Brake);
   }
 }

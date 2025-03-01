@@ -14,11 +14,13 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.util.LoggedTunableNumber;
+import java.util.Set;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -32,13 +34,9 @@ public class Elevator extends SubsystemBase {
       new Alert("Main Elevator Motor Disconnected.", AlertType.kError);
   private final Alert followerMotorDisconnectedAlert =
       new Alert("Follower Elevator Motor Disconnected.", AlertType.kError);
-  private final Alert forwardLimitSwitchTriggeredAlert =
-      new Alert("Top Limit Switch Triggered.", AlertType.kInfo);
-  private final Alert reverseLimitSwitchTriggeredAlert =
-      new Alert("Bottom Limit Switch Triggered. Elevator zeroed", AlertType.kInfo);
 
   /* State tracker for current height of the elevator */
-  private ElevatorState currentElevatorState = ElevatorState.ZERO;
+  private ElevatorState currentElevatorState = ElevatorState.STATION;
 
   @AutoLogOutput
   public Trigger isAtTargetState =
@@ -98,19 +96,10 @@ public class Elevator extends SubsystemBase {
       followerMotorDisconnectedAlert.set(true);
     }
 
-    // if (inputs.forwardLimitSwitchTriggered) {
-    //   forwardLimitSwitchTriggeredAlert.set(true);
-    // }
-
-    // if (inputs.reverseLimitSwitchTriggered) {
-    //   reverseLimitSwitchTriggeredAlert.set(true);
-    // }
-
     // driver variables to visualize the elevator state
-    SmartDashboard.putBoolean("ZERO", currentElevatorState == ElevatorState.ZERO);
+    SmartDashboard.putBoolean("STATION", currentElevatorState == ElevatorState.STATION);
     SmartDashboard.putBoolean("L1", currentElevatorState == ElevatorState.L1);
     SmartDashboard.putBoolean("L2", currentElevatorState == ElevatorState.L2);
-    SmartDashboard.putBoolean("STATION", currentElevatorState == ElevatorState.STATION);
     SmartDashboard.putBoolean("L3", currentElevatorState == ElevatorState.L3);
     SmartDashboard.putBoolean("L4", currentElevatorState == ElevatorState.L4);
     SmartDashboard.putBoolean("NET", currentElevatorState == ElevatorState.NET);
@@ -161,28 +150,8 @@ public class Elevator extends SubsystemBase {
         () -> io.holdPosition());
   }
 
-  // public Command homeElevator() {
-  //   return new FunctionalCommand(
-  //       () -> {},
-  //       () -> {
-  //         isOpenLoop = true;
-  //         io.setVoltageOpenLoop(Volts.of(-0.1 * 12.0));
-  //       },
-  //       interrupted -> {
-  //         isOpenLoop = false;
-  //         if (interrupted) { // e.g. robot disabled or operator lets go of button
-  //           io.holdPosition();
-  //         }
-  //         if (!interrupted) { // ends normally when bottom limit switch is triggered
-  //           io.zeroPosition();
-  //           currentElevatorState = ElevatorState.ZERO;
-  //         }
-  //       },
-  //       () -> inputs.reverseLimitSwitchTriggered);
-  // }
-
   public Command toggleElevatorSpeed() {
-    return runOnce(() -> io.changemotionmagic());
+    return Commands.defer(() -> runOnce(() -> io.toggleMotorProfile()), Set.of(this));
   }
 
   @AutoLogOutput

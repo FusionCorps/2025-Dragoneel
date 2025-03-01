@@ -79,9 +79,4 @@ public class ClimbIOTalonFX implements ClimbIO {
   public void setVoltage(Voltage voltage) {
     climbMotor.setVoltage(voltage.in(Volts));
   }
-
-  @Override
-  public void setTargetPosition(double rot) {
-    climbMotor.setControl(req.withPosition(rot));
-  }
 }

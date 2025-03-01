@@ -22,18 +22,18 @@ public class Wrist extends SubsystemBase {
   private final WristIO io;
   private final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
-  @AutoLogOutput private WristState currentWristState = WristState.ZERO;
+  @AutoLogOutput private WristState currentWristState = WristState.STATION;
 
   @AutoLogOutput
-  public Trigger isAtZero =
-      new Trigger(() -> WristState.ZERO.rotations.isNear(getCurrentAngle(), Degrees.of(15)));
+  public Trigger isAtStation =
+      new Trigger(() -> WristState.STATION.rotations.isNear(getCurrentAngle(), Degrees.of(15)));
 
   @AutoLogOutput
   public Trigger isAtScoringState =
       new Trigger(
           () ->
               currentWristState.rotations.isNear(getCurrentAngle(), Degrees.of(5))
-                  && currentWristState != WristState.ZERO);
+                  && currentWristState != WristState.STATION);
 
   private final Alert wristMotorDisconnectedAlert =
       new Alert("Wrist Motor Disconnected.", AlertType.kError);
@@ -44,9 +44,9 @@ public class Wrist extends SubsystemBase {
   LoggedTunableNumber wristL1Position =
       new LoggedTunableNumber("/Wrist/L1Position", WristState.L1.rotations.in(Rotations));
   LoggedTunableNumber wristL2Position =
-      new LoggedTunableNumber("/Wrist/L2Position", WristState.L2.rotations.in(Rotations));
+      new LoggedTunableNumber("/Wrist/L2Position", WristState.L2_CORAL.rotations.in(Rotations));
   LoggedTunableNumber wristL3Position =
-      new LoggedTunableNumber("/Wrist/L3Position", WristState.L3.rotations.in(Rotations));
+      new LoggedTunableNumber("/Wrist/L3Position", WristState.L3_CORAL.rotations.in(Rotations));
   LoggedTunableNumber wristL4Position =
       new LoggedTunableNumber("/Wrist/L4Position", WristState.L4.rotations.in(Rotations));
   LoggedTunableNumber wristNetPosition =
@@ -76,8 +76,8 @@ public class Wrist extends SubsystemBase {
         nums -> {
           WristState.PROCESSOR.rotations = Rotations.of(nums[0]);
           WristState.L1.rotations = Rotations.of(nums[1]);
-          WristState.L2.rotations = Rotations.of(nums[2]);
-          WristState.L3.rotations = Rotations.of(nums[3]);
+          WristState.L2_CORAL.rotations = Rotations.of(nums[2]);
+          WristState.L3_CORAL.rotations = Rotations.of(nums[3]);
           WristState.L4.rotations = Rotations.of(nums[4]);
           WristState.NET.rotations = Rotations.of(nums[5]);
         },
