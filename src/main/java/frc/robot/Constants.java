@@ -60,7 +60,7 @@ public final class Constants {
   }
 
   // TODO: Update these values in PathPlanner and Choreo and here
-  public static final Mass ROBOT_MASS = Pounds.of(115);
+  public static final Mass ROBOT_MASS = Pounds.of(131.2);
   public static final double ROBOT_MOI =
       //   ROBOT_MASS.in(Kilograms) * DriveConstants.FRONT_LEFT.LocationX * (0.011992 /
       // DriveConstants.driveGains.kA);
