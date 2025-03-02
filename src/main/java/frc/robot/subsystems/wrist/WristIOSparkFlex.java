@@ -13,12 +13,14 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.ClosedLoopConfig;
+import com.revrobotics.spark.config.MAXMotionConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Constants.ScoringModeType;
+import frc.robot.RobotContainer;
 import java.util.function.DoubleSupplier;
 
 public class WristIOSparkFlex implements WristIO {
@@ -29,9 +31,7 @@ public class WristIOSparkFlex implements WristIO {
   private final RelativeEncoder wristMotorEncoder;
   private final AbsoluteEncoder wristMotorAbsoluteEncoder;
 
-  SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0, 0.2);
-
-  SparkClosedLoopController pid;
+  private final SparkClosedLoopController pidController;
 
   private double setpoint = 0.0;
 
@@ -43,8 +43,7 @@ public class WristIOSparkFlex implements WristIO {
     wristMotorEncoder = wristMotor.getEncoder();
     wristMotorAbsoluteEncoder = wristMotor.getAbsoluteEncoder();
 
-    // pid.enableContinuousInput(-0.5, 0.5);
-    pid = wristMotor.getClosedLoopController();
+    pidController = wristMotor.getClosedLoopController();
 
     /* Try to apply */
     tryUntilOk(
@@ -52,7 +51,11 @@ public class WristIOSparkFlex implements WristIO {
         5,
         () ->
             wristMotor.configure(
-                WRIST_CONFIG, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
+                WRIST_CONFIG
+                    .apply(WRIST_ABSOLUTE_ENCODER_CONFIG)
+                    .apply(WRIST_CLOSED_LOOP_CONFIG.apply(WRIST_MAX_MOTION_CONFIG)),
+                ResetMode.kNoResetSafeParameters,
+                PersistMode.kPersistParameters));
   }
 
   @Override
@@ -86,21 +89,31 @@ public class WristIOSparkFlex implements WristIO {
   @Override
   public void setTargetPosition(Angle angle) {
     setpoint = angle.in(Rotations);
-    pid.setReference(setpoint, ControlType.kPosition);
+    // pid.setReference(setpoint, ControlType.kPosition);
+    pidController.setReference(setpoint, ControlType.kMAXMotionPositionControl);
   }
 
   boolean changed = false;
 
   @Override
   public void toggleSpeed() {
-    if (changed)
+    if (RobotContainer.currentScoringType == ScoringModeType.CORAL)
       wristMotor.configureAsync(
-          new SparkFlexConfig().apply(new ClosedLoopConfig().p(1.0)),
+          new SparkFlexConfig()
+              .apply(
+                  new ClosedLoopConfig()
+                      .apply(
+                          new MAXMotionConfig()
+                              .maxVelocity(WRIST_MAX_MOTION_MAX_VELOCITY)
+                              .maxAcceleration(WRIST_MAX_MOTION_MAX_ACCELERATION))),
           ResetMode.kNoResetSafeParameters,
           PersistMode.kPersistParameters);
     else
       wristMotor.configureAsync(
-          new SparkFlexConfig().apply(new ClosedLoopConfig().p(6.0)),
+          new SparkFlexConfig()
+              .apply(
+                  new ClosedLoopConfig()
+                      .apply(new MAXMotionConfig().maxVelocity(0.5).maxAcceleration(0.5))),
           ResetMode.kNoResetSafeParameters,
           PersistMode.kPersistParameters);
   }
