@@ -113,7 +113,7 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run();
 
     // Return to normal thread priority
-    Threads.setCurrentThreadPriority(false, 10);
+    // Threads.setCurrentThreadPriority(false, 10);
 
     // Record component poses
     Logger.recordOutput("ComponentPoses", componentPoses);

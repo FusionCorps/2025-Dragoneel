@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ScoringModeType;
 import frc.robot.commands.DriveCommands;
@@ -56,7 +57,6 @@ import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
 import frc.robot.util.ShootingUtil;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
@@ -104,8 +104,10 @@ public class RobotContainer {
             new Vision(
                 // drive,
                 (a, b, c) -> {},
-                new VisionIOPhotonVision(CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM),
-                new VisionIOPhotonVision(CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM));
+                new VisionIOPhotonVision(
+                    CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getRotation),
+                new VisionIOPhotonVision(
+                    CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM, drive::getRotation));
         climb = new Climb(new ClimbIOTalonFX());
         shooter = new Shooter(new ShooterIOSparkFlex());
         elevator = new Elevator(new ElevatorIOTalonFX());
@@ -217,6 +219,9 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
+    // robot will stow when re-enabled
+    RobotModeTriggers.disabled().onTrue(elevatorAndWristCommands.goToStation());
+
     // Configure the button bindings
     configureButtonBindings();
   }
@@ -225,7 +230,7 @@ public class RobotContainer {
   private void configureButtonBindings() {
     /* drive commands */
     if (drive != null) {
-      // Default command, normal field-relative drive
+      // Default command, field-relative drive
       drive.setDefaultCommand(
           DriveCommands.joystickDrive(
               drive,
@@ -235,16 +240,18 @@ public class RobotContainer {
 
       // in simulation: reset odometry to actual robot pose
       // in real: zero gyro heading
-      // final Runnable resetGyro =
-      //     Constants.CURRENT_MODE == Constants.Mode.SIM
-      //         ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
-      //         : () -> drive.zeroGyro();
+      final Runnable resetGyro =
+          Constants.CURRENT_MODE == Constants.Mode.SIM
+              ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
+              : () -> drive.zeroGyro();
 
-      controller.start().onTrue(drive.zeroGyro().ignoringDisable(true));
+      controller.start().onTrue(drive.runOnce(resetGyro).ignoringDisable(true));
 
+      // Auto align to nearest left/right branch
       controller.povLeft().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, true));
       controller.povRight().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, false));
 
+      // Toggle drive speed for "slow mode" driving
       controller
           .leftTrigger()
           .onTrue(
@@ -263,17 +270,15 @@ public class RobotContainer {
       controller
           .leftBumper()
           .onTrue(
-              Commands.defer(
+              Commands.runOnce(
                       () ->
-                          Commands.runOnce(
-                              () -> {
-                                if (Robot.currentScoringType == ScoringModeType.CORAL)
-                                  Robot.currentScoringType = ScoringModeType.ALGAE;
-                                else Robot.currentScoringType = ScoringModeType.CORAL;
-                              }),
-                      Set.of())
+                          Robot.currentScoringType =
+                              (Robot.currentScoringType == ScoringModeType.CORAL)
+                                  ? ScoringModeType.ALGAE
+                                  : ScoringModeType.CORAL)
                   .alongWith(rumbleCommand()));
 
+      // Goes to L1 or processor based on current scoring type
       controller
           .a()
           .onTrue(
@@ -282,6 +287,7 @@ public class RobotContainer {
                   elevatorAndWristCommands.goToProcessor(),
                   () -> Robot.currentScoringType == ScoringModeType.CORAL));
 
+      // Goes to L2 coral or algae based on current scoring type
       controller
           .b()
           .onTrue(
@@ -290,6 +296,7 @@ public class RobotContainer {
                   elevatorAndWristCommands.goToL2Algae(),
                   () -> Robot.currentScoringType == ScoringModeType.CORAL));
 
+      // Goes to L3 coral or algae based on current scoring type
       controller
           .x()
           .onTrue(
@@ -298,6 +305,7 @@ public class RobotContainer {
                   elevatorAndWristCommands.goToL3Algae(),
                   () -> Robot.currentScoringType == ScoringModeType.CORAL));
 
+      // Goes to L4 or net based on current scoring type
       controller
           .y()
           .onTrue(
@@ -305,31 +313,6 @@ public class RobotContainer {
                   elevatorAndWristCommands.goToL4(),
                   elevatorAndWristCommands.goToNet(),
                   () -> Robot.currentScoringType == ScoringModeType.CORAL));
-
-      // controller.a().onTrue(elevatorAndWristCommands.goToL1());
-      // controller
-      //     .a()
-      //     .debounce(0.75)
-      //     .onTrue(elevatorAndWristCommands.goToProcessor().alongWith(rumbleCommand()));
-
-      // controller.b().onTrue(elevatorAndWristCommands.goToL2Coral());
-      // controller
-      //     .b()
-      //     .debounce(0.5)
-      //     .onTrue(elevatorAndWristCommands.goToL2Algae().alongWith(rumbleCommand()));
-
-      // controller.x().onTrue(elevatorAndWristCommands.goToL3Coral());
-      // controller
-      //     .x()
-      //     .debounce(0.5)
-      //     .onTrue(elevatorAndWristCommands.goToL3Algae().alongWith(rumbleCommand()));
-
-      // controller.leftStick().onTrue(elevator.toggleElevatorSpeed());
-      // controller.y().onTrue(elevatorAndWristCommands.goToL4());
-      // controller
-      //     .y()
-      //     .debounce(0.75)
-      //     .onTrue(elevatorAndWristCommands.goToNet().alongWith(rumbleCommand()));
     }
 
     /* scoring commands */
@@ -340,11 +323,12 @@ public class RobotContainer {
               shooter.shootCoralCmd(elevator::getCurrentElevatorState, simCoralProjectileSupplier));
     }
 
+    /* Climb commands */
     if (climb != null) {
-      // extend climb
-      controller.povUp().whileTrue(climb.extendClimbCmd());
-      // retract climb
-      controller.povDown().whileTrue(climb.retractClimbCmd());
+      // extend climb out
+      controller.povDown().whileTrue(climb.extendClimbCmd());
+      // retract climb back in
+      controller.povUp().whileTrue(climb.retractClimbCmd());
     }
   }
 

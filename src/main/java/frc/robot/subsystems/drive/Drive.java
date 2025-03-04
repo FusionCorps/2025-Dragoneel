@@ -99,7 +99,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   private final Consumer<Pose2d> resetSimulationPose;
   private Supplier<Angle> currentElevatorPositionSupplier = () -> Rotations.zero();
 
-  Alert inCoast = new Alert("Drive in coast mode", AlertType.kWarning);
+  Alert wheelsInCoastAlert = new Alert("Drive in coast mode", AlertType.kWarning);
 
   public Drive(
       GyroIO gyroIO,
@@ -396,8 +396,8 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   }
 
   /** Sets the gyro angle to 0° and sets current gyro angle to forward. */
-  public Command zeroGyro() {
-    return runOnce(() -> setPose(new Pose2d(getPose().getTranslation(), new Rotation2d())));
+  public void zeroGyro() {
+    setPose(new Pose2d(getPose().getTranslation(), new Rotation2d()));
   }
 
   public void setCurrentElevatorPositionSupplier(Supplier<Angle> currentElevatorPositionSupplier) {
@@ -410,10 +410,10 @@ public class Drive extends SubsystemBase implements VisionConsumer {
                 Commands.runOnce(
                     () -> {
                       if (coast) {
-                        inCoast.set(true);
+                        wheelsInCoastAlert.set(true);
                         for (var module : modules) module.setNeutral(true);
                       } else {
-                        inCoast.set(false);
+                        wheelsInCoastAlert.set(false);
                         for (var module : modules) module.setNeutral(false);
                       }
                       ;

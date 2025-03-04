@@ -5,9 +5,10 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -15,7 +16,8 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 public class WristIOSim implements WristIO {
   private final DCMotorSim wristMotorSim;
 
-  PIDController controller = new PIDController(0.1, 0.0, 0.0);
+  ProfiledPIDController controller =
+      new ProfiledPIDController(0.1, 0.0, 0.0, new Constraints(0, 0));
 
   double appliedVolts = 0.0;
   Angle targetPosition = Rotations.zero();

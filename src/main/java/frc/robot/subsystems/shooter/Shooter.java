@@ -11,9 +11,6 @@ import frc.robot.Constants.ScoringModeType;
 import frc.robot.Robot;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.shooter.ShooterConstants.ShooterState;
-
-import static edu.wpi.first.units.Units.Seconds;
-
 import java.util.Set;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;

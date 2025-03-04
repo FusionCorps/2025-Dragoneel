@@ -37,7 +37,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
-import frc.robot.subsystems.vision.Vision;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -73,6 +72,7 @@ public class DriveCommands {
         .getTranslation();
   }
 
+  /** Toggles between maximum and slow speed. */
   public static Command toggleSpeed() {
     return Commands.runOnce(
         () -> {
@@ -208,7 +208,7 @@ public class DriveCommands {
           // Convert to field relative speeds & send command
           ChassisSpeeds speeds =
               new ChassisSpeeds(
-                  xVel * 0.5, yVel * 0.5, omega * drive.getMaxAngularSpeedRadPerSec() / 2.0);
+                  xVel * 0.5, yVel * 0.5, omega * drive.getMaxAngularSpeedRadPerSec() * 0.5);
           drive.driveRobotCentric(
               ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
         },
@@ -299,42 +299,6 @@ public class DriveCommands {
                             ? redReefTagPoses
                             : blueReefTagPoses)),
         alignLeft);
-  }
-
-  public static Command autoAlignNew(Drive drive, Vision vision, boolean alignLeft) {
-    return driveToPose(
-        drive,
-        () -> {
-          // determine the transform from robot to target, add the offset, and rotate 180 degrees
-          // add this to the robot's current pose to get the target pose
-          Pose2d transPose =
-              new Pose2d(
-                  vision.getBestReefTransform(1).getTranslation().toTranslation2d(),
-                  vision
-                      .getBestReefTransform(1)
-                      .getRotation()
-                      .toRotation2d()
-                      .rotateBy(Rotation2d.kPi));
-          Logger.recordOutput("transPose", transPose);
-          transPose =
-              transPose.transformBy(
-                  new Transform2d(
-                      ROBOT_TO_CAM_FR_TRANSFORM.getX(),
-                      ROBOT_TO_CAM_FR_TRANSFORM.getY(),
-                      ROBOT_TO_CAM_FR_TRANSFORM.getRotation().toRotation2d()));
-          if (alignLeft)
-            transPose =
-                transPose.transformBy(
-                    new Transform2d(-0.52, (alignLeft ? 0.33 : 0.0), Rotation2d.kZero));
-          Logger.recordOutput("offset", transPose);
-          Pose2d desiredPose =
-              drive
-                  .getPose()
-                  .plus(
-                      new Transform2d(transPose.getX(), transPose.getY(), transPose.getRotation()));
-          Logger.recordOutput("desiredTarget", desiredPose);
-          return desiredPose;
-        });
   }
 
   /**
