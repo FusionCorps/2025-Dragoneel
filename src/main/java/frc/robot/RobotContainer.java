@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ScoringModeType;
 import frc.robot.commands.DriveCommands;
@@ -33,6 +34,7 @@ import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.subsystems.drive.DriveConstants.DriveSpeedMode;
 import frc.robot.subsystems.drive.gyro.GyroIO;
 import frc.robot.subsystems.drive.gyro.GyroIOPigeon2;
 import frc.robot.subsystems.drive.gyro.GyroIOSim;
@@ -224,6 +226,10 @@ public class RobotContainer {
     // robot will stow when re-enabled
     RobotModeTriggers.disabled().onTrue(elevatorAndWristCommands.goToStation());
 
+    // When elevator leaves station, run at slower speed
+    new Trigger(() -> elevator.getCurrentElevatorState() != ElevatorState.STATION)
+        .onTrue(Commands.runOnce(() -> DriveCommands.speedMode = DriveSpeedMode.SLOWER).alongWith(DriveCommands.toggleSpeed(elevator::getCurrentElevatorState)));
+
     // Configure the button bindings
     configureButtonBindings();
   }
@@ -257,7 +263,9 @@ public class RobotContainer {
       controller
           .leftTrigger()
           .onTrue(
-              DriveCommands.toggleSpeed()); // TODO: consider making this an acceleration limiter
+              DriveCommands.toggleSpeed(
+                  elevator::getCurrentElevatorState)); // TODO: consider making this an acceleration
+      // limiter
     }
 
     /* elevator and wrist movement commands */

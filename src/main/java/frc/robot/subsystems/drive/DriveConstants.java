@@ -308,4 +308,10 @@ public class DriveConstants {
           Map.entry(ElevatorState.L2.rotations.in(Rotations), 1.5 * Math.PI),
           Map.entry(ElevatorState.L3.rotations.in(Rotations), 1.0 * Math.PI),
           Map.entry(ElevatorState.L4.rotations.in(Rotations), 0.5 * Math.PI));
+
+  public static enum DriveSpeedMode {
+    DEFAULT,
+    SLOW,
+    SLOWER
+  }
 }

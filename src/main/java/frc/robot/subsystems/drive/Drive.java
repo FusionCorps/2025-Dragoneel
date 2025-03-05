@@ -39,6 +39,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -389,8 +390,8 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
   /** Returns the maximum angular speed in radians per sec. */
   public double getMaxAngularSpeedRadPerSec() {
-    return getMaxLinearSpeedMetersPerSec() / DriveConstants.DRIVE_BASE_RADIUS;
-    // return 2 * Math.PI;
+    // return getMaxLinearSpeedMetersPerSec() / DriveConstants.DRIVE_BASE_RADIUS;
+    return Units.rotationsToRadians(1.0);
     // return DriveConstants.DRIVE_ROTATIONAL_MAX_SPEED_MAP_RAD_PER_SEC.get(
     //     currentElevatorPositionSupplier.get().in(Rotations));
   }
