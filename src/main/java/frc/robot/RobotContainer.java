@@ -13,6 +13,7 @@
 
 package frc.robot;
 
+import static frc.robot.Robot.currentScoringType;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -43,6 +44,7 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
+import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOSim;
@@ -55,6 +57,7 @@ import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
+import frc.robot.subsystems.wrist.WristConstants.WristState;
 import frc.robot.util.ShootingUtil;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -271,11 +274,25 @@ public class RobotContainer {
           .leftBumper()
           .onTrue(
               Commands.runOnce(
-                      () ->
-                          Robot.currentScoringType =
-                              (Robot.currentScoringType == ScoringModeType.CORAL)
-                                  ? ScoringModeType.ALGAE
-                                  : ScoringModeType.CORAL)
+                      () -> {
+                          if (Robot.currentScoringType == ScoringModeType.CORAL) {
+                              Robot.currentScoringType = ScoringModeType.ALGAE;
+                              // move wrist if at L2 and L3
+                              if (elevator.getCurrentElevatorState() == ElevatorState.L2) {
+                                wrist.goToState(WristState.L2_ALGAE);
+                              } else if (elevator.getCurrentElevatorState() == ElevatorState.L3) {
+                                wrist.goToState(WristState.L3_ALGAE);
+                                }
+                            } else {
+                                Robot.currentScoringType = ScoringModeType.CORAL;
+                                // move wrist if at L2 and L3
+                                if (elevator.getCurrentElevatorState() == ElevatorState.L2) {
+                                  wrist.goToState(WristState.L2_CORAL);
+                                } else if (elevator.getCurrentElevatorState() == ElevatorState.L3) {
+                                  wrist.goToState(WristState.L3_CORAL);
+                                }
+                            }
+                        })
                   .alongWith(rumbleCommand()));
 
       // Goes to L1 or processor based on current scoring type
@@ -362,8 +379,10 @@ public class RobotContainer {
   public Command rumbleCommand() {
     return Commands.run(
             () -> {
-              controller.setRumble(RumbleType.kBothRumble, 1.0);
-            })
+                if (Robot.currentScoringType == ScoringModeType.CORAL)
+              controller.setRumble(RumbleType.kBothRumble, 0.5);
+              else controller.setRumble(RumbleType.kBothRumble, 1.0);
+            }) 
         .withTimeout(0.5)
         .finallyDo(() -> controller.setRumble(RumbleType.kBothRumble, 0.0));
   }

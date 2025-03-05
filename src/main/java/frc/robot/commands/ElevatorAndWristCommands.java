@@ -163,11 +163,6 @@ public class ElevatorAndWristCommands {
   }
 
   public Command goToNet() {
-    // return Commands.either(
-    //     Commands.none(),
-    //     goToStateFromCoral(WristState.NET, ElevatorState.NET)
-    //         .alongWith(Commands.runOnce(() -> currentScoringMode = NET)),
-    //     () -> currentScoringMode == NET);
     return Commands.defer(
         () -> {
           if (currentScoringMode == NET) {
