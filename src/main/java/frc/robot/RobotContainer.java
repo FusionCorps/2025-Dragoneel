@@ -13,7 +13,6 @@
 
 package frc.robot;
 
-import static frc.robot.Robot.currentScoringType;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -25,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ScoringModeType;
 import frc.robot.commands.DriveCommands;
@@ -34,6 +34,7 @@ import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.subsystems.drive.DriveConstants.DriveSpeedMode;
 import frc.robot.subsystems.drive.gyro.GyroIO;
 import frc.robot.subsystems.drive.gyro.GyroIOPigeon2;
 import frc.robot.subsystems.drive.gyro.GyroIOSim;
@@ -41,10 +42,10 @@ import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFXReal;
 import frc.robot.subsystems.drive.module.ModuleIOTalonFXSim;
 import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
-import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOSim;
@@ -54,10 +55,10 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.wrist.Wrist;
+import frc.robot.subsystems.wrist.WristConstants.WristState;
 import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
-import frc.robot.subsystems.wrist.WristConstants.WristState;
 import frc.robot.util.ShootingUtil;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -225,6 +226,10 @@ public class RobotContainer {
     // robot will stow when re-enabled
     RobotModeTriggers.disabled().onTrue(elevatorAndWristCommands.goToStation());
 
+    // When elevator leaves station, run at slower speed
+    new Trigger(() -> elevator.getCurrentElevatorState() != ElevatorState.STATION)
+        .onTrue(Commands.runOnce(() -> DriveCommands.speedMode = DriveSpeedMode.SLOWER).alongWith(DriveCommands.toggleSpeed(elevator::getCurrentElevatorState)));
+
     // Configure the button bindings
     configureButtonBindings();
   }
@@ -258,7 +263,9 @@ public class RobotContainer {
       controller
           .leftTrigger()
           .onTrue(
-              DriveCommands.toggleSpeed()); // TODO: consider making this an acceleration limiter
+              DriveCommands.toggleSpeed(
+                  elevator::getCurrentElevatorState)); // TODO: consider making this an acceleration
+      // limiter
     }
 
     /* elevator and wrist movement commands */
@@ -275,24 +282,24 @@ public class RobotContainer {
           .onTrue(
               Commands.runOnce(
                       () -> {
-                          if (Robot.currentScoringType == ScoringModeType.CORAL) {
-                              Robot.currentScoringType = ScoringModeType.ALGAE;
-                              // move wrist if at L2 and L3
-                              if (elevator.getCurrentElevatorState() == ElevatorState.L2) {
-                                wrist.goToState(WristState.L2_ALGAE);
-                              } else if (elevator.getCurrentElevatorState() == ElevatorState.L3) {
-                                wrist.goToState(WristState.L3_ALGAE);
-                                }
-                            } else {
-                                Robot.currentScoringType = ScoringModeType.CORAL;
-                                // move wrist if at L2 and L3
-                                if (elevator.getCurrentElevatorState() == ElevatorState.L2) {
-                                  wrist.goToState(WristState.L2_CORAL);
-                                } else if (elevator.getCurrentElevatorState() == ElevatorState.L3) {
-                                  wrist.goToState(WristState.L3_CORAL);
-                                }
-                            }
-                        })
+                        if (Robot.currentScoringType == ScoringModeType.CORAL) {
+                          Robot.currentScoringType = ScoringModeType.ALGAE;
+                          // move wrist if at L2 and L3
+                          if (elevator.getCurrentElevatorState() == ElevatorState.L2) {
+                            wrist.goToState(WristState.L2_ALGAE);
+                          } else if (elevator.getCurrentElevatorState() == ElevatorState.L3) {
+                            wrist.goToState(WristState.L3_ALGAE);
+                          }
+                        } else {
+                          Robot.currentScoringType = ScoringModeType.CORAL;
+                          // move wrist if at L2 and L3
+                          if (elevator.getCurrentElevatorState() == ElevatorState.L2) {
+                            wrist.goToState(WristState.L2_CORAL);
+                          } else if (elevator.getCurrentElevatorState() == ElevatorState.L3) {
+                            wrist.goToState(WristState.L3_CORAL);
+                          }
+                        }
+                      })
                   .alongWith(rumbleCommand()));
 
       // Goes to L1 or processor based on current scoring type
@@ -379,10 +386,10 @@ public class RobotContainer {
   public Command rumbleCommand() {
     return Commands.run(
             () -> {
-                if (Robot.currentScoringType == ScoringModeType.CORAL)
-              controller.setRumble(RumbleType.kBothRumble, 0.5);
+              if (Robot.currentScoringType == ScoringModeType.CORAL)
+                controller.setRumble(RumbleType.kBothRumble, 0.5);
               else controller.setRumble(RumbleType.kBothRumble, 1.0);
-            }) 
+            })
         .withTimeout(0.5)
         .finallyDo(() -> controller.setRumble(RumbleType.kBothRumble, 0.0));
   }
