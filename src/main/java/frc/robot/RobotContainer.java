@@ -19,11 +19,12 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ScoringModeType;
@@ -88,7 +89,8 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser =
       new LoggedDashboardChooser<>("Auto Chooser");
 
-  private final CommandXboxController controller = new CommandXboxController(0);
+  final CommandXboxController controller = new CommandXboxController(0);
+  final Alert controllerDisconnectedAlert = new Alert("Controller Disconnected.", AlertType.kError);
 
   private Supplier<ReefscapeCoralOnFly> simCoralProjectileSupplier = () -> null;
 
@@ -140,7 +142,6 @@ public class RobotContainer {
                 new VisionIOPhotonVisionSim(
                     CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM, drive::getPose));
         elevator = new Elevator(new ElevatorIOSim());
-        drive.setCurrentElevatorPositionSupplier(elevator::getCurrentElevatorPosition);
         // climb = new Climb(new ClimbIOSim());
         shooter = new Shooter(new ShooterIOSim());
         wrist = new Wrist(new WristIOSim());
@@ -224,15 +225,11 @@ public class RobotContainer {
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // robot will stow when re-enabled
-    RobotModeTriggers.disabled().onTrue(elevatorAndWristCommands.goToStation());
+    // RobotModeTriggers.disabled().onTrue(elevatorAndWristCommands.goToStation());
 
     // When elevator leaves station, run at slower speed
-    // this is incredibly cursed, we set slow so the toggle goes to slower which is desired speed state
-    // TODO: do this more effectively, perhaps make the 
     new Trigger(() -> elevator.getCurrentElevatorState() != ElevatorState.STATION)
-        .onTrue(
-            Commands.runOnce(() -> DriveCommands.speedMode = DriveSpeedMode.SLOW)
-                .alongWith(DriveCommands.toggleSpeed(elevator::getCurrentElevatorState)));
+        .onTrue(Commands.runOnce(() -> drive.setMaxSpeed(DriveSpeedMode.SLOWER)));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -267,9 +264,11 @@ public class RobotContainer {
       controller
           .leftTrigger()
           .onTrue(
-              DriveCommands.toggleSpeed(
-                  elevator::getCurrentElevatorState)); // TODO: consider making this an acceleration
-      // limiter
+              drive.runOnce(
+                  () -> {
+                    drive.toggleSpeed(elevator::getCurrentElevatorState);
+                  })); // TODO: consider making this an acceleration
+      // limiter, i.e. with slew rate limiting
     }
 
     /* elevator and wrist movement commands */
@@ -281,6 +280,7 @@ public class RobotContainer {
                   .alongWith(elevatorAndWristCommands.goToStation()));
 
       // switch between coral and algae scoring
+      // immediately switch wrist position if at L2 or L3
       controller
           .leftBumper()
           .onTrue(

@@ -38,12 +38,10 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.DriveConstants.DriveSpeedMode;
-import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -75,31 +73,6 @@ public class DriveCommands {
         .getTranslation();
   }
 
-  /** Toggles between default max, slow, and slower speed. */
-  public static Command toggleSpeed(Supplier<ElevatorState> elevatorState) {
-    return Commands.defer(
-        () -> {
-          // if elevator is at station, toggle between default and slow
-          // if elevator is not at station, toggle between slow and slower
-          if (elevatorState.get() == ElevatorState.STATION) {
-            return Commands.runOnce(
-                () ->
-                    speedMode =
-                        speedMode == DriveSpeedMode.DEFAULT
-                            ? DriveSpeedMode.SLOW
-                            : DriveSpeedMode.DEFAULT);
-          } else {
-            return Commands.runOnce(
-                () ->
-                    speedMode =
-                        speedMode == DriveSpeedMode.SLOW
-                            ? DriveSpeedMode.SLOWER
-                            : DriveSpeedMode.SLOW);
-          }
-        },
-        Set.of());
-  }
-
   /**
    * Field relative drive command using two joysticks (controlling linear and angular velocities).
    */
@@ -121,21 +94,11 @@ public class DriveCommands {
           omega = Math.copySign(omega * omega, omega);
 
           // Convert to field relative speeds & send command
-          double maxLinearVel = drive.getMaxLinearSpeedMetersPerSec();
-          double maxTheta = drive.getMaxAngularSpeedRadPerSec();
-          if (speedMode == DriveSpeedMode.SLOW) {
-            maxLinearVel = 1.0;
-            maxTheta = Units.rotationsToRadians(0.5);
-          } else if (speedMode == DriveSpeedMode.SLOWER) {
-            maxLinearVel = 0.5;
-            maxTheta = Units.rotationsToRadians(0.35);
-          }
-
           ChassisSpeeds speeds =
               new ChassisSpeeds(
-                  linearVelocity.getX() * maxLinearVel,
-                  linearVelocity.getY() * maxLinearVel,
-                  omega * maxTheta);
+                  linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                  linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                  omega * drive.getMaxAngularSpeedRadPerSec());
           boolean isFlipped =
               DriverStation.getAlliance().isPresent()
                   && DriverStation.getAlliance().get() == Alliance.Red;
@@ -175,6 +138,7 @@ public class DriveCommands {
           yController.reset();
         },
         () -> {
+          // calculate linear velocities
           double xVel = xController.calculate(drive.getPose().getX(), poseSupplier.get().getX());
           double yVel = yController.calculate(drive.getPose().getY(), poseSupplier.get().getY());
 

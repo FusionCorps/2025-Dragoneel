@@ -94,8 +94,9 @@ public class Robot extends LoggedRobot {
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
 
-    // Warmup auto path following
+    // Warmup auto PathPlanner path following
     FollowPathCommand.warmupCommand().schedule();
+
 
     DriverStation.silenceJoystickConnectionWarning(true);
   }
@@ -103,7 +104,7 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically during all modes. */
   @Override
   public void robotPeriodic() {
-    // Switch thread to high priority to improve loop timing
+    // Switch robot thread to high priority to improve loop timing
     Threads.setCurrentThreadPriority(true, 99);
 
     // Runs the Scheduler. This is responsible for polling buttons, adding
@@ -123,6 +124,8 @@ public class Robot extends LoggedRobot {
     } else {
       Logger.recordOutput("Current Scoring Type", "#20b815");
     }
+
+    robotContainer.controllerDisconnectedAlert.set(!robotContainer.controller.isConnected());
   }
 
   /** This function is called once when the robot is disabled. */

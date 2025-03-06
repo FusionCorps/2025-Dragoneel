@@ -39,8 +39,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -52,10 +50,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.subsystems.drive.DriveConstants.DriveSpeedMode;
 import frc.robot.subsystems.drive.gyro.GyroIO;
 import frc.robot.subsystems.drive.gyro.GyroIOInputsAutoLogged;
 import frc.robot.subsystems.drive.module.Module;
 import frc.robot.subsystems.drive.module.ModuleIO;
+import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.vision.Vision.VisionConsumer;
 import frc.robot.util.LocalADStarAK;
 import java.io.IOException;
@@ -80,6 +80,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
   private final Alert pathPlannerSettingsLoadAlert =
       new Alert("PathPlanner could not load from GUI, using default settings", AlertType.kWarning);
+  private final Alert wheelsInCoastAlert = new Alert("Drive in coast mode", AlertType.kWarning);
 
   private SwerveDriveKinematics kinematics =
       new SwerveDriveKinematics(DriveConstants.MODULE_TRANSLATIONS);
@@ -98,9 +99,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   private SwerveSetpoint previousSetpoint;
 
   private final Consumer<Pose2d> resetSimulationPose;
-  private Supplier<Angle> currentElevatorPositionSupplier = () -> Rotations.zero();
-
-  Alert wheelsInCoastAlert = new Alert("Drive in coast mode", AlertType.kWarning);
+  @AutoLogOutput private DriveSpeedMode currentMaxSpeed = DriveSpeedMode.DEFAULT;
 
   public Drive(
       GyroIO gyroIO,
@@ -382,27 +381,17 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
   /** Returns the maximum linear speed in meters per sec. */
   public double getMaxLinearSpeedMetersPerSec() {
-    return DriveConstants.SPEED_AT_12V.in(MetersPerSecond);
-    // return 3.0;
-    // return DriveConstants.DRIVE_TRANSLATIONAL_MAX_SPEED_MAP_METER_PER_SEC.get(
-    //     currentElevatorPositionSupplier.get().in(Rotations));
+    return currentMaxSpeed.speedAndTheta.get(0);
   }
 
   /** Returns the maximum angular speed in radians per sec. */
   public double getMaxAngularSpeedRadPerSec() {
-    // return getMaxLinearSpeedMetersPerSec() / DriveConstants.DRIVE_BASE_RADIUS;
-    return Units.rotationsToRadians(1.0);
-    // return DriveConstants.DRIVE_ROTATIONAL_MAX_SPEED_MAP_RAD_PER_SEC.get(
-    //     currentElevatorPositionSupplier.get().in(Rotations));
+    return currentMaxSpeed.speedAndTheta.get(1);
   }
 
   /** Sets the gyro angle to 0° and sets current gyro angle to forward. */
   public void zeroGyro() {
     setPose(new Pose2d(getPose().getTranslation(), new Rotation2d()));
-  }
-
-  public void setCurrentElevatorPositionSupplier(Supplier<Angle> currentElevatorPositionSupplier) {
-    this.currentElevatorPositionSupplier = currentElevatorPositionSupplier;
   }
 
   public Command setNeutralMode(boolean coast) {
@@ -421,5 +410,28 @@ public class Drive extends SubsystemBase implements VisionConsumer {
                     }),
             Set.of(this))
         .ignoringDisable(true);
+  }
+
+  public void setMaxSpeed(DriveSpeedMode speedMode) {
+    currentMaxSpeed = speedMode;
+  }
+
+  public Command toggleSpeed(Supplier<ElevatorState> state) {
+    // if at station, toggle between slow and default
+    // if not at station, toggle between slow and slower
+    return Commands.either(
+        runOnce(
+            () ->
+                currentMaxSpeed =
+                    currentMaxSpeed == DriveSpeedMode.DEFAULT
+                        ? DriveSpeedMode.SLOW
+                        : DriveSpeedMode.DEFAULT),
+        runOnce(
+            () ->
+                currentMaxSpeed =
+                    currentMaxSpeed == DriveSpeedMode.SLOW
+                        ? DriveSpeedMode.SLOWER
+                        : DriveSpeedMode.SLOW),
+        () -> state.get().equals(ElevatorState.STATION));
   }
 }

@@ -67,6 +67,16 @@ public class Elevator extends SubsystemBase {
   /* Constructor */
   public Elevator(ElevatorIO io) {
     this.io = io;
+
+    // failsafe command buttons for manually moving elevator to setpoints regardless of wrist
+    // position
+    SmartDashboard.putData("Elevator/Processor", goToState(ElevatorState.PROCESSOR));
+    SmartDashboard.putData("Elevator/L1", goToState(ElevatorState.L1));
+    SmartDashboard.putData("Elevator/L2", goToState(ElevatorState.L2));
+    SmartDashboard.putData("Elevator/Station", goToState(ElevatorState.STATION));
+    SmartDashboard.putData("Elevator/L3", goToState(ElevatorState.L3));
+    SmartDashboard.putData("Elevator/L4", goToState(ElevatorState.L4));
+    SmartDashboard.putData("Elevator/Net", goToState(ElevatorState.NET));
   }
 
   /* Periodically running code */

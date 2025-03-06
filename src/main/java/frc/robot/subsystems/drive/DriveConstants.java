@@ -23,8 +23,8 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerFeedbackType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveModuleConstantsFactory;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -33,8 +33,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
-import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
-import java.util.Map;
+import java.util.List;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 
@@ -292,26 +291,15 @@ public class DriveConstants {
           .withSwerveModule(
               COTS.ofMark4n(DCMotor.getKrakenX60Foc(1), DCMotor.getFalcon500Foc(1), 1.9, 1));
 
-  public static final InterpolatingDoubleTreeMap DRIVE_TRANSLATIONAL_MAX_SPEED_MAP_METER_PER_SEC =
-      InterpolatingDoubleTreeMap.ofEntries(
-          Map.entry(
-              ElevatorState.STATION.rotations.in(Rotations), SPEED_AT_12V.in(MetersPerSecond)),
-          Map.entry(ElevatorState.L1.rotations.in(Rotations), 4.0),
-          Map.entry(ElevatorState.L2.rotations.in(Rotations), 3.0),
-          Map.entry(ElevatorState.L3.rotations.in(Rotations), 1.5),
-          Map.entry(ElevatorState.L4.rotations.in(Rotations), 0.75));
-
-  public static final InterpolatingDoubleTreeMap DRIVE_ROTATIONAL_MAX_SPEED_MAP_RAD_PER_SEC =
-      InterpolatingDoubleTreeMap.ofEntries(
-          Map.entry(ElevatorState.STATION.rotations.in(Rotations), 2.0 * Math.PI),
-          Map.entry(ElevatorState.L1.rotations.in(Rotations), 1.75 * Math.PI),
-          Map.entry(ElevatorState.L2.rotations.in(Rotations), 1.5 * Math.PI),
-          Map.entry(ElevatorState.L3.rotations.in(Rotations), 1.0 * Math.PI),
-          Map.entry(ElevatorState.L4.rotations.in(Rotations), 0.5 * Math.PI));
-
   public static enum DriveSpeedMode {
-    DEFAULT,
-    SLOW,
-    SLOWER
+    DEFAULT(List.of(SPEED_AT_12V.in(MetersPerSecond), Units.rotationsToRadians(1.0))),
+    SLOW(List.of(1.0, Units.rotationsToRadians(0.5))),
+    SLOWER(List.of(0.5, Units.rotationsToRadians(0.35)));
+
+    List<Double> speedAndTheta;
+
+    DriveSpeedMode(List<Double> speedAndTheta) {
+      this.speedAndTheta = speedAndTheta;
+    }
   }
 }
