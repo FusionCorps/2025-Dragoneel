@@ -17,6 +17,7 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Threads;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.ScoringModeState;
@@ -117,11 +118,11 @@ public class Robot extends LoggedRobot {
 
     // Record component poses
     Logger.recordOutput("ComponentPoses", componentPoses);
-    // if (currentScoringType == currentScoringType.CORAL) {
-    //   Logger.record
-    // }
-    // Logger.recordOutput("Current Scoring Type", (currentScoringType == currentScoringType.CORAL)
-    // ? Color.kWhite.toHexString(), Color.kAliceBlue.toHexString());
+    if (currentScoringType == ScoringModeType.CORAL) {
+      Logger.recordOutput("Current Scoring Type", Color.kWhite.toHexString());
+    } else {
+      Logger.recordOutput("Current Scoring Type", "#20b815");
+    }
   }
 
   /** This function is called once when the robot is disabled. */

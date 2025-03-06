@@ -50,10 +50,10 @@ import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
-  private static final double ANGLE_KP = 4.0;
-  private static final double ANGLE_KD = 0.4;
-  private static final double ANGLE_MAX_VELOCITY = 8.0;
-  private static final double ANGLE_MAX_ACCELERATION = 20.0;
+  private static final double ANGLE_KP = 2.0;
+  private static final double ANGLE_KD = 0.2;
+  private static final double ANGLE_MAX_VELOCITY = Units.rotationsToRadians(1.5);
+  private static final double ANGLE_MAX_ACCELERATION = Units.rotationsToRadians(1.0);
   private static final double FF_START_DELAY = 2.0; // Secs
   private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
@@ -159,12 +159,12 @@ public class DriveCommands {
             ANGLE_KD,
             new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
     angleController.enableContinuousInput(-Math.PI, Math.PI);
-    angleController.setTolerance(Units.degreesToRadians(2.0));
+    angleController.setTolerance(Units.degreesToRadians(1.0));
 
-    PIDController xController = new PIDController(5.0, 0.0, 0.0);
-    xController.setTolerance(0.05);
-    PIDController yController = new PIDController(5.0, 0.0, 0.0);
-    yController.setTolerance(0.05);
+    PIDController xController = new PIDController(10.0, 0.0, 0.0);
+    xController.setTolerance(0.02);
+    PIDController yController = new PIDController(10.0, 0.0, 0.0);
+    yController.setTolerance(0.02);
 
     // Construct command
     return new FunctionalCommand(
@@ -185,7 +185,7 @@ public class DriveCommands {
 
           // Convert to field relative speeds & send command
           ChassisSpeeds speeds =
-              new ChassisSpeeds(xVel * 0.75, yVel * 0.75, omega * Units.rotationsToRadians(0.5));
+              new ChassisSpeeds(xVel * 0.3, yVel * 0.3, omega * Units.rotationsToRadians(0.75));
           drive.driveRobotCentric(
               ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
         },
@@ -224,7 +224,7 @@ public class DriveCommands {
                 .get()
                 .transformBy(
                     new Transform3d(
-                        0.52, (alignLeft ? -0.33 : 0.0), 0, new Rotation3d(Rotation2d.kPi)))
+                        0.58, (alignLeft ? -0.45 : 0.0), 0, new Rotation3d(Rotation2d.kPi)))
                 .toPose2d();
           }
         };

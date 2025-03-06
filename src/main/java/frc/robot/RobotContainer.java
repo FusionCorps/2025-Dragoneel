@@ -106,8 +106,8 @@ public class RobotContainer {
                 new ModuleIOTalonFXReal(DriveConstants.BACK_RIGHT));
         vision =
             new Vision(
-                // drive,
-                (a, b, c) -> {},
+                drive,
+                // (a, b, c) -> {},
                 new VisionIOPhotonVision(
                     CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getRotation),
                 new VisionIOPhotonVision(
@@ -227,8 +227,12 @@ public class RobotContainer {
     RobotModeTriggers.disabled().onTrue(elevatorAndWristCommands.goToStation());
 
     // When elevator leaves station, run at slower speed
+    // this is incredibly cursed, we set slow so the toggle goes to slower which is desired speed state
+    // TODO: do this more effectively, perhaps make the 
     new Trigger(() -> elevator.getCurrentElevatorState() != ElevatorState.STATION)
-        .onTrue(Commands.runOnce(() -> DriveCommands.speedMode = DriveSpeedMode.SLOWER).alongWith(DriveCommands.toggleSpeed(elevator::getCurrentElevatorState)));
+        .onTrue(
+            Commands.runOnce(() -> DriveCommands.speedMode = DriveSpeedMode.SLOW)
+                .alongWith(DriveCommands.toggleSpeed(elevator::getCurrentElevatorState)));
 
     // Configure the button bindings
     configureButtonBindings();
