@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Constants.ScoringModeType;
+import frc.robot.Constants.ScoringPieceType;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -113,10 +113,10 @@ public class Robot extends LoggedRobot {
 
     // Record component poses
     Logger.recordOutput("ComponentPoses", componentPoses);
-    if (RobotContainer.currentScoringType == ScoringModeType.CORAL) {
+    if (RobotContainer.currentScoringPieceType == ScoringPieceType.CORAL) {
       Logger.recordOutput("Current Scoring Type", Color.kWhite.toHexString());
     } else {
-      Logger.recordOutput("Current Scoring Type", "#20b815");
+      Logger.recordOutput("Current Scoring Type", "#29ac9c");
     }
 
     robotContainer.controllerDisconnectedAlert.set(!robotContainer.controller.isConnected());

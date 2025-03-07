@@ -7,8 +7,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.Constants.ScoringModeType;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.shooter.ShooterConstants.ShooterState;
 import java.util.Set;
@@ -86,8 +84,7 @@ public class Shooter extends SubsystemBase {
                     setState(ShooterState.SHOOT_CORAL_L1);
                   } else if ((currentElevatorStateSupplier.get() == ElevatorState.L4)) {
                     setState(ShooterState.SHOOT_CORAL_L4);
-                  }
-                  else setState(ShooterState.SHOOT_CORAL_DEFAULT);
+                  } else setState(ShooterState.SHOOT_CORAL_DEFAULT);
                 },
                 () -> setState(ShooterState.IDLE)),
         Set.of(this));

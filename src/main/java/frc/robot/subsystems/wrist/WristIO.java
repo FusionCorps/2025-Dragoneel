@@ -2,7 +2,7 @@ package frc.robot.subsystems.wrist;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.Constants.ScoringModeType;
+import frc.robot.Constants.ScoringPieceType;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLog;
 
@@ -23,7 +23,7 @@ public interface WristIO {
 
   default void setVoltageOpenLoop(Voltage voltage) {}
 
-  default void setTargetPosition(Angle angle, Supplier<ScoringModeType> scoringModeType) {}
+  default void setTargetPosition(Angle angle, Supplier<ScoringPieceType> scoringModeType) {}
 
   default void toggleSpeed() {}
 }

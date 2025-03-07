@@ -12,7 +12,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import frc.robot.Constants.ScoringModeType;
+import frc.robot.Constants.ScoringPieceType;
 import java.util.function.Supplier;
 
 public class WristIOSim implements WristIO {
@@ -54,7 +54,7 @@ public class WristIOSim implements WristIO {
   }
 
   @Override
-  public void setTargetPosition(Angle angle, Supplier<ScoringModeType> scoringModeType) {
+  public void setTargetPosition(Angle angle, Supplier<ScoringPieceType> scoringModeType) {
     isOpenLoop = false;
     targetPosition = angle;
   }

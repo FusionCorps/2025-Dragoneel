@@ -18,7 +18,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.Constants.ScoringModeType;
+import frc.robot.Constants.ScoringPieceType;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -86,9 +86,9 @@ public class WristIOSparkFlex implements WristIO {
   }
 
   @Override
-  public void setTargetPosition(Angle angle, Supplier<ScoringModeType> scoringModeType) {
+  public void setTargetPosition(Angle angle, Supplier<ScoringPieceType> scoringModeType) {
     setpoint = angle.in(Rotations);
-    if (scoringModeType.get().equals(ScoringModeType.CORAL)) {
+    if (scoringModeType.get().equals(ScoringPieceType.CORAL)) {
       wristMotor.configureAsync(
           new SparkFlexConfig().apply(new ClosedLoopConfig().p(6.0)),
           ResetMode.kNoResetSafeParameters,

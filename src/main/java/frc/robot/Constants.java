@@ -21,6 +21,8 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
+import frc.robot.subsystems.wrist.WristConstants.WristState;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -42,20 +44,28 @@ public final class Constants {
     REPLAY
   }
 
-  public static enum ScoringModeState {
-    STATION,
-    L1,
-    ALGAE_STOW,
-    PROCESSOR,
-    L2_CORAL,
-    L2_ALGAE,
-    L3_CORAL,
-    L3_ALGAE,
-    NET,
-    L4
+  public static enum TargetState {
+    STATION(ElevatorState.STATION, WristState.STATION),
+    PROCESSOR(ElevatorState.PROCESSOR, WristState.PROCESSOR),
+    ALGAE_STOW(ElevatorState.ALGAE_STOW, WristState.ALGAE_STOW),
+    L1(ElevatorState.L1, WristState.L1),
+    L2_CORAL(ElevatorState.L2, WristState.L2_CORAL),
+    L2_ALGAE(ElevatorState.L2, WristState.L2_ALGAE),
+    L3_CORAL(ElevatorState.L3, WristState.L3_CORAL),
+    L3_ALGAE(ElevatorState.L3, WristState.L3_ALGAE),
+    L4(ElevatorState.L4, WristState.L4),
+    NET(ElevatorState.NET, WristState.NET);
+
+    public final ElevatorState elevatorState;
+    public final WristState wristState;
+
+    private TargetState(ElevatorState elevatorState, WristState wristState) {
+      this.elevatorState = elevatorState;
+      this.wristState = wristState;
+    }
   }
 
-  public static enum ScoringModeType {
+  public static enum ScoringPieceType {
     CORAL,
     ALGAE
   }

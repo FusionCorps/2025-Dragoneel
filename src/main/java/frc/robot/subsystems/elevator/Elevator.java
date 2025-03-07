@@ -3,7 +3,6 @@ package frc.robot.subsystems.elevator;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 
 import edu.wpi.first.math.geometry.Pose3d;
@@ -43,9 +42,7 @@ public class Elevator extends SubsystemBase {
       new Trigger(
           () ->
               getCurrentElevatorPosition()
-                  .isNear(currentElevatorState.rotations, Rotations.of(5.0)));
-
-  boolean isOpenLoop = false;
+                  .isNear(currentElevatorState.rotations, Rotations.of(10.0)));
 
   LoggedTunableNumber elevatorProcessorPosition =
       new LoggedTunableNumber(
@@ -70,19 +67,19 @@ public class Elevator extends SubsystemBase {
 
     // failsafe command buttons for manually moving elevator to setpoints regardless of wrist
     // position
-    SmartDashboard.putData("Elevator/Processor", goToState(ElevatorState.PROCESSOR));
-    SmartDashboard.putData("Elevator/L1", goToState(ElevatorState.L1));
-    SmartDashboard.putData("Elevator/L2", goToState(ElevatorState.L2));
-    SmartDashboard.putData("Elevator/Station", goToState(ElevatorState.STATION));
-    SmartDashboard.putData("Elevator/L3", goToState(ElevatorState.L3));
-    SmartDashboard.putData("Elevator/L4", goToState(ElevatorState.L4));
-    SmartDashboard.putData("Elevator/Net", goToState(ElevatorState.NET));
+    SmartDashboard.putData("Elevator/Processor", setTargetState(ElevatorState.PROCESSOR));
+    SmartDashboard.putData("Elevator/L1", setTargetState(ElevatorState.L1));
+    SmartDashboard.putData("Elevator/L2", setTargetState(ElevatorState.L2));
+    SmartDashboard.putData("Elevator/Station", setTargetState(ElevatorState.STATION));
+    SmartDashboard.putData("Elevator/L3", setTargetState(ElevatorState.L3));
+    SmartDashboard.putData("Elevator/L4", setTargetState(ElevatorState.L4));
+    SmartDashboard.putData("Elevator/Net", setTargetState(ElevatorState.NET));
   }
 
   /* Periodically running code */
   @Override
   public void periodic() {
-    if (!isOpenLoop) io.setTargetPosition(currentElevatorState.rotations);
+    io.setTargetPosition(currentElevatorState.rotations);
 
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
@@ -134,30 +131,8 @@ public class Elevator extends SubsystemBase {
         elevatorNetPosition);
   }
 
-  public Command goToState(ElevatorState targetState) {
-    return this.runOnce(
-        () -> {
-          isOpenLoop = false;
-          currentElevatorState = targetState;
-        });
-  }
-
-  public Command lowerElevatorOpenLoop() {
-    return this.runEnd(
-        () -> {
-          isOpenLoop = true;
-          io.setVoltageOpenLoop(Volts.of(-0.1 * 12.0));
-        },
-        () -> io.holdPosition());
-  }
-
-  public Command raiseElevatorOpenLoop() {
-    return this.runEnd(
-        () -> {
-          isOpenLoop = true;
-          io.setVoltageOpenLoop(Volts.of(0.1 * 12.0));
-        },
-        () -> io.holdPosition());
+  public Command setTargetState(ElevatorState targetState) {
+    return runOnce(() -> currentElevatorState = targetState);
   }
 
   public Command toggleElevatorSpeed() {

@@ -61,7 +61,7 @@ public class Wrist extends SubsystemBase {
 
   @Override
   public void periodic() {
-    io.setTargetPosition(currentWristState.rotations, () -> RobotContainer.currentScoringType);
+    io.setTargetPosition(currentWristState.rotations, () -> RobotContainer.currentScoringPieceType);
     io.updateInputs(inputs);
 
     Robot.componentPoses[2] =
@@ -92,11 +92,8 @@ public class Wrist extends SubsystemBase {
         wristNetPosition);
   }
 
-  public Command goToState(WristState state) {
-    return this.runOnce(
-        () -> {
-          currentWristState = state;
-        });
+  public Command setTargetState(WristState state) {
+    return runOnce(() -> currentWristState = state);
   }
 
   public Command toggleWristSpeed() {
