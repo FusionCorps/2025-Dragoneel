@@ -10,11 +10,13 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.subsystems.wrist.WristConstants.WristState;
 import frc.robot.util.LoggedTunableNumber;
+import java.util.Set;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -94,6 +96,10 @@ public class Wrist extends SubsystemBase {
         () -> {
           currentWristState = state;
         });
+  }
+
+  public Command toggleWristSpeed() {
+    return Commands.defer(() -> runOnce(() -> io.toggleSpeed()), Set.of(this));
   }
 
   public Angle getCurrentAngle() {

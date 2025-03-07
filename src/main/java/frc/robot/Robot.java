@@ -41,8 +41,6 @@ public class Robot extends LoggedRobot {
   private RobotContainer robotContainer;
 
   @AutoLogOutput public static ScoringModeState currentScoringMode = ScoringModeState.STATION;
-  @AutoLogOutput public static ScoringModeType currentScoringType = ScoringModeType.CORAL;
-
   // Order: 2nd stage, 3rd stage, wrist
   public static Pose3d[] componentPoses = new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d()};
 

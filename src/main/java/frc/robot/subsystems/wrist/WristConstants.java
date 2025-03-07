@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.MAXMotionConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.units.measure.Angle;
@@ -13,27 +14,37 @@ import edu.wpi.first.wpilibj.RobotController;
 public class WristConstants {
   public static final int WRIST_MOTOR_ID = 15;
 
-  // public static final double WRIST_kG = 0.224;
+  public static final AbsoluteEncoderConfig WRIST_ABSOLUTE_ENCODER_CONFIG =
+      new AbsoluteEncoderConfig().zeroCentered(true);
+
+  public static final ClosedLoopConfig WRIST_CLOSED_LOOP_CONFIG =
+      new ClosedLoopConfig()
+          .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
+          .positionWrappingInputRange(-0.5, 0.5)
+          .positionWrappingEnabled(true)
+          .pid(2.0, 0, 0)
+          .apply(
+              new MAXMotionConfig()
+                  .allowedClosedLoopError(0.005)
+                  .maxVelocity(0)
+                  .maxAcceleration(0));
+
+  public static final double WRIST_MAX_MOTION_MAX_VELOCITY = 0.0;
+  public static final double WRIST_MAX_MOTION_MAX_ACCELERATION = 0.0;
+
+  public static final MAXMotionConfig WRIST_MAX_MOTION_CONFIG =
+      new MAXMotionConfig()
+          .allowedClosedLoopError(0.005)
+          .maxVelocity(WRIST_MAX_MOTION_MAX_VELOCITY)
+          .maxAcceleration(WRIST_MAX_MOTION_MAX_ACCELERATION);
+
   public static final SparkFlexConfig WRIST_CONFIG =
       (SparkFlexConfig)
           new SparkFlexConfig()
               .inverted(false)
               .idleMode(IdleMode.kBrake)
               .voltageCompensation(RobotController.getBatteryVoltage())
-              .smartCurrentLimit(60)
-              .apply(new AbsoluteEncoderConfig().zeroCentered(true))
-              .apply(
-                  new ClosedLoopConfig()
-                      .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
-                      .positionWrappingInputRange(-0.5, 0.5)
-                      .positionWrappingEnabled(true)
-                      .pid(6.0, 0, 0));
-  // .apply(
-  //     new SoftLimitConfig()
-  //         .reverseSoftLimitEnabled(true)
-  //         .reverseSoftLimit(0)
-  //         .forwardSoftLimitEnabled(true)
-  //         .forwardSoftLimit(0.35)
+              .smartCurrentLimit(60);
 
   public static enum WristState {
     PROCESSOR(Rotations.of(0.15)),

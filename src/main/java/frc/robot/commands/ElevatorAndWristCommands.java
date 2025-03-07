@@ -9,9 +9,9 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristConstants.WristState;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Set;
 
+/** A class that contains commands for moving the elevator and wrist to specific states. */
 public class ElevatorAndWristCommands {
   private final Elevator elevator;
   private final Wrist wrist;
@@ -23,10 +23,10 @@ public class ElevatorAndWristCommands {
 
   /*
    * Stow the wrist, then move the elevator, then move the wrist.
+   * This is used when moving between coral states.
    */
   private Command goToStateFromCoral(WristState wristState, ElevatorState elevatorState) {
     return Commands.sequence(
-        elevator.toggleElevatorSpeed(),
         wrist.goToState(WristState.STATION),
         Commands.waitUntil(wrist.isAtStation),
         elevator.goToState(elevatorState),
@@ -34,14 +34,18 @@ public class ElevatorAndWristCommands {
         wrist.goToState(wristState));
   }
 
+  /*
+   * Move the elevator, then move the wrist. Do not stow the wrist ever.
+   * This is used when moving between algae states.
+   */
   private Command goToStateFromAlgae(WristState wristState, ElevatorState elevatorState) {
     return Commands.sequence(
-        elevator.toggleElevatorSpeed(),
         elevator.goToState(elevatorState),
         Commands.waitUntil(elevator.isAtTargetState),
         wrist.goToState(wristState));
   }
 
+  /* Move to station with coral state movement. */
   public Command goToStation() {
     return Commands.either(
         Commands.none(),
@@ -50,136 +54,116 @@ public class ElevatorAndWristCommands {
         () -> currentScoringMode == STATION);
   }
 
+  /* Move to L1 with appropriate state movement based on current scoring mode. */
   public Command goToL1() {
     return Commands.defer(
         () -> {
           if (currentScoringMode == L1) return Commands.none();
-          else if (currentScoringMode == PROCESSOR) {
-            return Commands.sequence(
-                    elevator.goToState(ElevatorState.L1), wrist.goToState(WristState.L1))
-                .alongWith(Commands.runOnce(() -> currentScoringMode = L1));
-          } else {
-            return goToStateFromCoral(WristState.L1, ElevatorState.L1)
-                .alongWith(Commands.runOnce(() -> currentScoringMode = L1));
-          }
+          Command command =
+              (currentScoringMode == PROCESSOR)
+                  ? goToStateFromAlgae(WristState.L1, ElevatorState.L1)
+                  : goToStateFromCoral(WristState.L1, ElevatorState.L1);
+          return command.alongWith(Commands.runOnce(() -> currentScoringMode = L1));
         },
-        new HashSet<>(Arrays.asList(wrist, elevator)));
+        Set.of(wrist, elevator));
   }
 
+  /* Move to processor with appropriate state movement based on current scoring mode. */
   public Command goToProcessor() {
     return Commands.defer(
         () -> {
           if (currentScoringMode == PROCESSOR) return Commands.none();
-          else if (currentScoringMode == L1) {
-            return Commands.sequence(
-                    elevator.goToState(ElevatorState.PROCESSOR),
-                    wrist.goToState(WristState.PROCESSOR))
-                .alongWith(Commands.runOnce(() -> currentScoringMode = PROCESSOR));
-          } else if (currentScoringMode == L2_ALGAE
-              || currentScoringMode == L3_ALGAE
-              || currentScoringMode == NET) {
-            return goToStateFromAlgae(WristState.PROCESSOR, ElevatorState.PROCESSOR)
-                .alongWith(Commands.runOnce(() -> currentScoringMode = PROCESSOR));
-          } else {
-            return goToStateFromCoral(WristState.PROCESSOR, ElevatorState.PROCESSOR)
-                .alongWith(Commands.runOnce(() -> currentScoringMode = PROCESSOR));
-          }
+          Command command =
+              (currentScoringMode == L1
+                      || currentScoringMode == L2_ALGAE
+                      || currentScoringMode == L3_ALGAE
+                      || currentScoringMode == NET)
+                  ? goToStateFromAlgae(WristState.PROCESSOR, ElevatorState.PROCESSOR)
+                  : goToStateFromCoral(WristState.PROCESSOR, ElevatorState.PROCESSOR);
+          return command.alongWith(Commands.runOnce(() -> currentScoringMode = PROCESSOR));
         },
-        new HashSet<>(Arrays.asList(wrist, elevator)));
+        Set.of(wrist, elevator));
   }
 
+  /* Move to L2_coral with appropriate state movement based on current scoring mode. */
   public Command goToL2Coral() {
     return Commands.defer(
         () -> {
           if (currentScoringMode == L2_CORAL) return Commands.none();
-          else if (currentScoringMode == L2_ALGAE) {
-            return Commands.sequence(
-                    elevator.goToState(ElevatorState.L2), wrist.goToState(WristState.L2_CORAL))
-                .alongWith(Commands.runOnce(() -> currentScoringMode = L2_CORAL));
-          } else {
-            return goToStateFromCoral(WristState.L2_CORAL, ElevatorState.L2)
-                .alongWith(Commands.runOnce(() -> currentScoringMode = L2_CORAL));
-          }
+          Command command =
+              (currentScoringMode == L2_ALGAE)
+                  ? goToStateFromAlgae(WristState.L2_CORAL, ElevatorState.L2)
+                  : goToStateFromCoral(WristState.L2_CORAL, ElevatorState.L2);
+          return command.alongWith(Commands.runOnce(() -> currentScoringMode = L2_CORAL));
         },
-        new HashSet<>(Arrays.asList(wrist, elevator)));
+        Set.of(wrist, elevator));
   }
 
+  /* Move to L2_algae with appropriate state movement based on current scoring mode. */
   public Command goToL2Algae() {
     return Commands.defer(
         () -> {
           if (currentScoringMode == L2_ALGAE) return Commands.none();
-          else if (currentScoringMode == L2_CORAL) {
-            return Commands.sequence(
-                    elevator.goToState(ElevatorState.L2), wrist.goToState(WristState.L2_ALGAE))
-                .alongWith(Commands.runOnce(() -> currentScoringMode = L2_ALGAE));
-          } else if (currentScoringMode == L3_ALGAE
-              || currentScoringMode == NET
-              || currentScoringMode == PROCESSOR) {
-            return goToStateFromAlgae(WristState.L2_ALGAE, ElevatorState.L2)
-                .alongWith(Commands.runOnce(() -> currentScoringMode = L2_ALGAE));
-          } else {
-            return goToStateFromCoral(WristState.L2_ALGAE, ElevatorState.L2)
-                .alongWith(Commands.runOnce(() -> currentScoringMode = L2_ALGAE));
-          }
+          Command command =
+              (currentScoringMode == L2_CORAL
+                      || currentScoringMode == L3_ALGAE
+                      || currentScoringMode == NET
+                      || currentScoringMode == PROCESSOR)
+                  ? goToStateFromAlgae(WristState.L2_ALGAE, ElevatorState.L2)
+                  : goToStateFromCoral(WristState.L2_ALGAE, ElevatorState.L2);
+          return command.alongWith(Commands.runOnce(() -> currentScoringMode = L2_ALGAE));
         },
-        new HashSet<>(Arrays.asList(wrist, elevator)));
+        Set.of(wrist, elevator));
   }
 
+  /* Move to L3_coral with appropriate state movement based on current scoring mode. */
   public Command goToL3Coral() {
     return Commands.defer(
         () -> {
           if (currentScoringMode == L3_CORAL) return Commands.none();
-          else if (currentScoringMode == L3_ALGAE) {
-            return Commands.sequence(
-                    elevator.goToState(ElevatorState.L3), wrist.goToState(WristState.L3_CORAL))
-                .alongWith(Commands.runOnce(() -> currentScoringMode = L3_CORAL));
-          } else {
-            return goToStateFromCoral(WristState.L3_CORAL, ElevatorState.L3)
-                .alongWith(Commands.runOnce(() -> currentScoringMode = L3_CORAL));
-          }
+          Command command =
+              (currentScoringMode == L3_ALGAE)
+                  ? goToStateFromAlgae(WristState.L3_CORAL, ElevatorState.L3)
+                  : goToStateFromCoral(WristState.L3_CORAL, ElevatorState.L3);
+          return command.alongWith(Commands.runOnce(() -> currentScoringMode = L3_CORAL));
         },
-        new HashSet<>(Arrays.asList(wrist, elevator)));
+        Set.of(wrist, elevator));
   }
 
+  /* Move to L3_algae with algae state movement if starting at L3_coral/algae states and coral state movement otherwise. */
   public Command goToL3Algae() {
     return Commands.defer(
         () -> {
           if (currentScoringMode == L3_ALGAE) return Commands.none();
-          else if (currentScoringMode == L3_CORAL) {
-            return Commands.sequence(
-                    elevator.goToState(ElevatorState.L3), wrist.goToState(WristState.L3_ALGAE))
-                .alongWith(Commands.runOnce(() -> currentScoringMode = L3_ALGAE));
-          } else if (currentScoringMode == NET
-              || currentScoringMode == L2_ALGAE
-              || currentScoringMode == PROCESSOR) {
-            return goToStateFromAlgae(WristState.L3_ALGAE, ElevatorState.L3)
-                .alongWith(Commands.runOnce(() -> currentScoringMode = L3_ALGAE));
-          } else {
-            return goToStateFromCoral(WristState.L3_ALGAE, ElevatorState.L3)
-                .alongWith(Commands.runOnce(() -> currentScoringMode = L3_ALGAE));
-          }
+          Command command =
+              (currentScoringMode == L3_CORAL
+                      || currentScoringMode == NET
+                      || currentScoringMode == L2_ALGAE
+                      || currentScoringMode == PROCESSOR)
+                  ? goToStateFromAlgae(WristState.L3_ALGAE, ElevatorState.L3)
+                  : goToStateFromCoral(WristState.L3_ALGAE, ElevatorState.L3);
+          return command.alongWith(Commands.runOnce(() -> currentScoringMode = L3_ALGAE));
         },
-        new HashSet<>(Arrays.asList(wrist, elevator)));
+        Set.of(wrist, elevator));
   }
 
+  /* Move to net with algae state movement if starting at algae states and coral state movement otherwise. */
   public Command goToNet() {
     return Commands.defer(
         () -> {
-          if (currentScoringMode == NET) {
-            return Commands.none();
-          } else if (currentScoringMode == L2_ALGAE
-              || currentScoringMode == L3_ALGAE
-              || currentScoringMode == PROCESSOR) {
-            return goToStateFromAlgae(WristState.NET, ElevatorState.NET)
-                .alongWith(Commands.runOnce(() -> currentScoringMode = NET));
-          } else {
-            return goToStateFromCoral(WristState.NET, ElevatorState.NET)
-                .alongWith(Commands.runOnce(() -> currentScoringMode = NET));
-          }
+          if (currentScoringMode == NET) return Commands.none();
+          Command command =
+              (currentScoringMode == L2_ALGAE
+                      || currentScoringMode == L3_ALGAE
+                      || currentScoringMode == PROCESSOR)
+                  ? goToStateFromAlgae(WristState.NET, ElevatorState.NET)
+                  : goToStateFromCoral(WristState.NET, ElevatorState.NET);
+          return command.alongWith(Commands.runOnce(() -> currentScoringMode = NET));
         },
-        new HashSet<>(Arrays.asList(wrist, elevator)));
+        Set.of(wrist, elevator));
   }
 
+  /* Move to L4 with coral state movement. */
   public Command goToL4() {
     return Commands.either(
         Commands.none(),

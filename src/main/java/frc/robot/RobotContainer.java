@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ScoringModeType;
 import frc.robot.commands.DriveCommands;
@@ -93,6 +94,8 @@ public class RobotContainer {
   final Alert controllerDisconnectedAlert = new Alert("Controller Disconnected.", AlertType.kError);
 
   private Supplier<ReefscapeCoralOnFly> simCoralProjectileSupplier = () -> null;
+
+  public static ScoringModeType currentScoringType = ScoringModeType.CORAL;
 
   /** The container for the robot. Contains subsystems, operator devices, and commands. */
   public RobotContainer() {
@@ -174,6 +177,10 @@ public class RobotContainer {
     if (elevator != null && wrist != null) {
       elevatorAndWristCommands = new ElevatorAndWristCommands(elevator, wrist);
     }
+
+    /* When current scoring type changes between coral and algae, elevator and wrist will toggle speed accordingly. */
+    new Trigger(() -> currentScoringType == ScoringModeType.CORAL)
+        .onChange(elevator.toggleElevatorSpeed().alongWith(wrist.toggleWristSpeed()));
 
     // Register named commands for auto
     if (drive != null && elevator != null && wrist != null && shooter != null) {
@@ -276,7 +283,7 @@ public class RobotContainer {
       controller
           .rightBumper()
           .onTrue(
-              Commands.runOnce(() -> Robot.currentScoringType = ScoringModeType.CORAL)
+              Commands.runOnce(() -> RobotContainer.currentScoringType = ScoringModeType.CORAL)
                   .alongWith(elevatorAndWristCommands.goToStation()));
 
       // switch between coral and algae scoring
@@ -313,7 +320,7 @@ public class RobotContainer {
               Commands.either(
                   elevatorAndWristCommands.goToL1(),
                   elevatorAndWristCommands.goToProcessor(),
-                  () -> Robot.currentScoringType == ScoringModeType.CORAL));
+                  () -> RobotContainer.currentScoringType == ScoringModeType.CORAL));
 
       // Goes to L2 coral or algae based on current scoring type
       controller
@@ -322,7 +329,7 @@ public class RobotContainer {
               Commands.either(
                   elevatorAndWristCommands.goToL2Coral(),
                   elevatorAndWristCommands.goToL2Algae(),
-                  () -> Robot.currentScoringType == ScoringModeType.CORAL));
+                  () -> RobotContainer.currentScoringType == ScoringModeType.CORAL));
 
       // Goes to L3 coral or algae based on current scoring type
       controller
@@ -331,7 +338,7 @@ public class RobotContainer {
               Commands.either(
                   elevatorAndWristCommands.goToL3Coral(),
                   elevatorAndWristCommands.goToL3Algae(),
-                  () -> Robot.currentScoringType == ScoringModeType.CORAL));
+                  () -> RobotContainer.currentScoringType == ScoringModeType.CORAL));
 
       // Goes to L4 or net based on current scoring type
       controller
