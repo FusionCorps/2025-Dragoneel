@@ -13,15 +13,14 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.ClosedLoopConfig;
-import com.revrobotics.spark.config.MAXMotionConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants.ScoringModeType;
-import frc.robot.RobotContainer;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 public class WristIOSparkFlex implements WristIO {
   /* Main scoring motor */
@@ -87,34 +86,20 @@ public class WristIOSparkFlex implements WristIO {
   }
 
   @Override
-  public void setTargetPosition(Angle angle) {
+  public void setTargetPosition(Angle angle, Supplier<ScoringModeType> scoringModeType) {
     setpoint = angle.in(Rotations);
-    // pid.setReference(setpoint, ControlType.kPosition);
-    pidController.setReference(setpoint, ControlType.kMAXMotionPositionControl);
-  }
-
-  boolean changed = false;
-
-  @Override
-  public void toggleSpeed() {
-    if (RobotContainer.currentScoringType == ScoringModeType.CORAL)
+    if (scoringModeType.get().equals(ScoringModeType.CORAL)) {
       wristMotor.configureAsync(
-          new SparkFlexConfig()
-              .apply(
-                  new ClosedLoopConfig()
-                      .apply(
-                          new MAXMotionConfig()
-                              .maxVelocity(WRIST_MAX_MOTION_MAX_VELOCITY)
-                              .maxAcceleration(WRIST_MAX_MOTION_MAX_ACCELERATION))),
+          new SparkFlexConfig().apply(new ClosedLoopConfig().p(6.0)),
           ResetMode.kNoResetSafeParameters,
           PersistMode.kPersistParameters);
-    else
+      pidController.setReference(setpoint, ControlType.kPosition);
+    } else {
       wristMotor.configureAsync(
-          new SparkFlexConfig()
-              .apply(
-                  new ClosedLoopConfig()
-                      .apply(new MAXMotionConfig().maxVelocity(0.5).maxAcceleration(0.5))),
+          new SparkFlexConfig().apply(new ClosedLoopConfig().p(2.0)),
           ResetMode.kNoResetSafeParameters,
           PersistMode.kPersistParameters);
+      pidController.setReference(setpoint, ControlType.kMAXMotionPositionControl);
+    }
   }
 }

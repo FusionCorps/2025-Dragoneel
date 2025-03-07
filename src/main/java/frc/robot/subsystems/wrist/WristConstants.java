@@ -22,15 +22,15 @@ public class WristConstants {
           .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
           .positionWrappingInputRange(-0.5, 0.5)
           .positionWrappingEnabled(true)
-          .pid(2.0, 0, 0)
+          .pid(6.0, 0, 0)
           .apply(
               new MAXMotionConfig()
                   .allowedClosedLoopError(0.005)
-                  .maxVelocity(0)
-                  .maxAcceleration(0));
+                  .maxVelocity(100.0)
+                  .maxAcceleration(100.0));
 
-  public static final double WRIST_MAX_MOTION_MAX_VELOCITY = 0.0;
-  public static final double WRIST_MAX_MOTION_MAX_ACCELERATION = 0.0;
+  public static final double WRIST_MAX_MOTION_MAX_VELOCITY = 100.0;
+  public static final double WRIST_MAX_MOTION_MAX_ACCELERATION = 100.0;
 
   public static final MAXMotionConfig WRIST_MAX_MOTION_CONFIG =
       new MAXMotionConfig()
@@ -49,6 +49,7 @@ public class WristConstants {
   public static enum WristState {
     PROCESSOR(Rotations.of(0.15)),
     STATION(Rotations.of(0)),
+    ALGAE_STOW(Rotations.of(0.35)),
     L1(Rotations.of(0.24)),
     L2_CORAL(Rotations.of(0.165)),
     L2_ALGAE(Rotations.of(0.125)),

@@ -86,8 +86,7 @@ public class Shooter extends SubsystemBase {
                     setState(ShooterState.SHOOT_CORAL_L1);
                   } else if ((currentElevatorStateSupplier.get() == ElevatorState.L4)) {
                     setState(ShooterState.SHOOT_CORAL_L4);
-                  } else if (RobotContainer.currentScoringType == ScoringModeType.ALGAE)
-                    setState(ShooterState.SHOOT_ALGAE);
+                  }
                   else setState(ShooterState.SHOOT_CORAL_DEFAULT);
                 },
                 () -> setState(ShooterState.IDLE)),

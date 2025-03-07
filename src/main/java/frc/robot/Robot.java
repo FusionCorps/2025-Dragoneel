@@ -20,9 +20,7 @@ import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Constants.ScoringModeState;
 import frc.robot.Constants.ScoringModeType;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -40,7 +38,6 @@ public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
 
-  @AutoLogOutput public static ScoringModeState currentScoringMode = ScoringModeState.STATION;
   // Order: 2nd stage, 3rd stage, wrist
   public static Pose3d[] componentPoses = new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d()};
 
@@ -95,7 +92,6 @@ public class Robot extends LoggedRobot {
     // Warmup auto PathPlanner path following
     FollowPathCommand.warmupCommand().schedule();
 
-
     DriverStation.silenceJoystickConnectionWarning(true);
   }
 
@@ -117,7 +113,7 @@ public class Robot extends LoggedRobot {
 
     // Record component poses
     Logger.recordOutput("ComponentPoses", componentPoses);
-    if (currentScoringType == ScoringModeType.CORAL) {
+    if (RobotContainer.currentScoringType == ScoringModeType.CORAL) {
       Logger.recordOutput("Current Scoring Type", Color.kWhite.toHexString());
     } else {
       Logger.recordOutput("Current Scoring Type", "#20b815");

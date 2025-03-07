@@ -26,8 +26,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants.ScoringModeState;
 import frc.robot.Constants.ScoringModeType;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorAndWristCommands;
@@ -63,10 +63,12 @@ import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
 import frc.robot.util.ShootingUtil;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -94,7 +96,9 @@ public class RobotContainer {
   final Alert controllerDisconnectedAlert = new Alert("Controller Disconnected.", AlertType.kError);
 
   private Supplier<ReefscapeCoralOnFly> simCoralProjectileSupplier = () -> null;
+  @AutoLogOutput public static ScoringModeState currentScoringMode = ScoringModeState.STATION;
 
+  @AutoLogOutput(key = "currScoreType")
   public static ScoringModeType currentScoringType = ScoringModeType.CORAL;
 
   /** The container for the robot. Contains subsystems, operator devices, and commands. */
@@ -291,27 +295,32 @@ public class RobotContainer {
       controller
           .leftBumper()
           .onTrue(
-              Commands.runOnce(
-                      () -> {
-                        if (Robot.currentScoringType == ScoringModeType.CORAL) {
-                          Robot.currentScoringType = ScoringModeType.ALGAE;
-                          // move wrist if at L2 and L3
-                          if (elevator.getCurrentElevatorState() == ElevatorState.L2) {
-                            wrist.goToState(WristState.L2_ALGAE);
-                          } else if (elevator.getCurrentElevatorState() == ElevatorState.L3) {
-                            wrist.goToState(WristState.L3_ALGAE);
-                          }
-                        } else {
-                          Robot.currentScoringType = ScoringModeType.CORAL;
-                          // move wrist if at L2 and L3
-                          if (elevator.getCurrentElevatorState() == ElevatorState.L2) {
-                            wrist.goToState(WristState.L2_CORAL);
-                          } else if (elevator.getCurrentElevatorState() == ElevatorState.L3) {
-                            wrist.goToState(WristState.L3_CORAL);
-                          }
-                        }
-                      })
-                  .alongWith(rumbleCommand()));
+              Commands.defer(
+                  () ->
+                      Commands.runOnce(
+                              () -> {
+                                if (currentScoringType == ScoringModeType.CORAL) {
+                                  currentScoringType = ScoringModeType.ALGAE;
+                                  // move wrist if at L2 and L3
+                                  if (elevator.getCurrentElevatorState() == ElevatorState.L2) {
+                                    wrist.goToState(WristState.L2_ALGAE);
+                                  } else if (elevator.getCurrentElevatorState()
+                                      == ElevatorState.L3) {
+                                    wrist.goToState(WristState.L3_ALGAE);
+                                  }
+                                } else {
+                                  currentScoringType = ScoringModeType.CORAL;
+                                  // move wrist if at L2 and L3
+                                  if (elevator.getCurrentElevatorState() == ElevatorState.L2) {
+                                    wrist.goToState(WristState.L2_CORAL);
+                                  } else if (elevator.getCurrentElevatorState()
+                                      == ElevatorState.L3) {
+                                    wrist.goToState(WristState.L3_CORAL);
+                                  }
+                                }
+                              })
+                          .alongWith(rumbleCommand()),
+                  Set.of(elevator, wrist)));
 
       // Goes to L1 or processor based on current scoring type
       controller
@@ -320,7 +329,7 @@ public class RobotContainer {
               Commands.either(
                   elevatorAndWristCommands.goToL1(),
                   elevatorAndWristCommands.goToProcessor(),
-                  () -> RobotContainer.currentScoringType == ScoringModeType.CORAL));
+                  () -> currentScoringType == ScoringModeType.CORAL));
 
       // Goes to L2 coral or algae based on current scoring type
       controller
@@ -329,7 +338,7 @@ public class RobotContainer {
               Commands.either(
                   elevatorAndWristCommands.goToL2Coral(),
                   elevatorAndWristCommands.goToL2Algae(),
-                  () -> RobotContainer.currentScoringType == ScoringModeType.CORAL));
+                  () -> currentScoringType == ScoringModeType.CORAL));
 
       // Goes to L3 coral or algae based on current scoring type
       controller
@@ -338,7 +347,7 @@ public class RobotContainer {
               Commands.either(
                   elevatorAndWristCommands.goToL3Coral(),
                   elevatorAndWristCommands.goToL3Algae(),
-                  () -> RobotContainer.currentScoringType == ScoringModeType.CORAL));
+                  () -> currentScoringType == ScoringModeType.CORAL));
 
       // Goes to L4 or net based on current scoring type
       controller
@@ -347,7 +356,7 @@ public class RobotContainer {
               Commands.either(
                   elevatorAndWristCommands.goToL4(),
                   elevatorAndWristCommands.goToNet(),
-                  () -> Robot.currentScoringType == ScoringModeType.CORAL));
+                  () -> currentScoringType == ScoringModeType.CORAL));
     }
 
     /* scoring commands */
@@ -356,12 +365,15 @@ public class RobotContainer {
           .rightTrigger()
           .whileTrue(
               shooter.shootCoralCmd(elevator::getCurrentElevatorState, simCoralProjectileSupplier));
+
+      controller.back().whileTrue(shooter.shootAlgaeCmd());
     }
 
     /* Climb commands */
     if (climb != null) {
       // extend climb out
-      controller.povDown().whileTrue(climb.extendClimbCmd());
+      controller.povDown().whileTrue(
+        Commands.either(climb.extendClimbCmd(), ));
       // retract climb back in
       controller.povUp().whileTrue(climb.retractClimbCmd());
     }
@@ -397,7 +409,7 @@ public class RobotContainer {
   public Command rumbleCommand() {
     return Commands.run(
             () -> {
-              if (Robot.currentScoringType == ScoringModeType.CORAL)
+              if (currentScoringType == ScoringModeType.CORAL)
                 controller.setRumble(RumbleType.kBothRumble, 0.5);
               else controller.setRumble(RumbleType.kBothRumble, 1.0);
             })

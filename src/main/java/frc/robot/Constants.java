@@ -45,6 +45,7 @@ public final class Constants {
   public static enum ScoringModeState {
     STATION,
     L1,
+    ALGAE_STOW,
     PROCESSOR,
     L2_CORAL,
     L2_ALGAE,

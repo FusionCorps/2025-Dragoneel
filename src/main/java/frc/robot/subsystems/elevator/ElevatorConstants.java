@@ -16,12 +16,13 @@ public class ElevatorConstants {
 
   public static enum ElevatorState {
     PROCESSOR(Rotations.of(0.0)),
+    ALGAE_STOW(Rotations.of(3)),
     STATION(Rotations.of(0)),
     L1(Rotations.of(3)),
     L2(Rotations.of(10)),
     L3(Rotations.of(16.8)),
     L4(Rotations.of(26)),
-    NET(Rotations.of(20));
+    NET(Rotations.of(26));
 
     public Angle rotations;
 
