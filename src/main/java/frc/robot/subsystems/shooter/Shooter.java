@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.shooter.ShooterConstants.ShooterState;
+import frc.robot.subsystems.wrist.WristConstants.WristState;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
@@ -60,9 +61,8 @@ public class Shooter extends SubsystemBase {
    * @param currentElevatorStateSupplier Supplies the current elevator state.
    */
   public Command shootCoralCmd(
-      Supplier<ElevatorState> currentElevatorStateSupplier,
-      Supplier<ReefscapeCoralOnFly> coralProjectileSupplier) {
-    return shootCoralCmd(currentElevatorStateSupplier)
+      Supplier<WristState> wristState, Supplier<ReefscapeCoralOnFly> coralProjectileSupplier) {
+    return shootCoralCmd(wristState)
         .alongWith(
             Commands.runOnce(
                 () -> {
@@ -75,16 +75,18 @@ public class Shooter extends SubsystemBase {
                 }));
   }
 
-  public Command shootCoralCmd(Supplier<ElevatorState> currentElevatorStateSupplier) {
+  public Command shootCoralCmd(Supplier<WristState> wristStateSupplier) {
     return Commands.defer(
         () ->
             startEnd(
                 () -> {
-                  if (currentElevatorStateSupplier.get() == ElevatorState.L1) {
+                  if (wristStateSupplier.get() == WristState.L1) {
                     setState(ShooterState.SHOOT_CORAL_L1);
-                  } else if ((currentElevatorStateSupplier.get() == ElevatorState.L4)) {
+                  } else if (wristStateSupplier.get() == WristState.L4) {
                     setState(ShooterState.SHOOT_CORAL_L4);
-                  } else setState(ShooterState.SHOOT_CORAL_DEFAULT);
+                  } else if (wristStateSupplier.get() == WristState.L3_ALGAE)
+                    setState(ShooterState.PULL_IN_ALGAE);
+                  else setState(ShooterState.SHOOT_CORAL_DEFAULT);
                 },
                 () -> setState(ShooterState.IDLE)),
         Set.of(this));

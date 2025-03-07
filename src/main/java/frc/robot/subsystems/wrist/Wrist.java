@@ -103,4 +103,8 @@ public class Wrist extends SubsystemBase {
   public Angle getCurrentAngle() {
     return Radians.of(inputs.absolutePositionRad);
   }
+
+  public WristState getCurrentWristState() {
+    return currentWristState;
+  }
 }

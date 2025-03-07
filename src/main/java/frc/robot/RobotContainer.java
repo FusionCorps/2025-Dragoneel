@@ -239,6 +239,8 @@ public class RobotContainer {
     new Trigger(() -> elevator.getCurrentElevatorState() != ElevatorState.STATION)
         .onTrue(Commands.runOnce(() -> drive.setMaxSpeed(DriveSpeedMode.SLOWER)));
 
+    new Trigger(() -> currentScoringPieceType == ScoringPieceType.CORAL).onChange(rumbleCommand());
+
     // Configure the button bindings
     configureButtonBindings();
   }
@@ -279,9 +281,7 @@ public class RobotContainer {
     }
 
     /* elevator and wrist movement commands */
-    controller
-        .leftBumper()
-        .onTrue(elevatorAndWristCommands.toggleScoringPieceType().andThen(rumbleCommand()));
+    controller.leftBumper().onTrue(elevatorAndWristCommands.setScoringPieceToAlgae());
 
     if (elevatorAndWristCommands != null) {
       controller
@@ -327,8 +327,10 @@ public class RobotContainer {
                   elevatorAndWristCommands.goToNet(),
                   () -> currentScoringPieceType == ScoringPieceType.CORAL));
 
-        controller.povDown().and(() -> currentScoringPieceType == ScoringPieceType.ALGAE)
-            .whileTrue(elevatorAndWristCommands.goToAlgaeStow());
+      controller
+          .povDown()
+          .and(() -> currentScoringPieceType == ScoringPieceType.ALGAE)
+          .whileTrue(elevatorAndWristCommands.goToAlgaeStow());
     }
 
     /* scoring commands */
@@ -336,7 +338,7 @@ public class RobotContainer {
       controller
           .rightTrigger()
           .whileTrue(
-              shooter.shootCoralCmd(elevator::getCurrentElevatorState, simCoralProjectileSupplier));
+              shooter.shootCoralCmd(wrist::getCurrentWristState, simCoralProjectileSupplier));
 
       controller.back().whileTrue(shooter.shootAlgaeCmd());
     }
@@ -345,12 +347,13 @@ public class RobotContainer {
     if (climb != null) {
       // extend climb out, uses composite trigger because this stows algae if in algae mode
       controller
-          .povDown().and(() -> currentScoringPieceType != ScoringPieceType.ALGAE)
+          .povDown()
+          .and(() -> currentScoringPieceType != ScoringPieceType.ALGAE)
           .whileTrue(
-                climb.extendClimbCmd()
-                    .alongWith(
-                        Commands.runOnce(() -> drive.setMaxSpeed(DriveSpeedMode.SLOWER))));
-        
+              climb
+                  .extendClimbCmd()
+                  .alongWith(Commands.runOnce(() -> drive.setMaxSpeed(DriveSpeedMode.SLOWER))));
+
       // retract climb back in
       controller.povUp().whileTrue(climb.retractClimbCmd());
     }

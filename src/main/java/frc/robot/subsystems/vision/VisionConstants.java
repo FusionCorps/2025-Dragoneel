@@ -35,7 +35,7 @@ public class VisionConstants {
   // Camera names, must match names configured on coprocessor
   public static String CAM_FL_NAME = "CamLeft";
   public static String CAM_FR_NAME = "CamRight";
-  public static String CAM_BACK_NAME = "OV9281-3";
+  //   public static String CAM_BACK_NAME = "OV9281-3";
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
@@ -44,15 +44,15 @@ public class VisionConstants {
       new Transform3d(0.306, 0.2785, 0.212, new Rotation3d(0.0, 0.0, Units.degreesToRadians(-27)));
   public static Transform3d ROBOT_TO_CAM_FR_TRANSFORM =
       new Transform3d(0.306, -0.2785, 0.212, new Rotation3d(0.0, 0.0, Units.degreesToRadians(28)));
-  public static Transform3d ROBOT_TO_CAM_BACK_TRANSFORM =
-      new Transform3d(-0.05, 0, 0.3, new Rotation3d(0.0, 0.0, Math.PI / 2.0));
+  //   public static Transform3d ROBOT_TO_CAM_BACK_TRANSFORM =
+  //       new Transform3d(-0.05, 0, 0.3, new Rotation3d(0.0, 0.0, Math.PI / 2.0));
   // Basic filtering thresholds
-  public static double maxAmbiguity = 0.2;
+  public static double maxAmbiguity = 0.5;
   public static double maxZError = 0.1;
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)
-  public static double linearStdDevBaseline = 0.05; // Meters
+  public static double linearStdDevBaseline = 0.04; // Meters
   public static double angularStdDevBaseline = Double.POSITIVE_INFINITY; // Radians
 
   // Standard deviation multipliers for each camera
@@ -60,12 +60,7 @@ public class VisionConstants {
   public static double[] cameraStdDevFactors =
       new double[] {
         1.0, // Camera FL
-        1.0, // Camera FR
-        1.0 // Camera back
+        Double.POSITIVE_INFINITY, // Camera FR
+        // 1.0 // Camera back
       };
-
-  // Multipliers to apply for MegaTag 2 observations
-  public static double linearStdDevMegatag2Factor = 0.5; // More stable than full 3D solve
-  public static double angularStdDevMegatag2Factor =
-      Double.POSITIVE_INFINITY; // No rotation data available
 }

@@ -80,12 +80,9 @@ public class ElevatorAndWristCommands {
             return Commands.none();
           }
           // Otherwise remember the old target, then set the new target
-          var oldTarget = targetPosition;
           targetPosition = L1;
           // Decide how to move based on old target
-          return (oldTarget == PROCESSOR)
-              ? goToStateBetweenAlgae(targetPosition)
-              : goToStateDefault(targetPosition);
+          return goToStateDefault(targetPosition);
         },
         Set.of());
   }
@@ -98,17 +95,8 @@ public class ElevatorAndWristCommands {
           if (targetPosition == PROCESSOR) {
             return Commands.none();
           }
-          var oldTarget = targetPosition;
           targetPosition = PROCESSOR;
-          if (oldTarget == L1
-              || oldTarget == L2_ALGAE
-              || oldTarget == L3_ALGAE
-              || oldTarget == NET
-              || oldTarget == ALGAE_STOW) {
-            return goToStateBetweenAlgae(targetPosition);
-          } else {
-            return goToStateDefault(targetPosition);
-          }
+          return goToStateBetweenAlgae(targetPosition);
         },
         Set.of());
   }
@@ -121,11 +109,8 @@ public class ElevatorAndWristCommands {
           if (targetPosition == L2_CORAL) {
             return Commands.none();
           }
-          var oldTarget = targetPosition;
           targetPosition = L2_CORAL;
-          return (oldTarget == L2_ALGAE)
-              ? goToStateBetweenAlgae(targetPosition)
-              : goToStateDefault(targetPosition);
+          return goToStateDefault(targetPosition);
         },
         Set.of());
   }
@@ -138,17 +123,8 @@ public class ElevatorAndWristCommands {
           if (targetPosition == L2_ALGAE) {
             return Commands.none();
           }
-          var oldTarget = targetPosition;
           targetPosition = L2_ALGAE;
-          if (oldTarget == L2_CORAL
-              || oldTarget == L3_ALGAE
-              || oldTarget == NET
-              || oldTarget == PROCESSOR
-              || oldTarget == ALGAE_STOW) {
-            return goToStateBetweenAlgae(targetPosition);
-          } else {
-            return goToStateDefault(targetPosition);
-          }
+          return goToStateBetweenAlgae(targetPosition);
         },
         Set.of());
   }
@@ -163,11 +139,8 @@ public class ElevatorAndWristCommands {
           }
 
           // Otherwise set movement method to L3 coral based on old target
-          var oldTarget = targetPosition;
           targetPosition = L3_CORAL;
-          return (oldTarget == L3_ALGAE)
-              ? goToStateBetweenAlgae(targetPosition)
-              : goToStateDefault(targetPosition);
+          return goToStateDefault(targetPosition);
         },
         Set.of());
   }
@@ -181,17 +154,8 @@ public class ElevatorAndWristCommands {
             return Commands.none();
           }
           // Otherwise set movement type to L3 algae based on old target
-          var oldTarget = targetPosition;
           targetPosition = L3_ALGAE;
-          if (oldTarget == L3_CORAL
-              || oldTarget == NET
-              || oldTarget == L2_ALGAE
-              || oldTarget == PROCESSOR
-              || oldTarget == ALGAE_STOW) {
-            return goToStateBetweenAlgae(targetPosition);
-          } else {
-            return goToStateDefault(targetPosition);
-          }
+          return goToStateBetweenAlgae(targetPosition);
         },
         Set.of());
   }
@@ -204,17 +168,9 @@ public class ElevatorAndWristCommands {
           if (targetPosition == NET) {
             return Commands.none();
           }
-          // Otherwise set movement type to NET based on old target
-          var oldTarget = targetPosition;
+          // Otherwise set movement type to NET based on old targetw
           targetPosition = NET;
-          if (oldTarget == L2_ALGAE
-              || oldTarget == L3_ALGAE
-              || oldTarget == PROCESSOR
-              || oldTarget == ALGAE_STOW) {
-            return goToStateBetweenAlgae(targetPosition);
-          } else {
-            return goToStateDefault(targetPosition);
-          }
+          return goToStateBetweenAlgae(targetPosition);
         },
         Set.of());
   }
@@ -248,27 +204,22 @@ public class ElevatorAndWristCommands {
   }
 
   /**
-   * Toggles the scoring piece type between coral and algae. If the target position is L2 or L3,
-   * move to the other state.
+   * Sets the scoring piece type to algae. If the target position is L1 or L2 or L3, move to the
+   * other state.
    *
    * @return
    */
-  public Command toggleScoringPieceType() {
+  public Command setScoringPieceToAlgae() {
     return Commands.defer(
         () -> {
           if (RobotContainer.currentScoringPieceType == ScoringPieceType.CORAL) {
             RobotContainer.currentScoringPieceType = ScoringPieceType.ALGAE;
-            if (targetPosition == L2_CORAL) {
+            if (targetPosition == L1) {
+              return goToProcessor();
+            } else if (targetPosition == L2_CORAL) {
               return goToL2Algae();
             } else if (targetPosition == L3_CORAL) {
               return goToL3Algae();
-            }
-          } else {
-            RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL;
-            if (targetPosition == L2_ALGAE) {
-              return goToL2Coral();
-            } else if (targetPosition == L3_ALGAE) {
-              return goToL3Coral();
             }
           }
           return Commands.none();
