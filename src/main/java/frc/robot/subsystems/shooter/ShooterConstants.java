@@ -23,7 +23,7 @@ public class ShooterConstants {
   public static enum ShooterState {
     IDLE(Volts.of(0.0)),
     SHOOT_ALGAE(Volts.of(-0.2 * 12.0)),
-    SHOOT_CORAL_DEFAULT(Volts.of(0.15 * 12.0)),
+    SHOOT_CORAL_DEFAULT(Volts.of(0.25 * 12.0)),
     SHOOT_CORAL_L4(Volts.of(0.10 * 12.0)),
     PULL_IN_ALGAE(Volts.of(0.40 * 12.0)),
     SHOOT_CORAL_L1(Volts.of(0.13 * 12.0));
