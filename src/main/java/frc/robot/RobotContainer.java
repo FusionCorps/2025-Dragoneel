@@ -56,7 +56,6 @@ import frc.robot.subsystems.shooter.ShooterIOSparkFlex;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
-import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
@@ -139,12 +138,14 @@ public class RobotContainer {
                 new ModuleIOTalonFXSim(DriveConstants.BACK_RIGHT, driveSim.getModules()[3]),
                 driveSim::setSimulationWorldPose);
         vision =
-            new Vision(
-                (a, b, c) -> {},
-                // drive,
-                new VisionIOPhotonVisionSim(CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getPose),
-                new VisionIOPhotonVisionSim(
-                    CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM, drive::getPose));
+            // new Vision(
+            //     (a, b, c) -> {},
+            //     // drive,
+            //     new VisionIOPhotonVisionSim(CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM,
+            // drive::getPose),
+            //     new VisionIOPhotonVisionSim(
+            //         CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM, drive::getPose));
+            null;
         elevator = new Elevator(new ElevatorIOSim());
         climb = new Climb(new ClimbIOSim());
         shooter = new Shooter(new ShooterIOSim());
@@ -208,16 +209,25 @@ public class RobotContainer {
                   simCoralProjectileSupplier),
               "ShootAlgae",
               shooter.shootAlgaeCmd()));
+
+      NamedCommands.registerCommand(
+          "AutoAlignLeft", DriveCommands.autoAlignToNearestBranch(drive, true).withTimeout(0.75));
+      NamedCommands.registerCommand(
+          "AutoAlignRight", DriveCommands.autoAlignToNearestBranch(drive, false).withTimeout(0.75));
     }
 
     // add auto routine selector to the dashboard
     // autoChooser.addDefaultOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
+    autoChooser.addOption("3 Piece Top", AutoBuilder.buildAuto("T1-IKL"));
+    autoChooser.addOption("3 Piece Bottom", AutoBuilder.buildAuto("B1-FDC"));
     autoChooser.addDefaultOption("4 Piece Opposite Processor", AutoBuilder.buildAuto("T2-ILKJ"));
     autoChooser.addOption("1 piece bottom to E", AutoBuilder.buildAuto("B1-E"));
-    autoChooser.addOption("Move straight", AutoBuilder.buildAuto("T1-Leave2M"));
+    autoChooser.addOption(
+        "Move straight",
+        DriveCommands.joystickDrive(drive, () -> -0.2, () -> 0, () -> 0).withTimeout(2.0));
     autoChooser.addOption("1 piece", AutoBuilder.buildAuto("C4-H"));
-    autoChooser.addOption("wheel", DriveCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption("feedforward", DriveCommands.feedforwardCharacterization(drive));
+    // autoChooser.addOption("wheel", DriveCommands.wheelRadiusCharacterization(drive));
+    // autoChooser.addOption("feedforward", DriveCommands.feedforwardCharacterization(drive));
 
     // Set up SysId routines
     // TODO: remove these later

@@ -9,6 +9,24 @@
           "data": {
             "pathName": "Top Push"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoAlignRight"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootCoral"
+          }
         }
       ]
     }

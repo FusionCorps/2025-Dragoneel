@@ -5,13 +5,19 @@
     "data": {
       "commands": [
         {
+          "type": "path",
+          "data": {
+            "pathName": "T1-I"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "T2-H"
+                  "name": "AutoAlignLeft"
                 }
               },
               {
@@ -30,28 +36,27 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "H-TStat"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Station"
-                }
-              }
-            ]
+            "name": "Station"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "I-TStat"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 1.0
+            "waitTime": 0.5
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TStat-K"
           }
         },
         {
@@ -59,9 +64,9 @@
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "TStat-I"
+                  "name": "AutoAlignLeft"
                 }
               },
               {
@@ -77,12 +82,67 @@
           "type": "named",
           "data": {
             "name": "ShootCoral"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Station"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "K-TStat"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TStat-L"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "AutoAlignRight"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L4"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootCoral"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Station"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "TwoPiece",
+  "folder": "ThreePiece",
   "choreoAuto": true
 }

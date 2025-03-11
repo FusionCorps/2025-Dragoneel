@@ -20,7 +20,7 @@ public class ElevatorIOSim implements ElevatorIO {
 
   ProfiledPIDController elevatorPIDController =
       new ProfiledPIDController(
-          0.8, 0, 0.0, new TrapezoidProfile.Constraints(80, 60)); // in rotations units
+          1.0, 0, 0.0, new TrapezoidProfile.Constraints(150, 100)); // in rotations units
 
   ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0, 0.65, 0.2);
 

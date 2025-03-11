@@ -220,6 +220,22 @@ public class DriveCommands {
         alignLeft);
   }
 
+  public static Command autoAlignToNearestBranchAuto(Drive drive, boolean alignLeft) {
+    return autoAlignToBranch(
+            drive,
+            () ->
+                new Pose3d(
+                    drive
+                        .getPose()
+                        .nearest(
+                            DriverStation.getAlliance().isPresent()
+                                    && DriverStation.getAlliance().get() == Alliance.Red
+                                ? redReefTagPoses
+                                : blueReefTagPoses)),
+            alignLeft)
+        .withTimeout(0.75);
+  }
+
   /**
    * Field relative drive command using joystick for linear control and PID for angular control.
    * Possible use cases include snapping to an angle, aiming at a vision target, or controlling

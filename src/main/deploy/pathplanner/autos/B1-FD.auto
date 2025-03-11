@@ -7,7 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "C4-H"
+            "pathName": "B1-F"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoAlignRight"
           }
         },
         {
@@ -23,21 +29,39 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Station"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "H-TStat"
+            "pathName": "F-BStat"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 3.0
+            "waitTime": 1.0
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "TStat-I"
+            "pathName": "BStat-D"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoAlignRight"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootCoral"
           }
         },
         {
@@ -49,7 +73,7 @@
         {
           "type": "named",
           "data": {
-            "name": "ShootCoral"
+            "name": "Station"
           }
         }
       ]
