@@ -22,6 +22,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.DriveFeedforwards;
+import com.pathplanner.lib.util.FlippingUtil;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
@@ -367,6 +368,19 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   public void setPose(Pose2d pose) {
     this.resetSimulationPose.accept(pose);
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+  }
+
+  /**
+   * Returns a command that sets the current odometry pose to the specified pose. If the robot is on
+   * the red alliance, the pose is flipped across the x-axis.
+   */
+  public Command setPoseCmd(Pose2d pose) {
+    return runOnce(
+        () -> {
+          if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red)
+            setPose(FlippingUtil.flipFieldPose(pose));
+          else setPose(pose);
+        });
   }
 
   /** Adds a new timestamped vision measurement. */

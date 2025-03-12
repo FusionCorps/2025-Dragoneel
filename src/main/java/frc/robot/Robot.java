@@ -118,8 +118,6 @@ public class Robot extends LoggedRobot {
     } else {
       Logger.recordOutput("Current Scoring Type", "#29ac9c");
     }
-
-    robotContainer.controllerDisconnectedAlert.set(!robotContainer.controller.isConnected());
   }
 
   /** This function is called once when the robot is disabled. */

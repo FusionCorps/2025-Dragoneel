@@ -15,8 +15,6 @@ package frc.robot;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Alert;
@@ -29,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ScoringPieceType;
 import frc.robot.Constants.TargetState;
+import frc.robot.commands.Autos;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorAndWristCommands;
 import frc.robot.subsystems.climb.Climb;
@@ -37,6 +36,7 @@ import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.climb.ClimbIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.subsystems.drive.DriveConstants.AutoAlignDirection;
 import frc.robot.subsystems.drive.DriveConstants.DriveSpeedMode;
 import frc.robot.subsystems.drive.gyro.GyroIO;
 import frc.robot.subsystems.drive.gyro.GyroIOPigeon2;
@@ -61,7 +61,6 @@ import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
 import frc.robot.util.ShootingUtil;
-import java.util.Map;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
@@ -150,10 +149,7 @@ public class RobotContainer {
         climb = new Climb(new ClimbIOSim());
         shooter = new Shooter(new ShooterIOSim());
         wrist = new Wrist(new WristIOSim());
-        // elevator = null;
-        // climb = null;
-        // shooter = null;
-        // wrist = null;
+
         simCoralProjectileSupplier =
             () -> ShootingUtil.createCoralProjectile(drive, elevator, wrist, shooter);
         break;
@@ -184,53 +180,31 @@ public class RobotContainer {
     new Trigger(() -> currentScoringPieceType == ScoringPieceType.CORAL)
         .onChange(elevator.toggleElevatorSpeed().alongWith(wrist.toggleWristSpeed()));
 
-    // Register named commands for auto
+    // Register auto routines on dashboard chooser
     if (drive != null && elevator != null && wrist != null && shooter != null) {
-      NamedCommands.registerCommands(
-          Map.of(
-              "L1",
-              elevatorAndWristCommands.goToL1(),
-              "L2",
-              elevatorAndWristCommands.goToL2Coral(),
-              "Station",
-              elevatorAndWristCommands.goToStation(),
-              "L3",
-              elevatorAndWristCommands.goToL3Coral(),
-              "L4",
-              elevatorAndWristCommands.goToL4(),
-              "Net",
-              elevatorAndWristCommands.goToNet(),
-              "Processor",
-              elevatorAndWristCommands.goToProcessor(),
-              "ShootCoral",
-              shooter.shootCoralInAutoCmd(
-                  wrist.isAtScoringState,
-                  elevator::getCurrentElevatorState,
-                  simCoralProjectileSupplier),
-              "ShootAlgae",
-              shooter.shootAlgaeCmd()));
-
-      NamedCommands.registerCommand(
-          "AutoAlignLeft", DriveCommands.autoAlignToNearestBranch(drive, true).withTimeout(0.75));
-      NamedCommands.registerCommand(
-          "AutoAlignRight", DriveCommands.autoAlignToNearestBranch(drive, false).withTimeout(0.75));
+      Autos autos = new Autos(drive, elevator, wrist, shooter);
+      autoChooser.addDefaultOption("Do Nothing", autos.doNothing());
+      autoChooser.addOption("Move Forward for 2 sec", autos.moveStraight());
+      autoChooser.addOption("1 Piece Center", autos.onePieceFromCenter());
+      autoChooser.addOption("1 Piece Top", autos.onePieceFromTop());
+      autoChooser.addOption("1 Piece Bottom", autos.onePieceFromBottom());
+      autoChooser.addOption("2 Piece Top", autos.twoPieceFromTop());
+      autoChooser.addOption("2 Piece Bottom", autos.twoPieceFromBottom());
+      autoChooser.addOption("3 Piece Top", autos.threePieceFromTop());
+      autoChooser.addOption("3 Piece Bottom", autos.threePieceFromBottom());
+      autoChooser.addOption("4 Piece Top", autos.fourPieceFromTop());
+      autoChooser.addOption("4 Piece Bottom", autos.fourPieceFromBottom());
+      autoChooser.addOption("Push + 1 Piece Center, Start at Top", autos.pushAndOnePieceFromTop());
+      autoChooser.addOption(
+          "Push + 1 Piece Center, Start at Bottom", autos.pushAndOnePieceFromBottom());
     }
 
-    // add auto routine selector to the dashboard
-    // autoChooser.addDefaultOption("Forward 2m", AutoBuilder.buildAuto("T1-Leave2M"));
-    autoChooser.addOption("3 Piece Top", AutoBuilder.buildAuto("T1-IKL"));
-    autoChooser.addOption("3 Piece Bottom", AutoBuilder.buildAuto("B1-FDC"));
-    autoChooser.addDefaultOption("4 Piece Opposite Processor", AutoBuilder.buildAuto("T2-ILKJ"));
-    autoChooser.addOption("1 piece bottom to E", AutoBuilder.buildAuto("B1-E"));
-    autoChooser.addOption(
-        "Move straight",
-        DriveCommands.joystickDrive(drive, () -> -0.2, () -> 0, () -> 0).withTimeout(2.0));
-    autoChooser.addOption("1 piece", AutoBuilder.buildAuto("C4-H"));
-    // autoChooser.addOption("wheel", DriveCommands.wheelRadiusCharacterization(drive));
-    // autoChooser.addOption("feedforward", DriveCommands.feedforwardCharacterization(drive));
-
-    // Set up SysId routines
+    // add diagnostic and sysid commands
     // TODO: remove these later
+
+    autoChooser.addOption("wheel", DriveCommands.wheelRadiusCharacterization(drive));
+    autoChooser.addOption("feedforward", DriveCommands.feedforwardCharacterization(drive));
+
     autoChooser.addOption(
         "Drive SysId (Quasistatic Forward)",
         drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
@@ -242,14 +216,17 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // robot will stow when re-enabled
-    // RobotModeTriggers.disabled().onTrue(elevatorAndWristCommands.goToStation());
-
     // When elevator leaves station, run at slower speed
     new Trigger(() -> elevator.getCurrentElevatorState() != ElevatorState.STATION)
         .onTrue(Commands.runOnce(() -> drive.setMaxSpeed(DriveSpeedMode.SLOWER)));
 
+    // When elevator changes scoring piece type, rumble controller
     new Trigger(() -> currentScoringPieceType == ScoringPieceType.CORAL).onChange(rumbleCommand());
+
+    // When controller disconnects, show alert
+    new Trigger(() -> controller.isConnected())
+        .whileFalse(Commands.runOnce(() -> controllerDisconnectedAlert.set(true)))
+        .whileTrue(Commands.runOnce(() -> controllerDisconnectedAlert.set(false)));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -277,8 +254,12 @@ public class RobotContainer {
       controller.start().onTrue(drive.runOnce(resetGyro).ignoringDisable(true));
 
       // Auto align to nearest left/right branch
-      controller.povLeft().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, true));
-      controller.povRight().whileTrue(DriveCommands.autoAlignToNearestBranch(drive, false));
+      controller
+          .povLeft()
+          .whileTrue(DriveCommands.autoAlignToNearestBranch(drive, AutoAlignDirection.LEFT));
+      controller
+          .povRight()
+          .whileTrue(DriveCommands.autoAlignToNearestBranch(drive, AutoAlignDirection.RIGHT));
 
       // Toggle drive speed for "slow mode" driving
       controller

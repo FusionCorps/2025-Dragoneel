@@ -302,4 +302,9 @@ public class DriveConstants {
       this.speedAndTheta = speedAndTheta;
     }
   }
+
+  public static enum AutoAlignDirection {
+    LEFT,
+    RIGHT
+  }
 }

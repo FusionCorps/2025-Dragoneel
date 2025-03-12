@@ -175,7 +175,9 @@ public class DriveCommands {
    *     pose of the robot relative to the tag or any offset pose.
    */
   private static Command autoAlignToBranch(
-      Drive drive, Supplier<Pose3d> tagPoseSupplierNoOffset, boolean alignLeft) {
+      Drive drive,
+      Supplier<Pose3d> tagPoseSupplierNoOffset,
+      DriveConstants.AutoAlignDirection autoAlignDirection) {
     // applies x/y offsets from the tag pose
     // rotate, because apriltag will always be 180° from robot
     Supplier<Pose2d> tagPoseSupplierIn2DWOffset =
@@ -188,7 +190,12 @@ public class DriveCommands {
                 .get()
                 .transformBy(
                     new Transform3d(
-                        0.61, (alignLeft ? -0.39 : -0.02), 0, new Rotation3d(Rotation2d.kPi)))
+                        0.61,
+                        (autoAlignDirection == DriveConstants.AutoAlignDirection.LEFT
+                            ? -0.39
+                            : -0.02),
+                        0,
+                        new Rotation3d(Rotation2d.kPi)))
                 .toPose2d();
           }
         };
@@ -205,7 +212,8 @@ public class DriveCommands {
    * (doesn't have to be seen). Separate commands should be created for aligning to left and right
    * branches.
    */
-  public static Command autoAlignToNearestBranch(Drive drive, boolean alignLeft) {
+  public static Command autoAlignToNearestBranch(
+      Drive drive, DriveConstants.AutoAlignDirection autoAlignDirection) {
     return autoAlignToBranch(
         drive,
         () ->
@@ -217,10 +225,11 @@ public class DriveCommands {
                                 && DriverStation.getAlliance().get() == Alliance.Red
                             ? redReefTagPoses
                             : blueReefTagPoses)),
-        alignLeft);
+        autoAlignDirection);
   }
 
-  public static Command autoAlignToNearestBranchAuto(Drive drive, boolean alignLeft) {
+  public static Command autoAlignToNearestBranchAuto(
+      Drive drive, DriveConstants.AutoAlignDirection AutoAlignDirection) {
     return autoAlignToBranch(
             drive,
             () ->
@@ -232,7 +241,7 @@ public class DriveCommands {
                                     && DriverStation.getAlliance().get() == Alliance.Red
                                 ? redReefTagPoses
                                 : blueReefTagPoses)),
-            alignLeft)
+            AutoAlignDirection)
         .withTimeout(0.75);
   }
 
