@@ -92,6 +92,7 @@ public class Robot extends LoggedRobot {
     // Warmup auto PathPlanner path following
     FollowPathCommand.warmupCommand().schedule();
 
+    // Silence joystick connection warning since we use custom alerts
     DriverStation.silenceJoystickConnectionWarning(true);
   }
 
@@ -99,7 +100,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     // Switch robot thread to high priority to improve loop timing
-    Threads.setCurrentThreadPriority(true, 99);
+    Threads.setCurrentThreadPriority(true, 10);
 
     // Runs the Scheduler. This is responsible for polling buttons, adding
     // newly-scheduled commands, running already-scheduled commands, removing

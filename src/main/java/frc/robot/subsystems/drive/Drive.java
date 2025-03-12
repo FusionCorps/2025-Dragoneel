@@ -131,7 +131,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
     // Start odometry thread
     PhoenixOdometryThread.getInstance().start();
 
-    // Configure AutoBuilder for PathPlanner
+    // Configure AutoBuilder for PathPlanner path following
     try {
       PP_CONFIG = RobotConfig.fromGUISettings();
     } catch (IOException | ParseException e) {

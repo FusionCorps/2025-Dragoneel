@@ -262,11 +262,8 @@ public class RobotContainer {
           .whileTrue(DriveCommands.autoAlignToNearestBranch(drive, AutoAlignDirection.RIGHT));
 
       // Toggle drive speed for "slow mode" driving
-      controller
-          .leftTrigger()
-          .onTrue(
-              drive.toggleSpeed(
-                  elevator::getCurrentElevatorState)); // TODO: consider making this an
+      controller.leftTrigger().onTrue(drive.toggleSpeed(elevator::getCurrentElevatorState));
+      // TODO: consider making this an
       // acceleration
       // limiter, i.e. with slew rate limiting
     }

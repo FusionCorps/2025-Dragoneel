@@ -13,16 +13,20 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import frc.robot.util.LoggedTunableNumber;
 import org.ironmaple.simulation.motorsims.SimulatedBattery;
 
 public class ElevatorIOSim implements ElevatorIO {
   private final DCMotorSim elevatorSim;
 
+  LoggedTunableNumber kP = new LoggedTunableNumber("Elevator kP", 0.0);
+
   ProfiledPIDController elevatorPIDController =
       new ProfiledPIDController(
-          1.0, 0, 0.0, new TrapezoidProfile.Constraints(150, 100)); // in rotations units
+          1.00, 0, 0.0, new TrapezoidProfile.Constraints(150, 200)); // in rotations units
 
-  ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0, 0.65, 0.2);
+  // ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0, 0.65, 0.2);
+  ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0, 3.0, 0.1);
 
   private double appliedVolts = 0.0;
 
@@ -31,7 +35,7 @@ public class ElevatorIOSim implements ElevatorIO {
   public ElevatorIOSim() {
     elevatorSim =
         new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60Foc(2), 0.01, 4.0),
+            LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60Foc(2), 0.0001, 60.0 / 14.0),
             DCMotor.getKrakenX60Foc(2));
 
     elevatorPIDController.reset(0);

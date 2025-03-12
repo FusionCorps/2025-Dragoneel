@@ -14,7 +14,7 @@ public class ShooterConstants {
   public static final SparkFlexConfig SHOOTER_CONFIG =
       (SparkFlexConfig)
           new SparkFlexConfig()
-              .inverted(true)
+              .inverted(false)
               .idleMode(IdleMode.kBrake)
               .voltageCompensation(RobotController.getBatteryVoltage())
               .smartCurrentLimit(180);

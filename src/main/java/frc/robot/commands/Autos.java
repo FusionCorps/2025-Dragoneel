@@ -5,6 +5,7 @@ import static frc.robot.subsystems.drive.DriveConstants.AutoAlignDirection.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
@@ -43,6 +44,10 @@ public class Autos {
   private PathPlannerPath BStat_B;
 
   private PathPlannerPath TOP_PUSH;
+
+  private final Time STATION_WAIT_TIME = Seconds.of(0.5);
+  private final Time AUTO_ALIGN_TIMEOUT = Seconds.of(0.5);
+  private final Time SHOOT_TIMEOUT = Seconds.of(0.75);
 
   public Autos(Drive drive, Elevator elevator, Wrist wrist, Shooter shooter) {
     this.drive = drive;
@@ -95,11 +100,12 @@ public class Autos {
 
   private Command autoAlignAndScore(AutoAlignDirection direction) {
     return Commands.sequence(
-        DriveCommands.autoAlignToNearestBranchAuto(drive, direction).withTimeout(Seconds.of(0.5)),
+        DriveCommands.autoAlignToNearestBranchAuto(drive, direction)
+            .withTimeout(AUTO_ALIGN_TIMEOUT),
         elevatorAndWristCommands.goToL4(),
         shooter
             .shootCoralInAutoCmd(wrist.isAtScoringState, elevator::getCurrentElevatorState)
-            .withTimeout(Seconds.of(0.75)));
+            .withTimeout(SHOOT_TIMEOUT));
   }
 
   public Command fourPieceFromTop() {
@@ -109,17 +115,17 @@ public class Autos {
         autoAlignAndScore(RIGHT),
         elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(J_TStat),
-        Commands.waitTime(Seconds.of(0.5)),
+        Commands.waitTime(STATION_WAIT_TIME),
         AutoBuilder.followPath(TStat_K),
         autoAlignAndScore(LEFT),
         elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(K_TStat),
-        Commands.waitTime(Seconds.of(0.5)),
+        Commands.waitTime(STATION_WAIT_TIME),
         AutoBuilder.followPath(TStat_L),
         autoAlignAndScore(RIGHT),
         elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(L_TStat),
-        Commands.waitTime(Seconds.of(0.5)),
+        Commands.waitTime(STATION_WAIT_TIME),
         AutoBuilder.followPath(TStat_A),
         autoAlignAndScore(LEFT),
         elevatorAndWristCommands.goToStation());
@@ -132,17 +138,17 @@ public class Autos {
         autoAlignAndScore(LEFT),
         elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(E_BStat),
-        Commands.waitTime(Seconds.of(0.5)),
+        Commands.waitTime(STATION_WAIT_TIME),
         AutoBuilder.followPath(BStat_D),
         autoAlignAndScore(RIGHT),
         elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(D_BStat),
-        Commands.waitTime(Seconds.of(0.5)),
+        Commands.waitTime(STATION_WAIT_TIME),
         AutoBuilder.followPath(BStat_C),
         autoAlignAndScore(LEFT),
         elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(C_BStat),
-        Commands.waitTime(Seconds.of(0.5)),
+        Commands.waitTime(STATION_WAIT_TIME),
         AutoBuilder.followPath(BStat_B),
         autoAlignAndScore(RIGHT),
         elevatorAndWristCommands.goToStation());
@@ -155,12 +161,12 @@ public class Autos {
         autoAlignAndScore(RIGHT),
         elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(J_TStat),
-        Commands.waitTime(Seconds.of(0.5)),
+        Commands.waitTime(STATION_WAIT_TIME),
         AutoBuilder.followPath(TStat_K),
         autoAlignAndScore(LEFT),
         elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(K_TStat),
-        Commands.waitTime(Seconds.of(0.5)),
+        Commands.waitTime(STATION_WAIT_TIME),
         AutoBuilder.followPath(TStat_L),
         autoAlignAndScore(RIGHT),
         elevatorAndWristCommands.goToStation());
@@ -173,12 +179,12 @@ public class Autos {
         autoAlignAndScore(LEFT),
         elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(E_BStat),
-        Commands.waitTime(Seconds.of(0.5)),
+        Commands.waitTime(STATION_WAIT_TIME),
         AutoBuilder.followPath(BStat_D),
         autoAlignAndScore(RIGHT),
         elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(D_BStat),
-        Commands.waitTime(Seconds.of(0.5)),
+        Commands.waitTime(STATION_WAIT_TIME),
         AutoBuilder.followPath(BStat_C),
         autoAlignAndScore(LEFT),
         elevatorAndWristCommands.goToStation());
@@ -191,7 +197,7 @@ public class Autos {
         autoAlignAndScore(RIGHT),
         elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(J_TStat),
-        Commands.waitTime(Seconds.of(0.5)),
+        Commands.waitTime(STATION_WAIT_TIME),
         AutoBuilder.followPath(TStat_K),
         autoAlignAndScore(LEFT),
         elevatorAndWristCommands.goToStation());
@@ -204,7 +210,7 @@ public class Autos {
         autoAlignAndScore(LEFT),
         elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(E_BStat),
-        Commands.waitTime(Seconds.of(0.5)),
+        Commands.waitTime(STATION_WAIT_TIME),
         AutoBuilder.followPath(BStat_D),
         autoAlignAndScore(RIGHT),
         elevatorAndWristCommands.goToStation());

@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
@@ -60,6 +62,16 @@ public class Elevator extends SubsystemBase {
       new LoggedTunableNumber("/Elevator/L4Position", ElevatorState.L4.rotations.in(Rotations));
   LoggedTunableNumber elevatorNetPosition =
       new LoggedTunableNumber("/Elevator/NetPosition", ElevatorState.NET.rotations.in(Rotations));
+
+  LoggedTunableNumber kP = new LoggedTunableNumber("/Elevator/kP", ELEVATOR_kP);
+  LoggedTunableNumber kS = new LoggedTunableNumber("/Elevator/kS", ELEVATOR_kS);
+  LoggedTunableNumber kG = new LoggedTunableNumber("/Elevator/kG", ELEVATOR_kG);
+  LoggedTunableNumber kV = new LoggedTunableNumber("/Elevator/kV", ELEVATOR_kV);
+
+  LoggedTunableNumber maxVel =
+      new LoggedTunableNumber("/Elevator/MaxVel", ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY);
+  LoggedTunableNumber maxAccel =
+      new LoggedTunableNumber("/Elevator/MaxAccel", ELEVATOR_MOTION_MAGIC_ACCELERATION);
 
   /* Constructor */
   public Elevator(ElevatorIO io) {
@@ -121,6 +133,21 @@ public class Elevator extends SubsystemBase {
           ElevatorState.L3.rotations = Rotations.of(nums[4]);
           ElevatorState.L4.rotations = Rotations.of(nums[5]);
           ElevatorState.NET.rotations = Rotations.of(nums[6]);
+
+          if (io instanceof ElevatorIOTalonFX) {
+            Slot0Configs gains =
+                new Slot0Configs().withKP(nums[7]).withKV(nums[8]).withKS(nums[9]).withKG(nums[10]);
+            MotionMagicConfigs motmag =
+                new MotionMagicConfigs()
+                    .withMotionMagicCruiseVelocity(nums[11])
+                    .withMotionMagicAcceleration(nums[12]);
+
+            ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(gains);
+            ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(gains);
+
+            ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(motmag);
+            ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(motmag);
+          }
         },
         elevatorProcessorPosition,
         elevatorL1Position,
@@ -128,7 +155,13 @@ public class Elevator extends SubsystemBase {
         elevatorStationPosition,
         elevatorL3Position,
         elevatorL4Position,
-        elevatorNetPosition);
+        elevatorNetPosition,
+        kP,
+        kV,
+        kS,
+        kG,
+        maxVel,
+        maxAccel);
   }
 
   public Command setTargetState(ElevatorState targetState) {
