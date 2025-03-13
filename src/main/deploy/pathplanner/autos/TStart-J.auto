@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "TopPush"
+            "pathName": "TStart-J"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Pushes",
+  "folder": "OnePiece",
   "choreoAuto": true
 }

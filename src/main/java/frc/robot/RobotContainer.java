@@ -92,7 +92,7 @@ public class RobotContainer {
   final CommandXboxController controller = new CommandXboxController(0);
   final Alert controllerDisconnectedAlert = new Alert("Controller Disconnected.", AlertType.kError);
 
-  private Supplier<ReefscapeCoralOnFly> simCoralProjectileSupplier = () -> null;
+  public static Supplier<ReefscapeCoralOnFly> simCoralProjectileSupplier = () -> null;
   @AutoLogOutput public static TargetState targetPosition = TargetState.STATION;
   @AutoLogOutput public static ScoringPieceType currentScoringPieceType = ScoringPieceType.CORAL;
 
@@ -323,10 +323,7 @@ public class RobotContainer {
 
     /* scoring commands */
     if (shooter != null && elevator != null) {
-      controller
-          .rightTrigger()
-          .whileTrue(
-              shooter.shootCoralCmd(wrist::getCurrentWristState, simCoralProjectileSupplier));
+      controller.rightTrigger().whileTrue(shooter.shootCoralCmd(wrist::getCurrentWristState));
 
       controller.back().whileTrue(shooter.shootAlgaeCmd());
     }

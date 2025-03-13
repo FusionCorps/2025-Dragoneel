@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TStart-J"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "J-TCor"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TCor-K"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "K-TCor"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TCor-L"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "ThreePiece",
+  "choreoAuto": true
+}

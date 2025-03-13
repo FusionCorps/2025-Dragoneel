@@ -1,0 +1,31 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TStart-J"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "J-TCor"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TCor-K"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "TwoPiece",
+  "choreoAuto": true
+}

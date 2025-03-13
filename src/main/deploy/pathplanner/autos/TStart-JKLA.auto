@@ -1,0 +1,55 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TStart-J"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "J-TCor"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TCor-K"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "K-TCor"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TCor-L"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "L-TCor"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TCor-A"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "FourPiece",
+  "choreoAuto": true
+}

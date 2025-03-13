@@ -9,24 +9,6 @@
           "data": {
             "pathName": "BottomPush"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "AutoAlignLeft"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "L4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "ShootCoral"
-          }
         }
       ]
     }
