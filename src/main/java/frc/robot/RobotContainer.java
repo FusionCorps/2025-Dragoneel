@@ -95,6 +95,7 @@ public class RobotContainer {
   public static Supplier<ReefscapeCoralOnFly> simCoralProjectileSupplier = () -> null;
   @AutoLogOutput public static TargetState targetPosition = TargetState.STATION;
   @AutoLogOutput public static ScoringPieceType currentScoringPieceType = ScoringPieceType.CORAL;
+  public static boolean isAutoAligning = false;
 
   /** The container for the robot. Contains subsystems, operator devices, and commands. */
   public RobotContainer() {

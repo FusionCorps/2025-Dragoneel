@@ -43,16 +43,17 @@ public class VisionConstants {
   public static Transform3d ROBOT_TO_CAM_FL_TRANSFORM =
       new Transform3d(0.306, 0.2785, 0.212, new Rotation3d(0.0, 0.0, Units.degreesToRadians(-27)));
   public static Transform3d ROBOT_TO_CAM_FR_TRANSFORM =
-      new Transform3d(0.306, -0.2785, 0.212, new Rotation3d(0.0, 0.0, Units.degreesToRadians(28)));
+      new Transform3d(
+          0.306, -0.2785 - 0.13, 0.212, new Rotation3d(0.0, 0.0, Units.degreesToRadians(28)));
   //   public static Transform3d ROBOT_TO_CAM_BACK_TRANSFORM =
   //       new Transform3d(-0.05, 0, 0.3, new Rotation3d(0.0, 0.0, Math.PI / 2.0));
   // Basic filtering thresholds
-  public static double maxAmbiguity = 0.5;
+  public static double maxAmbiguity = 0.4;
   public static double maxZError = 0.1;
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)
-  public static double linearStdDevBaseline = 0.04; // Meters
+  public static double linearStdDevBaseline = 0.35; // Meters
   public static double angularStdDevBaseline = Double.POSITIVE_INFINITY; // Radians
 
   // Standard deviation multipliers for each camera

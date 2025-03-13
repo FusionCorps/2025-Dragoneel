@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.DriveConstants.DriveSpeedMode;
@@ -182,6 +183,7 @@ public class DriveCommands {
     // rotate, because apriltag will always be 180° from robot
     Supplier<Pose2d> tagPoseSupplierIn2DWOffset =
         () -> {
+          RobotContainer.isAutoAligning = true;
           Logger.recordOutput("tag", tagPoseSupplierNoOffset.get());
           if (tagPoseSupplierNoOffset.get() == null) {
             return drive.getPose();
@@ -192,8 +194,8 @@ public class DriveCommands {
                     new Transform3d(
                         0.61,
                         (autoAlignDirection == DriveConstants.AutoAlignDirection.LEFT
-                            ? -0.39
-                            : -0.02),
+                            ? -0.37
+                            : -0.05),
                         0,
                         new Rotation3d(Rotation2d.kPi)))
                 .toPose2d();

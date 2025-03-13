@@ -5,8 +5,6 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
@@ -44,7 +42,7 @@ public class Elevator extends SubsystemBase {
       new Trigger(
           () ->
               getCurrentElevatorPosition()
-                  .isNear(currentElevatorState.rotations, Rotations.of(10.0)));
+                  .isNear(currentElevatorState.rotations, Rotations.of(8.0)));
 
   LoggedTunableNumber elevatorProcessorPosition =
       new LoggedTunableNumber(
@@ -134,20 +132,21 @@ public class Elevator extends SubsystemBase {
           ElevatorState.L4.rotations = Rotations.of(nums[5]);
           ElevatorState.NET.rotations = Rotations.of(nums[6]);
 
-          if (io instanceof ElevatorIOTalonFX) {
-            Slot0Configs gains =
-                new Slot0Configs().withKP(nums[7]).withKV(nums[8]).withKS(nums[9]).withKG(nums[10]);
-            MotionMagicConfigs motmag =
-                new MotionMagicConfigs()
-                    .withMotionMagicCruiseVelocity(nums[11])
-                    .withMotionMagicAcceleration(nums[12]);
+          // if (io instanceof ElevatorIOTalonFX) {
+          //   Slot0Configs gains =
+          //       new
+          // Slot0Configs().withKP(nums[7]).withKV(nums[8]).withKS(nums[9]).withKG(nums[10]);
+          //   MotionMagicConfigs motmag =
+          //       new MotionMagicConfigs()
+          //           .withMotionMagicCruiseVelocity(nums[11])
+          //           .withMotionMagicAcceleration(nums[12]);
 
-            ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(gains);
-            ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(gains);
+          //   ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(gains);
+          //   ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(gains);
 
-            ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(motmag);
-            ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(motmag);
-          }
+          //   ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(motmag);
+          //   ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(motmag);
+          // }
         },
         elevatorProcessorPosition,
         elevatorL1Position,

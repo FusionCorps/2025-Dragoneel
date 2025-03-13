@@ -172,12 +172,10 @@ public class Autos {
         DriveCommands.autoAlignToNearestBranchAuto(drive, direction)
             .withTimeout(AUTO_ALIGN_TIMEOUT),
         elevatorAndWristCommands.goToL4(),
-        shooter
-            .shootCoralInAutoCmd(
-                wrist.isAtScoringState,
-                elevator::getCurrentElevatorState,
-                RobotContainer.simCoralProjectileSupplier)
-            .withTimeout(SHOOT_TIMEOUT));
+        shooter.shootCoralInAutoCmd(
+            wrist.isAtScoringState,
+            elevator::getCurrentElevatorState,
+            RobotContainer.simCoralProjectileSupplier));
   }
 
   private Command resetOdom(PathPlannerPath initialPath) {
@@ -188,12 +186,15 @@ public class Autos {
 
   private Command moveAndScore(PathPlannerPath path, AutoAlignDirection direction) {
     return Commands.sequence(
-        resetOdom(path), AutoBuilder.followPath(path), autoAlignAndScore(direction));
+        Commands.runOnce(() -> RobotContainer.isAutoAligning = false),
+        AutoBuilder.followPath(path),
+        autoAlignAndScore(direction));
   }
 
   private Command moveAndPickup(PathPlannerPath path) {
     return Commands.sequence(
         elevatorAndWristCommands.goToStation(),
+        Commands.runOnce(() -> RobotContainer.isAutoAligning = false),
         AutoBuilder.followPath(path),
         Commands.waitTime(STATION_WAIT_TIME));
   }

@@ -19,6 +19,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants.ScoringPieceType;
+import frc.robot.RobotContainer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -89,17 +90,25 @@ public class WristIOSparkFlex implements WristIO {
   public void setTargetPosition(Angle angle, Supplier<ScoringPieceType> scoringModeType) {
     setpoint = angle.in(Rotations);
     if (scoringModeType.get().equals(ScoringPieceType.CORAL)) {
+      pidController.setReference(setpoint, ControlType.kPosition);
+    } else {
+      pidController.setReference(setpoint, ControlType.kMAXMotionPositionControl);
+    }
+  }
+
+  @Override
+  public void toggleSpeed() {
+    // TODO Auto-generated method stub
+    if (RobotContainer.currentScoringPieceType == ScoringPieceType.CORAL) {
       wristMotor.configureAsync(
           new SparkFlexConfig().apply(new ClosedLoopConfig().p(6.0)),
           ResetMode.kNoResetSafeParameters,
-          PersistMode.kPersistParameters);
-      pidController.setReference(setpoint, ControlType.kPosition);
+          PersistMode.kNoPersistParameters);
     } else {
       wristMotor.configureAsync(
           new SparkFlexConfig().apply(new ClosedLoopConfig().p(2.0)),
           ResetMode.kNoResetSafeParameters,
-          PersistMode.kPersistParameters);
-      pidController.setReference(setpoint, ControlType.kMAXMotionPositionControl);
+          PersistMode.kNoPersistParameters);
     }
   }
 }

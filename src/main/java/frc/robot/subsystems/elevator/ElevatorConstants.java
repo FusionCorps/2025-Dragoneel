@@ -34,9 +34,9 @@ public class ElevatorConstants {
   public static final double ELEVATOR_kP = 0.7;
   public static final double ELEVATOR_kI = 0.0;
   public static final double ELEVATOR_kD = 0.0;
-  public static final double ELEVATOR_kS = 0.0;
+  public static final double ELEVATOR_kS = 0.015;
   public static final double ELEVATOR_kV = 0.03;
-  public static final double ELEVATOR_kG = 0.2057;
+  public static final double ELEVATOR_kG = 0.045;
   public static final double ELEVATOR_kA = 0;
 
   public static final double ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY = 100;
