@@ -12,4 +12,4 @@
 - Can score algae in Net and Processor
 - Can score coral at all reef levels
 - Capability to score up to four coral at L4 reef height in autonomous period (theoretically)
-- Dynamic drivetrain speed limiting based on the current state of the elevator and wrist 
+- Dynamic drivetrain speed limiting based on the current state of the elevator and wrist

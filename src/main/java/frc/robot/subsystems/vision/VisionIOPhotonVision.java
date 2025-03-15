@@ -22,7 +22,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
-import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
@@ -86,44 +85,53 @@ public class VisionIOPhotonVision implements VisionIO {
 
       // Add pose observation
       if (result.getMultiTagResult().isPresent()) { // Multitag result
-        EstimatedRobotPose robotPoseEst = multiTagPoseEstimator.update(result).get();
+        multiTagPoseEstimator
+            .update(result)
+            .ifPresent(
+                (robotPoseEst) -> {
+                  // Calculate average tag distance
+                  double totalTagDistance = 0;
+                  for (var target : robotPoseEst.targetsUsed) {
+                    totalTagDistance += target.bestCameraToTarget.getTranslation().getNorm();
+                  }
 
-        // Calculate average tag distance
-        double totalTagDistance = 0;
-        for (var target : robotPoseEst.targetsUsed) {
-          totalTagDistance += target.bestCameraToTarget.getTranslation().getNorm();
-        }
+                  // Add tag IDs
+                  tagIds.addAll(
+                      robotPoseEst.targetsUsed.stream().map(t -> (short) t.fiducialId).toList());
 
-        // Add tag IDs
-        tagIds.addAll(robotPoseEst.targetsUsed.stream().map(t -> (short) t.fiducialId).toList());
-
-        // Add observation
-        poseObservations.add(
-            new PoseObservation(
-                result.getTimestampSeconds(), // Timestamp
-                robotPoseEst.estimatedPose, // 3D pose estimate
-                result.multitagResult.get().estimatedPose.ambiguity, // Ambiguity
-                robotPoseEst.targetsUsed.size(), // Tag count
-                totalTagDistance / result.targets.size(), // Average tag distance
-                PoseObservationType.PHOTONVISION)); // Observation type
-
+                  // Add observation
+                  poseObservations.add(
+                      new PoseObservation(
+                          result.getTimestampSeconds(), // Timestamp
+                          robotPoseEst.estimatedPose, // 3D pose estimate
+                          result.multitagResult.get().estimatedPose.ambiguity, // Ambiguity
+                          robotPoseEst.targetsUsed.size(), // Tag count
+                          totalTagDistance / result.targets.size(), // Average tag distance
+                          PoseObservationType.PHOTONVISION)); // Observation type
+                });
       } else if (!result.targets.isEmpty()) { // Single tag result
-        EstimatedRobotPose robotPose = singleTagPoseEstimator.update(result).get();
+        singleTagPoseEstimator
+            .update(result)
+            .ifPresent(
+                robotPoseEst -> {
+                  var target = robotPoseEst.targetsUsed.get(0);
 
-        var target = robotPose.targetsUsed.get(0);
+                  // Add tag ID
+                  tagIds.add((short) robotPoseEst.targetsUsed.get(0).fiducialId);
 
-        // Add tag ID
-        tagIds.add((short) robotPose.targetsUsed.get(0).fiducialId);
-
-        // Add observation
-        poseObservations.add(
-            new PoseObservation(
-                robotPose.timestampSeconds, // Timestamp
-                robotPose.estimatedPose, // 3D pose estimate
-                target.poseAmbiguity, // Ambiguity
-                1, // Tag count
-                target.getBestCameraToTarget().getTranslation().getNorm(), // Average tag distance
-                PoseObservationType.PHOTONVISION)); // Observation type
+                  // Add observation
+                  poseObservations.add(
+                      new PoseObservation(
+                          robotPoseEst.timestampSeconds, // Timestamp
+                          robotPoseEst.estimatedPose, // 3D pose estimate
+                          target.poseAmbiguity, // Ambiguity
+                          1, // Tag count
+                          target
+                              .getBestCameraToTarget()
+                              .getTranslation()
+                              .getNorm(), // Average tag distance
+                          PoseObservationType.PHOTONVISION)); // Observation type
+                });
       }
     }
 

@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.shooter.ShooterConstants.ShooterState;
 import frc.robot.subsystems.wrist.WristConstants.WristState;
 import java.util.Set;
@@ -92,21 +91,16 @@ public class Shooter extends SubsystemBase {
                 }));
   }
 
-  public Command shootCoralInAutoCmd(
-      Trigger wristAtScoringState, Supplier<ElevatorState> currentElevatorStateSupplier) {
+  public Command shootCoralInAutoCmd(Trigger wristAtScoringState) {
     return Commands.waitUntil(wristAtScoringState)
         .andThen(
-            Commands.sequence(
-                runOnce(() -> setState(ShooterState.SHOOT_CORAL_L4)),
-                Commands.waitSeconds(0.6),
-                runOnce(() -> setState(ShooterState.IDLE))));
+            startEnd(
+                () -> setState(ShooterState.SHOOT_CORAL_L4), () -> setState(ShooterState.IDLE)));
   }
 
   public Command shootCoralInAutoCmd(
-      Trigger wristAtState,
-      Supplier<ElevatorState> currentElevatorStateSupplier,
-      Supplier<ReefscapeCoralOnFly> coralProjectileSupplier) {
-    return shootCoralInAutoCmd(wristAtState, currentElevatorStateSupplier)
+      Trigger wristAtState, Supplier<ReefscapeCoralOnFly> coralProjectileSupplier) {
+    return shootCoralInAutoCmd(wristAtState)
         .alongWith(
             Commands.runOnce(
                 () -> {

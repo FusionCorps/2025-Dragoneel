@@ -115,7 +115,7 @@ public class Autos {
     return Commands.sequence(resetOdometry(CenterStart_H), autoAlignAndScore(RIGHT));
   }
 
-  /* ========== Top autos ========== */
+  /* ========== Top autos JKLA ========== */
   public Command onePieceFromTop() {
     return Commands.sequence(resetOdometry(TStart_J), autoAlignAndScore(RIGHT));
   }
@@ -138,7 +138,7 @@ public class Autos {
         autoAlignAndScore(LEFT));
   }
 
-  /* ========== Bottom autos ========== */
+  /* ========== Bottom autos EDCB ========== */
   public Command onePieceFromBottom() {
     return Commands.sequence(resetOdometry(BStart_E), autoAlignAndScore(LEFT));
   }
@@ -178,10 +178,9 @@ public class Autos {
     return Commands.sequence(
         DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
         elevatorAndWristCommands.goToL4(),
-        shooter.shootCoralInAutoCmd(
-            wrist.isAtScoringState,
-            elevator::getCurrentElevatorState,
-            RobotContainer.simCoralProjectileSupplier));
+        shooter
+            .shootCoralInAutoCmd(wrist.isAtScoringState, RobotContainer.simCoralProjectileSupplier)
+            .withTimeout(SHOOT_TIMEOUT));
   }
 
   private Command resetOdometry(PathPlannerPath initialPath) {
