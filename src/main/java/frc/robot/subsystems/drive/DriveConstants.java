@@ -46,9 +46,9 @@ public class DriveConstants {
       new Slot0Configs()
           .withKP(90)
           .withKI(0)
-          .withKD(0.0)
+          .withKD(0.1)
           .withKS(0.0)
-          .withKV(0.005)
+          .withKV(1.5)
           .withKA(0)
           .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
 

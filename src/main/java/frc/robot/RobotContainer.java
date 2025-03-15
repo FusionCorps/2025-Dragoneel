@@ -178,10 +178,6 @@ public class RobotContainer {
       elevatorAndWristCommands = new ElevatorAndWristCommands(elevator, wrist);
     }
 
-    /* When current scoring type changes between coral and algae, elevator and wrist will toggle speed accordingly. */
-    new Trigger(() -> currentScoringPieceType == ScoringPieceType.CORAL)
-        .onChange(elevator.toggleElevatorSpeed().alongWith(wrist.toggleWristSpeed()));
-
     // Register auto routines on dashboard chooser
     if (drive != null && elevator != null && wrist != null && shooter != null) {
       Autos autos = new Autos(drive, elevator, wrist, shooter);
@@ -221,6 +217,10 @@ public class RobotContainer {
     // When elevator leaves station, run at slower speed
     new Trigger(() -> elevator.getCurrentElevatorState() != ElevatorState.STATION)
         .onTrue(Commands.runOnce(() -> drive.setMaxSpeed(DriveSpeedMode.SLOWER)));
+
+    /* When current scoring type changes between coral and algae, elevator and wrist will toggle speed accordingly. */
+    new Trigger(() -> currentScoringPieceType == ScoringPieceType.CORAL)
+        .onChange(elevator.toggleElevatorSpeed().alongWith(wrist.toggleWristSpeed()));
 
     // When elevator changes scoring piece type, rumble controller
     new Trigger(() -> currentScoringPieceType == ScoringPieceType.CORAL).onChange(rumbleCommand());
