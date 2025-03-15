@@ -56,6 +56,7 @@ import frc.robot.subsystems.shooter.ShooterIOSparkFlex;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
@@ -95,6 +96,7 @@ public class RobotContainer {
   public static Supplier<ReefscapeCoralOnFly> simCoralProjectileSupplier = () -> null;
   @AutoLogOutput public static TargetState targetPosition = TargetState.STATION;
   @AutoLogOutput public static ScoringPieceType currentScoringPieceType = ScoringPieceType.CORAL;
+
   public static boolean isAutoAligning = false;
 
   /** The container for the robot. Contains subsystems, operator devices, and commands. */
@@ -138,14 +140,13 @@ public class RobotContainer {
                 new ModuleIOTalonFXSim(DriveConstants.BACK_RIGHT, driveSim.getModules()[3]),
                 driveSim::setSimulationWorldPose);
         vision =
-            // new Vision(
-            //     (a, b, c) -> {},
-            //     // drive,
-            //     new VisionIOPhotonVisionSim(CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM,
-            // drive::getPose),
-            //     new VisionIOPhotonVisionSim(
-            //         CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM, drive::getPose));
-            null;
+            new Vision(
+                // (a, b, c) -> {},
+                drive,
+                new VisionIOPhotonVisionSim(CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getPose),
+                new VisionIOPhotonVisionSim(
+                    CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM, drive::getPose));
+        // null;
         elevator = new Elevator(new ElevatorIOSim());
         climb = new Climb(new ClimbIOSim());
         shooter = new Shooter(new ShooterIOSim());

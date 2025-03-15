@@ -71,11 +71,11 @@ public final class Constants {
   }
 
   // TODO: Update these values in PathPlanner and Choreo and here
-  public static final Mass ROBOT_MASS = Pounds.of(131.2);
+  public static final Mass ROBOT_MASS = Pounds.of(111.4 + 17.8 + 15.0);
   public static final double ROBOT_MOI =
       //   ROBOT_MASS.in(Kilograms) * DriveConstants.FRONT_LEFT.LocationX * (0.011992 /
       // DriveConstants.driveGains.kA);
-      8.0; // round number on the higher/safer side, higher MOI means slower path rotation which is
+      5.0; // round number on the higher/safer side, higher MOI means slower path rotation which is
   // OK
   // default PathPlanner configuration for path following
   public static final RobotConfig PP_ROBOT_CONFIG_DEFAULT =

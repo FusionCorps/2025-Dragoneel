@@ -49,7 +49,7 @@ public class Autos {
   private PathPlannerPath BOTTOM_PUSH;
 
   private final Time STATION_WAIT_TIME = Seconds.of(0.5);
-  private final Time AUTO_ALIGN_TIMEOUT = Seconds.of(0.5);
+  private final Time AUTO_ALIGN_TIMEOUT = Seconds.of(5.0);
   private final Time SHOOT_TIMEOUT = Seconds.of(0.75);
 
   public Autos(Drive drive, Elevator elevator, Wrist wrist, Shooter shooter) {
@@ -94,7 +94,7 @@ public class Autos {
 
   // Move straight for 2 seconds
   public Command moveStraight() {
-    return DriveCommands.joystickDrive(drive, () -> -0.2, () -> 0, () -> 0).withTimeout(2.0);
+    return DriveCommands.joystickDrive(drive, () -> -0.5, () -> 0, () -> 0).withTimeout(2.0);
   }
 
   /*
@@ -102,8 +102,7 @@ public class Autos {
    *
    * 1. Reset odometry to starting position
    * 2a. If scoring:
-   *   - Follow path
-   *   - Align to branch
+   *   - Auto-Align to branch (works at a distance)
    *   - Move elevator/wrist and shoot
    * 2b. If picking up from station:
    *  - Move elevator/wrist down to station position
@@ -113,45 +112,53 @@ public class Autos {
    */
 
   public Command onePieceFromCenter() {
-    return Commands.sequence(resetOdom(CenterStart_H), moveAndScore(CenterStart_H, RIGHT));
+    return Commands.sequence(resetOdometry(CenterStart_H), autoAlignAndScore(RIGHT));
   }
 
   /* ========== Top autos ========== */
   public Command onePieceFromTop() {
-    return Commands.sequence(resetOdom(TStart_J), moveAndScore(TStart_J, RIGHT));
+    return Commands.sequence(resetOdometry(TStart_J), autoAlignAndScore(RIGHT));
   }
 
   public Command twoPieceFromTop() {
-    return Commands.sequence(onePieceFromTop(), moveAndPickup(J_TCor), moveAndScore(TCor_K, LEFT));
+    return Commands.sequence(
+        onePieceFromTop(), moveToStationAndPickup(J_TCor), autoAlignAndScore(LEFT));
   }
 
   public Command threePieceFromTop() {
-    return Commands.sequence(twoPieceFromTop(), moveAndPickup(K_TCor), moveAndScore(TCor_L, RIGHT));
+    return Commands.sequence(
+        twoPieceFromTop(), moveToStationAndPickup(K_TCor), autoAlignAndScore(RIGHT));
   }
 
   public Command fourPieceFromTop() {
     return Commands.sequence(
-        threePieceFromTop(), moveAndPickup(L_TCor), moveAndScore(TCor_A, LEFT));
+        threePieceFromTop(),
+        moveToStationAndPickup(L_TCor),
+        AutoBuilder.followPath(TCor_A),
+        autoAlignAndScore(LEFT));
   }
 
   /* ========== Bottom autos ========== */
   public Command onePieceFromBottom() {
-    return Commands.sequence(resetOdom(BStart_E), moveAndScore(BStart_E, LEFT));
+    return Commands.sequence(resetOdometry(BStart_E), autoAlignAndScore(LEFT));
   }
 
   public Command twoPieceFromBottom() {
     return Commands.sequence(
-        onePieceFromBottom(), moveAndPickup(E_BCor), moveAndScore(BCor_D, RIGHT));
+        onePieceFromBottom(), moveToStationAndPickup(E_BCor), autoAlignAndScore(RIGHT));
   }
 
   public Command threePieceFromBottom() {
     return Commands.sequence(
-        twoPieceFromBottom(), moveAndPickup(D_BCor), moveAndScore(BCor_C, LEFT));
+        twoPieceFromBottom(), moveToStationAndPickup(D_BCor), autoAlignAndScore(LEFT));
   }
 
   public Command fourPieceFromBottom() {
     return Commands.sequence(
-        threePieceFromBottom(), moveAndPickup(C_BCor), moveAndScore(BCor_B, RIGHT));
+        threePieceFromBottom(),
+        moveToStationAndPickup(C_BCor),
+        AutoBuilder.followPath(BCor_B),
+        autoAlignAndScore(RIGHT));
   }
 
   public Command doNothing() {
@@ -159,18 +166,17 @@ public class Autos {
   }
 
   public Command pushAndOnePieceFromTop() {
-    return Commands.sequence(resetOdom(TOP_PUSH), moveAndScore(TOP_PUSH, RIGHT));
+    return Commands.sequence(resetOdometry(TOP_PUSH), autoAlignAndScore(RIGHT));
   }
 
   public Command pushAndOnePieceFromBottom() {
-    return Commands.sequence(resetOdom(BOTTOM_PUSH), moveAndScore(BOTTOM_PUSH, LEFT));
+    return Commands.sequence(resetOdometry(BOTTOM_PUSH), autoAlignAndScore(LEFT));
   }
 
   /* Helper commands for readability */
   private Command autoAlignAndScore(AutoAlignDirection direction) {
     return Commands.sequence(
-        DriveCommands.autoAlignToNearestBranchAuto(drive, direction)
-            .withTimeout(AUTO_ALIGN_TIMEOUT),
+        DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
         elevatorAndWristCommands.goToL4(),
         shooter.shootCoralInAutoCmd(
             wrist.isAtScoringState,
@@ -178,23 +184,23 @@ public class Autos {
             RobotContainer.simCoralProjectileSupplier));
   }
 
-  private Command resetOdom(PathPlannerPath initialPath) {
+  private Command resetOdometry(PathPlannerPath initialPath) {
     return drive.setPoseCmd(
         new Pose2d(
             initialPath.getPoint(0).position, initialPath.getIdealStartingState().rotation()));
   }
 
-  private Command moveAndScore(PathPlannerPath path, AutoAlignDirection direction) {
-    return Commands.sequence(
-        Commands.runOnce(() -> RobotContainer.isAutoAligning = false),
-        AutoBuilder.followPath(path),
-        autoAlignAndScore(direction));
-  }
+  // private Command autoAlignAndScore(PathPlannerPath path, AutoAlignDirection direction) {
+  //   return Commands.sequence(
+  //       Commands.runOnce(() -> RobotContainer.isAutoAligning = false),
+  //       AutoBuilder.followPath(path),
+  //       autoAlignAndScore(direction));
+  // }
 
-  private Command moveAndPickup(PathPlannerPath path) {
+  private Command moveToStationAndPickup(PathPlannerPath path) {
     return Commands.sequence(
-        elevatorAndWristCommands.goToStation(),
         Commands.runOnce(() -> RobotContainer.isAutoAligning = false),
+        elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(path),
         Commands.waitTime(STATION_WAIT_TIME));
   }

@@ -144,7 +144,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
         this::getChassisSpeeds,
         this::driveRobotCentric,
         new PPHolonomicDriveController(
-            new PIDConstants(15.0, 0.0, 0.5), new PIDConstants(15.0, 0.0, 0.25)),
+            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);

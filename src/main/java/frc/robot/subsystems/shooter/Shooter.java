@@ -54,6 +54,23 @@ public class Shooter extends SubsystemBase {
     return startEnd(() -> setState(ShooterState.SHOOT_ALGAE), () -> setState(ShooterState.IDLE));
   }
 
+  public Command shootCoralCmd(Supplier<WristState> wristStateSupplier) {
+    return Commands.defer(
+        () ->
+            startEnd(
+                () -> {
+                  if (wristStateSupplier.get() == WristState.L1) {
+                    setState(ShooterState.SHOOT_CORAL_L1);
+                  } else if (wristStateSupplier.get() == WristState.L4) {
+                    setState(ShooterState.SHOOT_CORAL_L4);
+                  } else if (wristStateSupplier.get() == WristState.L3_ALGAE)
+                    setState(ShooterState.PULL_IN_ALGAE);
+                  else setState(ShooterState.SHOOT_CORAL_DEFAULT);
+                },
+                () -> setState(ShooterState.IDLE)),
+        Set.of(this));
+  }
+
   /**
    * Runs the scorer to shoot stored coral. This simultaneously intakes algae. Shoots coral at
    * different speed on L1 vs other levels.
@@ -75,21 +92,14 @@ public class Shooter extends SubsystemBase {
                 }));
   }
 
-  public Command shootCoralCmd(Supplier<WristState> wristStateSupplier) {
-    return Commands.defer(
-        () ->
-            startEnd(
-                () -> {
-                  if (wristStateSupplier.get() == WristState.L1) {
-                    setState(ShooterState.SHOOT_CORAL_L1);
-                  } else if (wristStateSupplier.get() == WristState.L4) {
-                    setState(ShooterState.SHOOT_CORAL_L4);
-                  } else if (wristStateSupplier.get() == WristState.L3_ALGAE)
-                    setState(ShooterState.PULL_IN_ALGAE);
-                  else setState(ShooterState.SHOOT_CORAL_DEFAULT);
-                },
-                () -> setState(ShooterState.IDLE)),
-        Set.of(this));
+  public Command shootCoralInAutoCmd(
+      Trigger wristAtScoringState, Supplier<ElevatorState> currentElevatorStateSupplier) {
+    return Commands.waitUntil(wristAtScoringState)
+        .andThen(
+            Commands.sequence(
+                runOnce(() -> setState(ShooterState.SHOOT_CORAL_L4)),
+                Commands.waitSeconds(0.6),
+                runOnce(() -> setState(ShooterState.IDLE))));
   }
 
   public Command shootCoralInAutoCmd(
@@ -107,24 +117,5 @@ public class Shooter extends SubsystemBase {
                     }
                   }
                 }));
-  }
-
-  /* Note we only ever shoot L4 in auto. "Pulse" L4 three times. */
-  public Command shootCoralInAutoCmd(
-      Trigger wristAtScoringState, Supplier<ElevatorState> currentElevatorStateSupplier) {
-    return Commands.waitUntil(wristAtScoringState)
-        .andThen(
-            Commands.sequence(
-                runOnce(() -> setState(ShooterState.SHOOT_CORAL_L4)),
-                Commands.waitSeconds(0.15),
-                runOnce(() -> setState(ShooterState.IDLE)),
-                Commands.waitSeconds(0.15),
-                runOnce(() -> setState(ShooterState.SHOOT_CORAL_L4)),
-                Commands.waitSeconds(0.2),
-                runOnce(() -> setState(ShooterState.IDLE)),
-                Commands.waitSeconds(0.15),
-                runOnce(() -> setState(ShooterState.SHOOT_CORAL_L4)),
-                Commands.waitSeconds(0.4),
-                runOnce(() -> setState(ShooterState.IDLE))));
   }
 }

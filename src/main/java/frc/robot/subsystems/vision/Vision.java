@@ -25,6 +25,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,6 +37,8 @@ public class Vision extends SubsystemBase {
   private final VisionIO[] io;
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
+
+  private Trigger inAutonomous = RobotModeTriggers.autonomous();
 
   public Vision(VisionConsumer consumer, VisionIO... io) {
     this.consumer = consumer;
@@ -102,10 +106,6 @@ public class Vision extends SubsystemBase {
 
       // Loop over pose observations
       for (var observation : inputs[cameraIndex].poseObservations) {
-        if (!RobotContainer.isAutoAligning) {
-          // Skip if not auto-aligning
-          continue;
-        }
         // Check whether to reject pose
         boolean rejectPose =
             observation.tagCount() == 0 // Must have at least one tag
@@ -118,7 +118,10 @@ public class Vision extends SubsystemBase {
                 || observation.pose().getX() < 0.0
                 || observation.pose().getX() > aprilTagLayout.getFieldLength()
                 || observation.pose().getY() < 0.0
-                || observation.pose().getY() > aprilTagLayout.getFieldWidth();
+                || observation.pose().getY() > aprilTagLayout.getFieldWidth()
+
+                // do not add vision estimate if running auton and not auto-aligning
+                || (!RobotContainer.isAutoAligning && inAutonomous.getAsBoolean());
 
         // Add pose to log
         robotPoses.add(observation.pose());
@@ -142,6 +145,9 @@ public class Vision extends SubsystemBase {
           linearStdDev *= cameraStdDevFactors[cameraIndex];
           angularStdDev *= cameraStdDevFactors[cameraIndex];
         }
+        Logger.recordOutput(
+            "Vision/Camera" + Integer.toString(cameraIndex) + "/xythetaStdDevs",
+            new double[] {linearStdDev, linearStdDev, angularStdDev});
 
         // Send vision observation
         consumer.accept(

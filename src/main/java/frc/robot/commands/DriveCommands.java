@@ -184,7 +184,6 @@ public class DriveCommands {
     Supplier<Pose2d> tagPoseSupplierIn2DWOffset =
         () -> {
           RobotContainer.isAutoAligning = true;
-          Logger.recordOutput("tag", tagPoseSupplierNoOffset.get());
           if (tagPoseSupplierNoOffset.get() == null) {
             return drive.getPose();
           } else {
@@ -194,7 +193,7 @@ public class DriveCommands {
                     new Transform3d(
                         0.61,
                         (autoAlignDirection == DriveConstants.AutoAlignDirection.LEFT
-                            ? -0.37
+                            ? -0.37 // more negative means more to the left of the robot
                             : -0.05),
                         0,
                         new Rotation3d(Rotation2d.kPi)))
@@ -203,7 +202,7 @@ public class DriveCommands {
         };
 
     return driveToPose(drive, tagPoseSupplierIn2DWOffset)
-        .alongWith(
+        .deadlineFor(
             Commands.run(
                 () ->
                     Logger.recordOutput("targetAutoAlignPose", tagPoseSupplierIn2DWOffset.get())));
@@ -228,23 +227,6 @@ public class DriveCommands {
                             ? redReefTagPoses
                             : blueReefTagPoses)),
         autoAlignDirection);
-  }
-
-  public static Command autoAlignToNearestBranchAuto(
-      Drive drive, DriveConstants.AutoAlignDirection AutoAlignDirection) {
-    return autoAlignToBranch(
-            drive,
-            () ->
-                new Pose3d(
-                    drive
-                        .getPose()
-                        .nearest(
-                            DriverStation.getAlliance().isPresent()
-                                    && DriverStation.getAlliance().get() == Alliance.Red
-                                ? redReefTagPoses
-                                : blueReefTagPoses)),
-            AutoAlignDirection)
-        .withTimeout(0.75);
   }
 
   /**
