@@ -22,7 +22,8 @@ public class ElevatorConstants {
     L2(Rotations.of(10)),
     L3(Rotations.of(16.8)),
     L4(Rotations.of(26)),
-    NET(Rotations.of(26));
+    NET(Rotations.of(26)),
+    NEUTRAL(Rotations.of(0));
 
     public Angle rotations;
 

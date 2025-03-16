@@ -16,10 +16,8 @@ package frc.robot;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Constants.ScoringPieceType;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -113,11 +111,6 @@ public class Robot extends LoggedRobot {
 
     // Record component poses
     Logger.recordOutput("ComponentPoses", componentPoses);
-    if (RobotContainer.currentScoringPieceType == ScoringPieceType.CORAL) {
-      Logger.recordOutput("Current Scoring Type", Color.kWhite.toHexString());
-    } else {
-      Logger.recordOutput("Current Scoring Type", "#29ac9c");
-    }
   }
 
   /** This function is called once when the robot is disabled. */

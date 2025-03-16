@@ -51,12 +51,13 @@ public class WristConstants {
     STATION(Rotations.of(0)),
     ALGAE_STOW(Rotations.of(0.35)),
     L1(Rotations.of(0.24)),
-    L2_CORAL(Rotations.of(0.190)),
+    L2_CORAL(Rotations.of(0.18)),
     L2_ALGAE(Rotations.of(0.125)),
-    L3_CORAL(Rotations.of(0.190)),
+    L3_CORAL(Rotations.of(0.185)),
     L3_ALGAE(Rotations.of(0.125)),
     L4(Rotations.of(0.195)),
-    NET(Rotations.of(0.35));
+    NET(Rotations.of(0.35)),
+    NEUTRAL(Rotations.of(0));
 
     public Angle rotations;
 

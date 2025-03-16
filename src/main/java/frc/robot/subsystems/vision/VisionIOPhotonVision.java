@@ -72,12 +72,9 @@ public class VisionIOPhotonVision implements VisionIO {
                 Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
 
         int bestTagId = result.getBestTarget().getFiducialId();
-        if (DriverStation.getAlliance().isPresent()) {
-          if (DriverStation.getAlliance().get() == Alliance.Blue) {
+        if (DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue) {
             if (17 <= bestTagId && bestTagId <= 22) inputs.bestReefTagId = bestTagId;
-          } else {
-            if (6 <= bestTagId && bestTagId <= 11) inputs.bestReefTagId = bestTagId;
-          }
+            else if (6 <= bestTagId && bestTagId <= 11) inputs.bestReefTagId = bestTagId;
         }
       } else {
         inputs.latestTargetObservation = new TargetObservation(new Rotation2d(), new Rotation2d());
@@ -107,9 +104,10 @@ public class VisionIOPhotonVision implements VisionIO {
                           result.multitagResult.get().estimatedPose.ambiguity, // Ambiguity
                           robotPoseEst.targetsUsed.size(), // Tag count
                           totalTagDistance / result.targets.size(), // Average tag distance
-                          PoseObservationType.PHOTONVISION)); // Observation type
+                          PoseObservationType.PHOTONVISION_MULTITAG)); // Observation type
                 });
-      } else if (!result.targets.isEmpty()) { // Single tag result
+      } else if (!result.targets.isEmpty()) {
+        // update the single tag pose estimator
         singleTagPoseEstimator
             .update(result)
             .ifPresent(
@@ -130,7 +128,7 @@ public class VisionIOPhotonVision implements VisionIO {
                               .getBestCameraToTarget()
                               .getTranslation()
                               .getNorm(), // Average tag distance
-                          PoseObservationType.PHOTONVISION)); // Observation type
+                          PoseObservationType.PHOTONVISION_SINGLE)); // Observation type
                 });
       }
     }

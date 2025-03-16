@@ -294,7 +294,7 @@ public class DriveConstants {
   public static enum DriveSpeedMode {
     DEFAULT(List.of(SPEED_AT_12V.in(MetersPerSecond), Units.rotationsToRadians(1.0))),
     SLOW(List.of(1.0, Units.rotationsToRadians(0.5))),
-    SLOWER(List.of(0.5, Units.rotationsToRadians(0.35)));
+    PRECISION(List.of(0.5, Units.rotationsToRadians(0.35)));
 
     List<Double> speedAndTheta;
 

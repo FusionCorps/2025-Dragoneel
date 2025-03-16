@@ -428,13 +428,11 @@ public class Drive extends SubsystemBase implements VisionConsumer {
         .ignoringDisable(true);
   }
 
-  public void setMaxSpeed(DriveSpeedMode speedMode) {
-    currentMaxSpeed = speedMode;
+  public Command setMaxSpeed(DriveSpeedMode speedMode) {
+    return runOnce(() -> currentMaxSpeed = speedMode);
   }
 
   public Command toggleSpeed(Supplier<ElevatorState> state) {
-    // if at station, toggle between slow and default
-    // if not at station, toggle between slow and slower
     return Commands.either(
         runOnce(
             () ->
@@ -446,8 +444,10 @@ public class Drive extends SubsystemBase implements VisionConsumer {
             () ->
                 currentMaxSpeed =
                     currentMaxSpeed == DriveSpeedMode.SLOW
-                        ? DriveSpeedMode.SLOWER
+                        ? DriveSpeedMode.PRECISION
                         : DriveSpeedMode.SLOW),
-        () -> state.get().equals(ElevatorState.STATION));
+        () ->
+            state.get().equals(ElevatorState.STATION)
+                || state.get().equals(ElevatorState.ALGAE_STOW));
   }
 }

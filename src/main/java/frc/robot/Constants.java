@@ -54,7 +54,8 @@ public final class Constants {
     L3_CORAL(ElevatorState.L3, WristState.L3_CORAL),
     L3_ALGAE(ElevatorState.L3, WristState.L3_ALGAE),
     L4(ElevatorState.L4, WristState.L4),
-    NET(ElevatorState.NET, WristState.NET);
+    NET(ElevatorState.NET, WristState.NET),
+    NEUTRAL(ElevatorState.NEUTRAL, WristState.NEUTRAL);
 
     public final ElevatorState elevatorState;
     public final WristState wristState;

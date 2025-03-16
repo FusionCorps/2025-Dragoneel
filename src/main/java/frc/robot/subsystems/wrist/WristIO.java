@@ -25,5 +25,7 @@ public interface WristIO {
 
   default void setTargetPosition(Angle angle, Supplier<ScoringPieceType> scoringModeType) {}
 
-  default void toggleSpeed() {}
+  default void setToCoralSpeed() {}
+
+  default void setToAlgaeSpeed() {}
 }

@@ -23,10 +23,10 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ScoringPieceType;
-import frc.robot.Constants.TargetState;
 import frc.robot.commands.Autos;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorAndWristCommands;
@@ -66,7 +66,6 @@ import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -90,17 +89,16 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser =
       new LoggedDashboardChooser<>("Auto Chooser");
 
-  final CommandXboxController controller = new CommandXboxController(0);
+  static final CommandXboxController controller = new CommandXboxController(0);
   final Alert controllerDisconnectedAlert = new Alert("Controller Disconnected.", AlertType.kError);
 
   public static Supplier<ReefscapeCoralOnFly> simCoralProjectileSupplier = () -> null;
-  @AutoLogOutput public static TargetState targetPosition = TargetState.STATION;
-  @AutoLogOutput public static ScoringPieceType currentScoringPieceType = ScoringPieceType.CORAL;
 
   public static boolean isAutoAligning = false;
 
   /** The container for the robot. Contains subsystems, operator devices, and commands. */
   public RobotContainer() {
+    // Instantiate subsystems
     switch (Constants.CURRENT_MODE) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
@@ -174,6 +172,7 @@ public class RobotContainer {
         break;
     }
 
+    // Create factory for commands involving moving the elevator+wrist
     if (elevator != null && wrist != null) {
       elevatorAndWristCommands = new ElevatorAndWristCommands(elevator, wrist);
     }
@@ -199,10 +198,8 @@ public class RobotContainer {
 
     // add diagnostic and sysid commands
     // TODO: remove these later
-
     autoChooser.addOption("wheel", DriveCommands.wheelRadiusCharacterization(drive));
     autoChooser.addOption("feedforward", DriveCommands.feedforwardCharacterization(drive));
-
     autoChooser.addOption(
         "Drive SysId (Quasistatic Forward)",
         drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
@@ -214,21 +211,29 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // When elevator leaves station, run at slower speed
-    new Trigger(() -> elevator.getCurrentElevatorState() != ElevatorState.STATION)
-        .onTrue(Commands.runOnce(() -> drive.setMaxSpeed(DriveSpeedMode.SLOWER)));
+    /* Triggers for various robot behaviors */
 
-    /* When current scoring type changes between coral and algae, elevator and wrist will toggle speed accordingly. */
-    new Trigger(() -> currentScoringPieceType == ScoringPieceType.CORAL)
-        .onChange(elevator.toggleElevatorSpeed().alongWith(wrist.toggleWristSpeed()));
+    // When elevator is NO LONGER at (i.e. leaves) station/algae stow position,
+    // set drive to PRECISION max speed to avoid tipping
+    new Trigger(
+            () ->
+                elevator.getCurrentElevatorState() != ElevatorState.STATION
+                    && elevator.getCurrentElevatorState() != ElevatorState.ALGAE_STOW)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.PRECISION));
 
-    // When elevator changes scoring piece type, rumble controller
-    new Trigger(() -> currentScoringPieceType == ScoringPieceType.CORAL).onChange(rumbleCommand());
+    // When elevator is set to target station/algae stow position, set drive to DEFAULT max speed
+    new Trigger(
+            () ->
+                elevator.getCurrentElevatorState() == ElevatorState.STATION
+                    || elevator.getCurrentElevatorState() == ElevatorState.ALGAE_STOW)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
 
     // When controller disconnects, show alert
     new Trigger(() -> controller.isConnected())
-        .whileFalse(Commands.runOnce(() -> controllerDisconnectedAlert.set(true)))
-        .whileTrue(Commands.runOnce(() -> controllerDisconnectedAlert.set(false)));
+        .onFalse(Commands.runOnce(() -> controllerDisconnectedAlert.set(true)))
+        .onTrue(Commands.runOnce(() -> controllerDisconnectedAlert.set(false)));
+
+    RobotModeTriggers.teleop().onTrue(elevatorAndWristCommands.setNeutral());
 
     // Configure the button bindings
     configureButtonBindings();
@@ -263,7 +268,10 @@ public class RobotContainer {
           .povRight()
           .whileTrue(DriveCommands.autoAlignToNearestBranch(drive, AutoAlignDirection.RIGHT));
 
-      // Toggle drive speed for "slow mode" driving
+      // Toggle drive max speed
+      // #1 If the elevator is at station/algae stow, toggle between DEFAULT and SLOW.
+      // #2 Otherwise, toggle between SLOW and PRECISION.
+      // (#2 is a scenario where the robot is moving to a scoring position.)
       controller.leftTrigger().onTrue(drive.toggleSpeed(elevator::getCurrentElevatorState));
       // TODO: consider making this an
       // acceleration
@@ -271,77 +279,82 @@ public class RobotContainer {
     }
 
     /* elevator and wrist movement commands */
-    controller.leftBumper().onTrue(elevatorAndWristCommands.setScoringPieceToAlgae());
-
     if (elevatorAndWristCommands != null) {
+      controller.leftBumper().onTrue(elevatorAndWristCommands.setScoringModeToAlgae());
+
+      // Set scoring mode to coral and move to station
       controller
           .rightBumper()
           .onTrue(
-              Commands.runOnce(
-                      () -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL)
+              elevatorAndWristCommands
+                  .setScoringModeToCoral()
+                  .andThen(Commands.none())
                   .andThen(elevatorAndWristCommands.goToStation()));
 
-      // Goes to L1 or processor based on current scoring type
+      // Goes to L1 or processor based on current scoring mode
       controller
           .a()
           .onTrue(
               Commands.either(
                   elevatorAndWristCommands.goToL1(),
                   elevatorAndWristCommands.goToProcessor(),
-                  () -> currentScoringPieceType == ScoringPieceType.CORAL));
+                  elevatorAndWristCommands.isInCoralMode));
 
-      // Goes to L2 coral or algae based on current scoring type
+      // Goes to L2 coral or algae based on current scoring mode
       controller
           .b()
           .onTrue(
               Commands.either(
                   elevatorAndWristCommands.goToL2Coral(),
                   elevatorAndWristCommands.goToL2Algae(),
-                  () -> currentScoringPieceType == ScoringPieceType.CORAL));
+                  elevatorAndWristCommands.isInCoralMode));
 
-      // Goes to L3 coral or algae based on current scoring type
+      // Goes to L3 coral or algae based on current scoring mode
       controller
           .x()
           .onTrue(
               Commands.either(
                   elevatorAndWristCommands.goToL3Coral(),
                   elevatorAndWristCommands.goToL3Algae(),
-                  () -> currentScoringPieceType == ScoringPieceType.CORAL));
+                  elevatorAndWristCommands.isInCoralMode));
 
-      // Goes to L4 or net based on current scoring type
+      // Goes to L4 or net based on current scoring mode
       controller
           .y()
           .onTrue(
               Commands.either(
                   elevatorAndWristCommands.goToL4(),
                   elevatorAndWristCommands.goToNet(),
-                  () -> currentScoringPieceType == ScoringPieceType.CORAL));
+                  elevatorAndWristCommands.isInCoralMode));
 
+      // Goes to algae stow if in algae mode
       controller
           .povDown()
-          .and(() -> currentScoringPieceType == ScoringPieceType.ALGAE)
-          .whileTrue(elevatorAndWristCommands.goToAlgaeStow());
+          .and(elevatorAndWristCommands.isInAlgaeMode)
+          .onTrue(elevatorAndWristCommands.goToAlgaeStow());
     }
 
     /* scoring commands */
     if (shooter != null && elevator != null) {
+      // Shoots coral
       controller.rightTrigger().whileTrue(shooter.shootCoralCmd(wrist::getCurrentWristState));
 
+      // Shoots algae; alternatively, pulls coral back into shooter
       controller.back().whileTrue(shooter.shootAlgaeCmd());
     }
 
     /* Climb commands */
     if (climb != null) {
-      // extend climb out, uses composite trigger because this stows algae if in algae mode
+      // Extend climb down/out. Use to latch onto the cage.
+      // Only works if in coral mode, because D-pad down is bound to moving to algae stow in algae
+      // mode
+      // This will also set the drive to precision mode.
       controller
           .povDown()
-          .and(() -> currentScoringPieceType != ScoringPieceType.ALGAE)
-          .whileTrue(
-              climb
-                  .extendClimbCmd()
-                  .alongWith(Commands.runOnce(() -> drive.setMaxSpeed(DriveSpeedMode.SLOWER))));
+          .and(() -> elevatorAndWristCommands.getScoringPieceType() != ScoringPieceType.ALGAE)
+          .whileTrue(climb.extendClimbCmd().alongWith(drive.setMaxSpeed(DriveSpeedMode.PRECISION)));
 
-      // retract climb back in
+      // Retract climb in/up. Use for the actual climb.
       controller.povUp().whileTrue(climb.retractClimbCmd());
     }
   }
@@ -373,12 +386,10 @@ public class RobotContainer {
         Arena2025Reefscape.getInstance().getGamePiecesArrayByType("Algae"));
   }
 
-  public Command rumbleCommand() {
+  public static Command rumbleCommand() {
     return Commands.run(
             () -> {
-              if (currentScoringPieceType == ScoringPieceType.CORAL)
-                controller.setRumble(RumbleType.kBothRumble, 0.02);
-              else controller.setRumble(RumbleType.kBothRumble, 1.0);
+              controller.setRumble(RumbleType.kBothRumble, 1.0);
             })
         .withTimeout(0.2)
         .finallyDo(() -> controller.setRumble(RumbleType.kBothRumble, 0.0));
