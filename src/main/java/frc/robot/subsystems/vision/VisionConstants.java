@@ -6,13 +6,18 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
+
+import static edu.wpi.first.units.Units.Meters;
+
 import java.util.List;
 
 public class VisionConstants {
   // AprilTag layout
   public static AprilTagFieldLayout aprilTagLayout =
       AprilTagFieldLayout.loadField(
-          AprilTagFields.k2025ReefscapeWelded); // TODO: change this at comp
+        //   AprilTagFields.k2025ReefscapeAndyMark
+          AprilTagFields.k2025ReefscapeWelded); // TODO: change the field type at comp
 
   public static List<Pose2d> blueReefTagPoses =
       List.of(
@@ -35,20 +40,16 @@ public class VisionConstants {
   // Camera names, must match names configured on coprocessor
   public static String CAM_FL_NAME = "CamLeft";
   public static String CAM_FR_NAME = "CamRight";
-  //   public static String CAM_BACK_NAME = "OV9281-3";
 
-  // Robot to camera transforms
-  // (Not used by Limelight, configure in web UI instead)
-  // TODO: find out proper transforms
+  // Robot to camera transforms, measured empirically
   public static Transform3d ROBOT_TO_CAM_FL_TRANSFORM =
       new Transform3d(0.306, 0.2785, 0.212, new Rotation3d(0.0, 0.0, Units.degreesToRadians(-27)));
   public static Transform3d ROBOT_TO_CAM_FR_TRANSFORM =
       new Transform3d(0.306, -0.2785, 0.212, new Rotation3d(0.0, 0.0, Units.degreesToRadians(28)));
-  //   public static Transform3d ROBOT_TO_CAM_BACK_TRANSFORM =
-  //       new Transform3d(-0.05, 0, 0.3, new Rotation3d(0.0, 0.0, Math.PI / 2.0));
   // Basic filtering thresholds
-  public static double maxAmbiguity = 0.4;
-  public static double maxZError = 0.1;
+  public static double maxSingleTagAmbiguity = 0.4;
+  public static Distance maxZError = Meters.of(0.1);
+  public static Distance maxSingleTagDistance = Meters.of(2.0);
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)
@@ -61,6 +62,5 @@ public class VisionConstants {
       new double[] {
         1.0, // Camera FL
         1.0, // Camera FR
-        // 1.0 // Camera back
       };
 }

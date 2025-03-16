@@ -89,12 +89,10 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser =
       new LoggedDashboardChooser<>("Auto Chooser");
 
-  static final CommandXboxController controller = new CommandXboxController(0);
+  static final CommandXboxController controller = new CommandXboxController(Constants.DRIVER_CONTROLLER_PORT);
   final Alert controllerDisconnectedAlert = new Alert("Controller Disconnected.", AlertType.kError);
 
   public static Supplier<ReefscapeCoralOnFly> simCoralProjectileSupplier = () -> null;
-
-  public static boolean isAutoAligning = false;
 
   /** The container for the robot. Contains subsystems, operator devices, and commands. */
   public RobotContainer() {
@@ -112,7 +110,6 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive,
-                // (a, b, c) -> {},
                 new VisionIOPhotonVision(
                     CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getRotation),
                 new VisionIOPhotonVision(
@@ -139,12 +136,10 @@ public class RobotContainer {
                 driveSim::setSimulationWorldPose);
         vision =
             new Vision(
-                // (a, b, c) -> {},
                 drive,
                 new VisionIOPhotonVisionSim(CAM_FL_NAME, ROBOT_TO_CAM_FL_TRANSFORM, drive::getPose),
                 new VisionIOPhotonVisionSim(
                     CAM_FR_NAME, ROBOT_TO_CAM_FR_TRANSFORM, drive::getPose));
-        // null;
         elevator = new Elevator(new ElevatorIOSim());
         climb = new Climb(new ClimbIOSim());
         shooter = new Shooter(new ShooterIOSim());
@@ -211,8 +206,16 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
+    // Configure the button bindings
+    configureBindings();
+  }
+
+  /** {@link CommandXboxController} button bindings for each subsystem are defined here. */
+  private void configureBindings() {
+    // General robot bindings
     /* Triggers for various robot behaviors */
 
+    if (elevator != null) {
     // When elevator is NO LONGER at (i.e. leaves) station/algae stow position,
     // set drive to PRECISION max speed to avoid tipping
     new Trigger(
@@ -227,20 +230,18 @@ public class RobotContainer {
                 elevator.getCurrentElevatorState() == ElevatorState.STATION
                     || elevator.getCurrentElevatorState() == ElevatorState.ALGAE_STOW)
         .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
+    }
 
     // When controller disconnects, show alert
     new Trigger(() -> controller.isConnected())
         .onFalse(Commands.runOnce(() -> controllerDisconnectedAlert.set(true)))
         .onTrue(Commands.runOnce(() -> controllerDisconnectedAlert.set(false)));
 
+    if (elevatorAndWristCommands != null)
     RobotModeTriggers.teleop().onTrue(elevatorAndWristCommands.setNeutral());
 
-    // Configure the button bindings
-    configureButtonBindings();
-  }
+    //=====Controller bindings=====
 
-  /** {@link CommandXboxController} button bindings for each subsystem are defined here. */
-  private void configureButtonBindings() {
     /* drive commands */
     if (drive != null) {
       // Default command, field-relative drive

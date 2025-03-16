@@ -198,7 +198,6 @@ public class Autos {
 
   private Command moveToStationAndPickup(PathPlannerPath path) {
     return Commands.sequence(
-        Commands.runOnce(() -> RobotContainer.isAutoAligning = false),
         elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(path),
         Commands.waitTime(STATION_WAIT_TIME));

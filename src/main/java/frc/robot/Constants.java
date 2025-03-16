@@ -92,4 +92,5 @@ public final class Constants {
               DriveConstants.FRONT_LEFT.SlipCurrent,
               1),
           DriveConstants.MODULE_TRANSLATIONS);
+static final int DRIVER_CONTROLLER_PORT = 0;
 }

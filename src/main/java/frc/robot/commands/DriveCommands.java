@@ -183,7 +183,6 @@ public class DriveCommands {
     // rotate, because apriltag will always be 180° from robot
     Supplier<Pose2d> tagPoseSupplierIn2DWOffset =
         () -> {
-          RobotContainer.isAutoAligning = true;
           if (tagPoseSupplierNoOffset.get() == null) {
             return drive.getPose();
           } else {

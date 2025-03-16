@@ -81,7 +81,7 @@ public class DriveConstants {
   private static final SteerFeedbackType kSteerFeedbackType = SteerFeedbackType.FusedCANcoder;
 
   // The stator current at which the wheels start to slip
-  // TODO: needs to be tuned
+  // TODO: drive stator limit needs to be tuned
   private static final Current kSlipCurrent = Amps.of(80.0);
 
   // Initial configs for the drive and steer motors and the azimuth encoder; these cannot be null.
@@ -106,7 +106,7 @@ public class DriveConstants {
   public static final CANBus kCANBus = new CANBus("canivore");
 
   // Theoretical free speed (m/s) at 12 V applied output
-  // TODO: needs to be tuned
+  // TODO: max speed needs to be tuned
   public static LinearVelocity SPEED_AT_12V = MetersPerSecond.of(4.32816);
   public static AngularVelocity MODULE_ANGULAR_VEL_AT_12V = RotationsPerSecond.of(60);
 
@@ -303,6 +303,7 @@ public class DriveConstants {
     }
   }
 
+  /** Robot-relative auto align directions */
   public static enum AutoAlignDirection {
     LEFT,
     RIGHT
