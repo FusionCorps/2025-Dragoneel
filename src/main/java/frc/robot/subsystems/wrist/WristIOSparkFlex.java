@@ -19,6 +19,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants.ScoringPieceType;
+import frc.robot.RobotContainer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -97,7 +98,7 @@ public class WristIOSparkFlex implements WristIO {
 
   @Override
   public void setToAlgaeSpeed() {
-    wristMotor.configureAsync(
+    wristMotor.configure(
         new SparkFlexConfig().apply(new ClosedLoopConfig().p(2.0)),
         ResetMode.kNoResetSafeParameters,
         PersistMode.kNoPersistParameters);
@@ -105,9 +106,24 @@ public class WristIOSparkFlex implements WristIO {
 
   @Override
   public void setToCoralSpeed() {
-    wristMotor.configureAsync(
+    wristMotor.configure(
         new SparkFlexConfig().apply(new ClosedLoopConfig().p(6.0)),
         ResetMode.kNoResetSafeParameters,
         PersistMode.kNoPersistParameters);
+  }
+
+  @Override
+  public void toggleSpeed() {
+    if (RobotContainer.currentScoringPieceType == ScoringPieceType.CORAL) {
+      wristMotor.configure(
+          new SparkFlexConfig().apply(new ClosedLoopConfig().p(6.0)),
+          ResetMode.kNoResetSafeParameters,
+          PersistMode.kNoPersistParameters);
+    } else {
+      wristMotor.configure(
+          new SparkFlexConfig().apply(new ClosedLoopConfig().p(2.0)),
+          ResetMode.kNoResetSafeParameters,
+          PersistMode.kNoPersistParameters);
+    }
   }
 }

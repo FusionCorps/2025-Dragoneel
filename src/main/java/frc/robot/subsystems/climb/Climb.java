@@ -2,7 +2,6 @@ package frc.robot.subsystems.climb;
 
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_HOLD_VOLTS;
-import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_RETRACT_VOLTS;
 import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_RUNOUT_VOLTS;
 
 import edu.wpi.first.wpilibj.Alert;
@@ -44,6 +43,6 @@ public class Climb extends SubsystemBase {
 
   public Command retractClimbCmd() {
     // Note that the end runnable sets a little voltage to hold the climb position.
-    return runEnd(() -> io.setVoltage(CLIMB_RETRACT_VOLTS), () -> io.setVoltage(CLIMB_HOLD_VOLTS));
+    return runEnd(() -> io.retract(), () -> io.setVoltage(CLIMB_HOLD_VOLTS));
   }
 }

@@ -26,6 +26,8 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Constants.ScoringPieceType;
+import frc.robot.RobotContainer;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
   final TalonFX mainElevatorMotor = new TalonFX(MAIN_ELEVATOR_MOTOR_ID);
@@ -172,5 +174,16 @@ public class ElevatorIOTalonFX implements ElevatorIO {
   public void setToCoralSpeed() {
     posRequest.Acceleration = ELEVATOR_MOTION_MAGIC_ACCELERATION;
     posRequest.Velocity = ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY;
+  }
+
+  @Override
+  public void toggleMotorProfile() {
+    if (RobotContainer.currentScoringPieceType == ScoringPieceType.CORAL) {
+      posRequest.Acceleration = ELEVATOR_MOTION_MAGIC_ACCELERATION;
+      posRequest.Velocity = ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY;
+    } else {
+      posRequest.Acceleration = 60.0; // TODO: change these as needed
+      posRequest.Velocity = 30.0;
+    }
   }
 }

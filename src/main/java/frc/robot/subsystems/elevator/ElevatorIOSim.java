@@ -1,32 +1,20 @@
 package frc.robot.subsystems.elevator;
 
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
+import static frc.robot.subsystems.elevator.ElevatorConstants.ELEVATOR_GEAR_RATIO;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.controller.ProfiledPIDController;
+import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import frc.robot.util.LoggedTunableNumber;
-import org.ironmaple.simulation.motorsims.SimulatedBattery;
 
-public class ElevatorIOSim implements ElevatorIO {
+public class ElevatorIOSim extends ElevatorIOTalonFX {
+  TalonFXSimState mainMotorSim = mainElevatorMotor.getSimState();
+  TalonFXSimState followerMotorSim = followerElevatorMotor.getSimState();
+
   private final DCMotorSim elevatorSim;
-
-  LoggedTunableNumber kP = new LoggedTunableNumber("Elevator kP", 0.0);
-
-  ProfiledPIDController elevatorPIDController =
-      new ProfiledPIDController(
-          1.00, 0, 0.0, new TrapezoidProfile.Constraints(150, 200)); // in rotations units
-
-  // ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0, 0.65, 0.2);
-  ElevatorFeedforward elevatorFeedforward = new ElevatorFeedforward(0.0, 0, 3.0, 0.1);
 
   private double appliedVolts = 0.0;
 
@@ -35,57 +23,35 @@ public class ElevatorIOSim implements ElevatorIO {
   public ElevatorIOSim() {
     elevatorSim =
         new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60Foc(2), 0.0001, 60.0 / 14.0),
+            LinearSystemId.createDCMotorSystem(
+                DCMotor.getKrakenX60Foc(2), 0.0001, ELEVATOR_GEAR_RATIO),
             DCMotor.getKrakenX60Foc(2));
-
-    elevatorPIDController.reset(0);
   }
 
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
-    if (!isOpenLoop) {
-      appliedVolts =
-          MathUtil.clamp(
-              elevatorPIDController.calculate(elevatorSim.getAngularPositionRotations())
-                  + elevatorFeedforward.calculate(elevatorPIDController.getSetpoint().velocity),
-              SimulatedBattery.getBatteryVoltage().unaryMinus().in(Volts),
-              SimulatedBattery.getBatteryVoltage().in(Volts));
-    }
+    mainMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+    followerMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
-    elevatorSim.setInputVoltage(appliedVolts);
-    elevatorSim.update(0.02);
+    // get the motor voltage of the TalonFX
+    Voltage motorVoltage = mainMotorSim.getMotorVoltageMeasure();
 
-    inputs.mainConnected = true;
-    inputs.mainPositionRad = elevatorSim.getAngularPositionRad();
-    inputs.mainVelocityRadPerSec = elevatorSim.getAngularVelocityRadPerSec();
-    inputs.mainAppliedVolts = appliedVolts;
-    inputs.mainCurrentAmps = elevatorSim.getCurrentDrawAmps();
+    // use the motor voltage to calculate new position and velocity
+    // using WPILib's DCMotorSim class for physics simulation
+    elevatorSim.setInputVoltage(motorVoltage.in(Volts));
+    elevatorSim.update(0.02); // assume 20 ms loop time
 
-    inputs.followerConnected = true;
-    inputs.followerPositionRad = elevatorSim.getAngularPositionRad();
-    inputs.followerVelocityRadPerSec = elevatorSim.getAngularVelocityRadPerSec();
-    inputs.followerAppliedVolts = appliedVolts;
-    inputs.followerCurrentAmps = elevatorSim.getCurrentDrawAmps();
+    // apply the new rotor position and velocity to the TalonFX;
+    // note that this is rotor position/velocity (before gear ratio), but
+    // DCMotorSim returns mechanism position/velocity (after gear ratio)
+    mainMotorSim.setRawRotorPosition(elevatorSim.getAngularPosition().times(ELEVATOR_GEAR_RATIO));
+    mainMotorSim.setRotorVelocity(elevatorSim.getAngularVelocity().times(ELEVATOR_GEAR_RATIO));
 
-    inputs.positionSetpointRad =
-        Units.rotationsToRadians(elevatorPIDController.getSetpoint().position);
-  }
+    // do the same for the follower motor
+    followerMotorSim.setRawRotorPosition(
+        elevatorSim.getAngularPosition().times(ELEVATOR_GEAR_RATIO));
+    followerMotorSim.setRotorVelocity(elevatorSim.getAngularVelocity().times(ELEVATOR_GEAR_RATIO));
 
-  @Override
-  public void setTargetPosition(Angle motorTargetRotations) {
-    isOpenLoop = false;
-    elevatorPIDController.setGoal(motorTargetRotations.in(Rotations));
-  }
-
-  @Override
-  public void setVoltageOpenLoop(Voltage volts) {
-    isOpenLoop = true;
-    appliedVolts = volts.in(Volts);
-  }
-
-  @Override
-  public void zeroPosition() {
-    elevatorSim.setAngle(0);
-    elevatorPIDController.reset(0);
+    super.updateInputs(inputs);
   }
 }

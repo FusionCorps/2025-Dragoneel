@@ -3,7 +3,6 @@ package frc.robot.subsystems.wrist;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -11,13 +10,14 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.ScoringPieceType;
 import frc.robot.Robot;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.wrist.WristConstants.WristState;
 import frc.robot.util.LoggedTunableNumber;
-import java.util.function.Supplier;
+import java.util.Set;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -27,10 +27,8 @@ public class Wrist extends SubsystemBase {
 
   @AutoLogOutput private WristState currentWristState = WristState.STATION;
 
-  private Supplier<ScoringPieceType> currentScoringPieceTypeSupplier = () -> ScoringPieceType.CORAL;
-
   @AutoLogOutput
-  public Trigger hasReachedStation =
+  public Trigger isAtStation =
       new Trigger(() -> WristState.STATION.rotations.isNear(getCurrentAngle(), Degrees.of(15)));
 
   @AutoLogOutput
@@ -63,11 +61,7 @@ public class Wrist extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (currentWristState.equals(WristState.NEUTRAL)) {
-      io.setVoltageOpenLoop(Volts.zero());
-    } else {
-      io.setTargetPosition(currentWristState.rotations, currentScoringPieceTypeSupplier);
-    }
+    io.setTargetPosition(currentWristState.rotations, () -> RobotContainer.currentScoringPieceType);
     io.updateInputs(inputs);
 
     Robot.componentPoses[2] =
@@ -102,16 +96,16 @@ public class Wrist extends SubsystemBase {
     return runOnce(() -> currentWristState = state);
   }
 
-  public Command setScoringPieceTypeSupplier(Supplier<ScoringPieceType> scoringPieceTypeSupplier) {
-    return runOnce(() -> currentScoringPieceTypeSupplier = scoringPieceTypeSupplier);
+  public Command toggleWristSpeed() {
+    return Commands.defer(() -> runOnce(() -> io.toggleSpeed()), Set.of(this));
   }
 
-  public Command setToCoralSpeed() {
-    return runOnce(() -> io.setToCoralSpeed());
+  public void setToAlgaeSpeed() {
+    io.setToAlgaeSpeed();
   }
 
-  public Command setToAlgaeSpeed() {
-    return runOnce(() -> io.setToAlgaeSpeed());
+  public void setToCoralSpeed() {
+    io.setToCoralSpeed();
   }
 
   public Angle getCurrentAngle() {

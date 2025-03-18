@@ -3,7 +3,6 @@ package frc.robot.subsystems.elevator;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -16,11 +15,13 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.util.LoggedTunableNumber;
+import java.util.Set;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -39,11 +40,11 @@ public class Elevator extends SubsystemBase {
   private ElevatorState currentElevatorState = ElevatorState.STATION;
 
   @AutoLogOutput
-  public Trigger hasReachedTargetState =
+  public Trigger isAtTargetState =
       new Trigger(
           () ->
               getCurrentElevatorPosition()
-                  .isNear(currentElevatorState.rotations, Rotations.of(8.0)));
+                  .isNear(currentElevatorState.rotations, Rotations.of(0.5)));
 
   LoggedTunableNumber elevatorProcessorPosition =
       new LoggedTunableNumber(
@@ -90,11 +91,8 @@ public class Elevator extends SubsystemBase {
   /* Periodically running code */
   @Override
   public void periodic() {
-    if (currentElevatorState.equals(ElevatorState.NEUTRAL)) {
-      io.setVoltageOpenLoop(Volts.zero());
-    } else {
-      io.setTargetPosition(currentElevatorState.rotations);
-    }
+    io.setTargetPosition(currentElevatorState.rotations);
+
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
@@ -136,20 +134,18 @@ public class Elevator extends SubsystemBase {
           ElevatorState.L4.rotations = Rotations.of(nums[5]);
           ElevatorState.NET.rotations = Rotations.of(nums[6]);
 
-          if (io instanceof ElevatorIOTalonFX) {
-            Slot0Configs gains =
-                new Slot0Configs().withKP(nums[7]).withKV(nums[8]).withKS(nums[9]).withKG(nums[10]);
-            MotionMagicConfigs motmag =
-                new MotionMagicConfigs()
-                    .withMotionMagicCruiseVelocity(nums[11])
-                    .withMotionMagicAcceleration(nums[12]);
+          Slot0Configs gains =
+              new Slot0Configs().withKP(nums[7]).withKV(nums[8]).withKS(nums[9]).withKG(nums[10]);
+          MotionMagicConfigs motmag =
+              new MotionMagicConfigs()
+                  .withMotionMagicCruiseVelocity(nums[11])
+                  .withMotionMagicAcceleration(nums[12]);
 
-            ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(gains);
-            ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(gains);
+          ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(gains);
+          ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(gains);
 
-            ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(motmag);
-            ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(motmag);
-          }
+          ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(motmag);
+          ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(motmag);
         },
         elevatorProcessorPosition,
         elevatorL1Position,
@@ -170,12 +166,16 @@ public class Elevator extends SubsystemBase {
     return runOnce(() -> currentElevatorState = targetState);
   }
 
-  public Command setToCoralSpeed() {
-    return runOnce(() -> io.setToCoralSpeed());
+  public Command toggleElevatorSpeed() {
+    return Commands.defer(() -> runOnce(() -> io.toggleMotorProfile()), Set.of(this));
   }
 
-  public Command setToAlgaeSpeed() {
-    return runOnce(() -> io.setToAlgaeSpeed());
+  public void setToAlgaeSpeed() {
+    io.setToAlgaeSpeed();
+  }
+
+  public void setToCoralSpeed() {
+    io.setToCoralSpeed();
   }
 
   @AutoLogOutput

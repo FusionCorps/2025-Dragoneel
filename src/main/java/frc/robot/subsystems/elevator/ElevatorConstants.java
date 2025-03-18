@@ -17,6 +17,7 @@ public class ElevatorConstants {
     ALGAE_STOW(Rotations.of(3)),
     STATION(Rotations.of(0)),
     L1(Rotations.of(3)),
+    L1_INTERMEDIATE(Rotations.of(4)),
     L2(Rotations.of(10)),
     L3(Rotations.of(16.8)),
     L4(Rotations.of(26)),
@@ -39,7 +40,7 @@ public class ElevatorConstants {
   public static final double ELEVATOR_kA = 0;
 
   public static final double ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY = 100;
-  public static final double ELEVATOR_MOTION_MAGIC_ACCELERATION = 150;
+  public static final double ELEVATOR_MOTION_MAGIC_ACCELERATION = 300;
 
   public static final CurrentLimitsConfigs ELEVATOR_CURRENT_LIMITS_CONFIGS =
       new CurrentLimitsConfigs()

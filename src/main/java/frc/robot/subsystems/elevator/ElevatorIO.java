@@ -36,4 +36,6 @@ public interface ElevatorIO {
   default void setToCoralSpeed() {}
 
   default void setToAlgaeSpeed() {}
+
+  default void toggleMotorProfile() {}
 }

@@ -28,4 +28,6 @@ public interface WristIO {
   default void setToCoralSpeed() {}
 
   default void setToAlgaeSpeed() {}
+
+  default void toggleSpeed() {}
 }

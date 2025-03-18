@@ -49,7 +49,7 @@ public class WristConstants {
   public static enum WristState {
     PROCESSOR(Rotations.of(0.15)),
     STATION(Rotations.of(0)),
-    ALGAE_STOW(Rotations.of(0.35)),
+    ALGAE_STOW(Rotations.of(0.30)),
     L1(Rotations.of(0.24)),
     L2_CORAL(Rotations.of(0.18)),
     L2_ALGAE(Rotations.of(0.125)),

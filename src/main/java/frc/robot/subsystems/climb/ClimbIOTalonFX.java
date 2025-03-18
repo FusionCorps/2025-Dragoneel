@@ -5,15 +5,17 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_MOTOR_ID;
+import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_RETRACT_VOLTS;
 import static frc.robot.util.PhoenixUtil.tryUntilOk;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -21,7 +23,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
 public class ClimbIOTalonFX implements ClimbIO {
-  private final TalonFX climbMotor;
+  public final TalonFX climbMotor;
 
   private final Debouncer climbDebounce = new Debouncer(0.5);
   private final StatusSignal<Angle> climbPosition;
@@ -29,7 +31,7 @@ public class ClimbIOTalonFX implements ClimbIO {
   private final StatusSignal<Voltage> climbAppliedVolts;
   private final StatusSignal<Current> climbCurrent;
 
-  MotionMagicVoltage req = new MotionMagicVoltage(0);
+  VoltageOut voltageOut = new VoltageOut(0);
 
   public ClimbIOTalonFX() {
     climbMotor = new TalonFX(CLIMB_MOTOR_ID);
@@ -44,6 +46,9 @@ public class ClimbIOTalonFX implements ClimbIO {
 
     config.MotionMagic.MotionMagicCruiseVelocity = 20;
     config.MotionMagic.MotionMagicAcceleration = 20;
+
+    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 48;
+    config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 48;
 
     config.Slot0.kS = 0.5;
     config.Slot0.kV = 2.0;
@@ -77,6 +82,17 @@ public class ClimbIOTalonFX implements ClimbIO {
 
   @Override
   public void setVoltage(Voltage voltage) {
-    climbMotor.setVoltage(voltage.in(Volts));
+    climbMotor.setControl(
+        voltageOut.withOutput(voltage).withLimitForwardMotion(false).withLimitReverseMotion(false));
+  }
+
+  @Override
+  public void retract() {
+    climbMotor.setControl(
+        voltageOut
+            .withOutput(CLIMB_RETRACT_VOLTS)
+            .withLimitReverseMotion(
+                MathUtil.isNear(48, climbMotor.getPosition().refresh().getValueAsDouble(), 1))
+            .withLimitForwardMotion(false));
   }
 }

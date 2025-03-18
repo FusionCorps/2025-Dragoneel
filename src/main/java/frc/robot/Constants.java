@@ -51,6 +51,7 @@ public final class Constants {
     PROCESSOR(ElevatorState.PROCESSOR, WristState.PROCESSOR),
     ALGAE_STOW(ElevatorState.ALGAE_STOW, WristState.ALGAE_STOW),
     L1(ElevatorState.L1, WristState.L1),
+    L1_INTERMEDIATE(ElevatorState.L1_INTERMEDIATE, WristState.STATION),
     L2_CORAL(ElevatorState.L2, WristState.L2_CORAL),
     L2_ALGAE(ElevatorState.L2, WristState.L2_ALGAE),
     L3_CORAL(ElevatorState.L3, WristState.L3_CORAL),

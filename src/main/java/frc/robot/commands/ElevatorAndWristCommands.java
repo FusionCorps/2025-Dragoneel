@@ -1,12 +1,10 @@
 package frc.robot.commands;
 
-import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.TargetState.*;
+import static frc.robot.RobotContainer.targetPosition;
 
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ScoringPieceType;
 import frc.robot.Constants.TargetState;
 import frc.robot.RobotContainer;
@@ -15,102 +13,31 @@ import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristConstants.WristState;
 import java.util.Set;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
 /** A class that contains commands for moving the elevator and wrist to specific states. */
 public class ElevatorAndWristCommands {
   private final Elevator elevator;
   private final Wrist wrist;
 
-  @AutoLogOutput(key = "TargetStates/PreviousTargetState")
-  private TargetState previousTargetState = STATION;
-
-  @AutoLogOutput(key = "TargetStates/CurrentTargetState")
-  private TargetState currentTargetState = STATION;
-
-  /**
-   * Tracks which scoring mode the robot is in. The robot has ONLY two scoring modes, {@link
-   * ScoringPieceType#CORAL} and {@link ScoringPieceType#ALGAE}
-   */
-  private ScoringPieceType scoringPieceType = ScoringPieceType.CORAL;
-
-  public Trigger isInCoralMode = new Trigger(() -> scoringPieceType == ScoringPieceType.CORAL);
-  public Trigger isInAlgaeMode = new Trigger(() -> scoringPieceType == ScoringPieceType.ALGAE);
-
   public ElevatorAndWristCommands(Elevator elevator, Wrist wrist) {
     this.elevator = elevator;
     this.wrist = wrist;
-
-    this.wrist.setScoringPieceTypeSupplier(() -> scoringPieceType);
-
-    isInAlgaeMode.onTrue(RobotContainer.rumbleCommand());
-
-    isInCoralMode
-        .whileTrue(
-            Commands.runOnce(
-                () -> Logger.recordOutput("Current Scoring Type", Color.kWhite.toHexString())))
-        .onFalse(Commands.runOnce(() -> Logger.recordOutput("Current Scoring Type", "#29ac9c")));
   }
 
-  /** Helper method to determine if a state is an algae position */
-  private boolean isAlgaePosition(TargetState state) {
-    return state == PROCESSOR
-        || state == L2_ALGAE
-        || state == L3_ALGAE
-        || state == NET
-        || state == ALGAE_STOW;
+  private boolean isAlgaeState(TargetState targetState) {
+    return targetState == ALGAE_STOW
+        || targetState == PROCESSOR
+        || targetState == L2_ALGAE
+        || targetState == L3_ALGAE
+        || targetState == NET;
   }
 
-  /** Manages state transitions and applies appropriate speeds */
-  private Command transitionToState(TargetState newTargetState) {
-    return Commands.deferredProxy(
-        () -> {
-          // If no change in state, do nothing
-          if (newTargetState == currentTargetState) {
-            return Commands.none();
-          }
-
-          // Save previous state before updating current
-          previousTargetState = currentTargetState;
-          currentTargetState = newTargetState;
-
-          // Special case: always use default movement when going to STATION
-          if (newTargetState == STATION) {
-            return goToStateDefault(newTargetState).beforeStarting(setToCoralSpeeds());
-          }
-
-          // Determine transition type and apply appropriate movement pattern
-          Command moveCommand;
-          boolean wasAlgaePosition = isAlgaePosition(previousTargetState);
-          boolean isAlgaePosition = isAlgaePosition(newTargetState);
-
-          // If moving between algae positions, use default movement with algae speeds
-          if (wasAlgaePosition && isAlgaePosition && scoringPieceType == ScoringPieceType.ALGAE) {
-            moveCommand = goToStateDefault(newTargetState).beforeStarting(setToAlgaeSpeeds());
-          }
-          // If moving from corresponding coral to algae, use default movement with coral speeds
-          else if (!wasAlgaePosition && isAlgaePosition) {
-            moveCommand = goToStateDefault(newTargetState).beforeStarting(setToCoralSpeeds());
-          }
-          // Stow first when moving between station and L1/processor/algae stow
-          else if (previousTargetState == STATION
-                  && (newTargetState == L1
-                      || newTargetState == PROCESSOR
-                      || newTargetState == ALGAE_STOW)
-              || newTargetState == STATION
-                  && (previousTargetState == L1
-                      || previousTargetState == PROCESSOR
-                      || previousTargetState == ALGAE_STOW)) {
-            moveCommand = goToStateWithStow(newTargetState).beforeStarting(setToCoralSpeeds());
-          }
-          // For all other cases, use default movement with coral speeds
-          else {
-            moveCommand = goToStateDefault(newTargetState).beforeStarting(setToCoralSpeeds());
-          }
-
-          return moveCommand;
-        });
+  private boolean isCoralState(TargetState targetState) {
+    return targetState == STATION
+        || targetState == L1
+        || targetState == L2_CORAL
+        || targetState == L3_CORAL
+        || targetState == L4;
   }
 
   /**
@@ -123,12 +50,12 @@ public class ElevatorAndWristCommands {
    *
    * <p>- and when moving to the station.
    */
-  private Command goToStateWithStow(TargetState targetState) {
+  private Command goToStateWithPreStow(TargetState targetState) {
     return Commands.sequence(
         wrist.setTargetState(WristState.STATION),
-        Commands.waitUntil(wrist.hasReachedStation),
+        Commands.waitUntil(wrist.isAtStation),
         elevator.setTargetState(targetState.elevatorState),
-        Commands.waitUntil(elevator.hasReachedTargetState),
+        Commands.waitUntil(elevator.isAtTargetState),
         wrist.setTargetState(targetState.wristState));
   }
 
@@ -139,145 +66,243 @@ public class ElevatorAndWristCommands {
    *
    * <p>- between algae and coral states on the same level (excluding L4/net)
    */
-  // private Command goToStateDefault(TargetState targetState) {
-  //   // Special handling for ALGAE_STOW to ensure wrist movement completes
-  //   if (targetState == ALGAE_STOW) {
-  //     return Commands.sequence(
-  //         elevator.setTargetState(targetState.elevatorState),
-  //         Commands.waitUntil(elevator.hasReachedTargetState),
-  //         wrist.setTargetState(targetState.wristState),
-  //         // Add explicit wait for wrist to complete moving
-  //         Commands.waitUntil(() -> wrist.getCurrentWristState() == targetState.wristState));
-  //   }
-
-  //   // Normal behavior for other targets
-  //   return Commands.sequence(
-  //       Commands.print("a1"),
-  //       elevator.setTargetState(targetState.elevatorState),
-  //       Commands.print("a2"),
-  //       Commands.waitUntil(elevator.hasReachedTargetState),
-  //       Commands.print("a3"),
-  //       wrist.setTargetState(targetState.wristState));
-  // }
-
-  private Command goToStateDefault(TargetState targetState) {
+  private Command goToStateDirect(TargetState targetState) {
     return Commands.sequence(
         elevator.setTargetState(targetState.elevatorState),
-        Commands.waitTime(Seconds.of(0.05)),
+        Commands.waitUntil(elevator.isAtTargetState),
         wrist.setTargetState(targetState.wristState));
   }
 
-  /* Move to station */
+  /* Move to station with coral state movement, setting the target position first. */
   public Command goToStation() {
-    return transitionToState(STATION);
-  }
-
-  public Command goToProcessor() {
-    return transitionToState(PROCESSOR);
-  }
-
-  public Command goToL1() {
-    return transitionToState(L1);
-  }
-
-  public Command goToL2Coral() {
-    return transitionToState(L2_CORAL);
-  }
-
-  public Command goToL2Algae() {
-    return transitionToState(L2_ALGAE);
-  }
-
-  public Command goToL3Coral() {
-    return transitionToState(L3_CORAL);
-  }
-
-  public Command goToL3Algae() {
-    return transitionToState(L3_ALGAE);
-  }
-
-  public Command goToL4() {
-    return transitionToState(L4);
-  }
-
-  public Command goToNet() {
-    return transitionToState(NET);
-  }
-
-  public Command goToAlgaeStow() {
-    return transitionToState(ALGAE_STOW);
-  }
-
-  public Command setNeutral() {
-    return wrist
-        .setTargetState(WristState.NEUTRAL)
-        .alongWith(elevator.setTargetState(ElevatorState.NEUTRAL));
-  }
-
-  /**
-   * Sets the scoring piece type to algae and transitions to appropriate algae position if needed
-   */
-  public Command setScoringModeToAlgae() {
     return Commands.defer(
         () -> {
-          // Update scoring mode
-          scoringPieceType = ScoringPieceType.ALGAE;
+          // If we're already at station, do nothing
+          if (targetPosition == STATION) {
+            return Commands.none();
+          }
+          if (targetPosition == PROCESSOR || targetPosition == L1) {
+            return goToL1Intermediate()
+                .andThen(Commands.waitUntil(elevator.isAtTargetState))
+                .andThen(goToStation());
+          }
+          wrist.setToCoralSpeed();
+          elevator.setToCoralSpeed();
+          // Otherwise set the target position first, then move
+          targetPosition = STATION;
+          return goToStateWithPreStow(targetPosition);
+        },
+        Set.of());
+  }
 
-          // If already in algae position, do nothing
-          if (isAlgaePosition(currentTargetState)) {
+  /* Move to L1 with appropriate state movement. */
+  public Command goToL1() {
+    return Commands.defer(
+        () -> {
+          // If we're already at L1, do nothing
+          if (targetPosition == L1) {
             return Commands.none();
           }
 
-          // Otherwise, transition to appropriate algae position
-          if (currentTargetState == L2_CORAL) {
-            return transitionToState(L2_ALGAE);
-          } else if (currentTargetState == L3_CORAL) {
-            return transitionToState(L3_ALGAE);
-          } else if (currentTargetState == L1) {
-            return transitionToState(PROCESSOR);
+          if (targetPosition == STATION) {
+            return goToL1Intermediate()
+                .andThen(Commands.waitUntil(elevator.isAtTargetState))
+                .andThen(goToL1());
+          }
+          // Otherwise remember the old target, then set the new target
+          targetPosition = L1;
+          // Decide how to move based on old target
+          return goToStateWithPreStow(targetPosition);
+        },
+        Set.of());
+  }
+
+  private Command goToL1Intermediate() {
+    return Commands.defer(
+        () -> {
+          targetPosition = L1_INTERMEDIATE;
+          return elevator.setTargetState(L1_INTERMEDIATE.elevatorState);
+        },
+        Set.of());
+  }
+
+  /* Move to processor with appropriate state movement. */
+  public Command goToProcessor() {
+    return Commands.defer(
+        () -> {
+          // If we're already at PROCESSOR, do nothing
+          if (targetPosition == PROCESSOR) {
+            return Commands.none();
+          }
+          if (targetPosition == STATION) {
+            return goToL1Intermediate()
+                .andThen(
+                    Commands.waitUntil(elevator.isAtTargetState)
+                        .andThen(
+                            Commands.defer(
+                                () -> {
+                                  targetPosition = PROCESSOR;
+                                  return wrist
+                                      .setTargetState(PROCESSOR.wristState)
+                                      .andThen(elevator.setTargetState(PROCESSOR.elevatorState));
+                                },
+                                Set.of())));
+          }
+          if (isAlgaeState(targetPosition)) {
+            wrist.setToAlgaeSpeed();
+            elevator.setToAlgaeSpeed();
+          }
+          targetPosition = PROCESSOR;
+          return goToStateDirect(targetPosition);
+        },
+        Set.of());
+  }
+
+  /* Move to L2_coral with appropriate state movement. */
+  public Command goToL2Coral() {
+    return Commands.defer(
+        () -> {
+          // If we're already at L2_CORAL, do nothing
+          if (targetPosition == L2_CORAL) {
+            return Commands.none();
+          }
+          targetPosition = L2_CORAL;
+          return goToStateWithPreStow(targetPosition);
+        },
+        Set.of());
+  }
+
+  /* Move to L2_algae with appropriate state movement. */
+  public Command goToL2Algae() {
+    return Commands.defer(
+        () -> {
+          // If we're already at L2_ALGAE, do nothing
+          if (targetPosition == L2_ALGAE) {
+            return Commands.none();
+          }
+          if (isAlgaeState(targetPosition)) {
+            wrist.setToAlgaeSpeed();
+            elevator.setToAlgaeSpeed();
+          }
+          targetPosition = L2_ALGAE;
+          return goToStateDirect(targetPosition);
+        },
+        Set.of());
+  }
+
+  /* Move to L3_coral with appropriate state movement. */
+  public Command goToL3Coral() {
+    return Commands.defer(
+        () -> {
+          // If we're already at L3_CORAL, do nothing
+          if (targetPosition == L3_CORAL) {
+            return Commands.none();
           }
 
+          // Otherwise set movement method to L3 coral based on old target
+          targetPosition = L3_CORAL;
+          return goToStateWithPreStow(targetPosition);
+        },
+        Set.of());
+  }
+
+  /* Move to L3_algae with appropriate state movement. */
+  public Command goToL3Algae() {
+    return Commands.defer(
+        () -> {
+          // If we're already at L3_ALGAE, do nothing
+          if (targetPosition == L3_ALGAE) {
+            return Commands.none();
+          }
+          if (isAlgaeState(targetPosition)) {
+            wrist.setToAlgaeSpeed();
+            elevator.setToAlgaeSpeed();
+          }
+          // Otherwise set movement type to L3 algae based on old target
+          targetPosition = L3_ALGAE;
+          return goToStateDirect(targetPosition);
+        },
+        Set.of());
+  }
+
+  /* Move to net with appropriate state movement. */
+  public Command goToNet() {
+    return Commands.defer(
+        () -> {
+          // If we're already at NET, do nothing
+          if (targetPosition == NET) {
+            return Commands.none();
+          }
+          if (isAlgaeState(targetPosition)) {
+            wrist.setToAlgaeSpeed();
+            elevator.setToAlgaeSpeed();
+          }
+          // Otherwise set movement type to NET based on old targetw
+          targetPosition = NET;
+          return goToStateDirect(targetPosition);
+        },
+        Set.of());
+  }
+
+  /* Move to L4 with coral state movement. */
+  public Command goToL4() {
+    return Commands.defer(
+        () -> {
+          // If we're already at L4, do nothing
+          if (targetPosition == L4) {
+            return Commands.none();
+          }
+          // Otherwise move to L4 with stowing movement
+          targetPosition = L4;
+          return goToStateWithPreStow(targetPosition);
+        },
+        Set.of());
+  }
+
+  /* Move to algae stow with algae state movement. */
+  public Command goToAlgaeStow() {
+    return Commands.defer(
+        () -> {
+          if (targetPosition == ALGAE_STOW) {
+            return Commands.none();
+          }
+          if (isAlgaeState(targetPosition)) {
+            wrist.setToAlgaeSpeed();
+            elevator.setToAlgaeSpeed();
+          }
+          targetPosition = ALGAE_STOW;
+          return goToStateDirect(targetPosition);
+        },
+        Set.of());
+  }
+
+  public Command setNeutral() {
+    return elevator
+        .setTargetState(ElevatorState.NEUTRAL)
+        .alongWith(wrist.setTargetState(WristState.NEUTRAL));
+  }
+
+  /**
+   * Sets the scoring piece type to algae. If the target position is L1 or L2 or L3, move to the
+   * other state.
+   *
+   * @return
+   */
+  public Command setScoringPieceToAlgae() {
+    return Commands.defer(
+        () -> {
+          if (RobotContainer.currentScoringPieceType == ScoringPieceType.CORAL) {
+            RobotContainer.currentScoringPieceType = ScoringPieceType.ALGAE;
+            if (targetPosition == L1) {
+              return goToProcessor();
+            } else if (targetPosition == L2_CORAL) {
+              return goToL2Algae();
+            } else if (targetPosition == L3_CORAL) {
+              return goToL3Algae();
+            }
+          }
           return Commands.none();
         },
-        Set.of(elevator, wrist));
-  }
-
-  /** Sets the scoring piece type to coral */
-  public Command setScoringModeToCoral() {
-    return Commands.runOnce(
-        () -> {
-          scoringPieceType = ScoringPieceType.CORAL;
-        });
-  }
-
-  /**
-   * @return the current target state
-   */
-  public TargetState getCurrentTargetState() {
-    return currentTargetState;
-  }
-
-  /**
-   * @return the previous target state
-   */
-  public TargetState getPreviousTargetState() {
-    return previousTargetState;
-  }
-
-  /**
-   * @return the current scoring piece type
-   */
-  public ScoringPieceType getScoringPieceType() {
-    return scoringPieceType;
-  }
-
-  /** Sets elevator and wrist to coral speeds */
-  public Command setToCoralSpeeds() {
-    return elevator.setToCoralSpeed().alongWith(wrist.setToCoralSpeed());
-  }
-
-  /** Sets elevator and wrist to algae speeds */
-  public Command setToAlgaeSpeeds() {
-    return elevator.setToAlgaeSpeed().alongWith(wrist.setToAlgaeSpeed());
+        Set.of());
   }
 }
