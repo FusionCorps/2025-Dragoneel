@@ -89,7 +89,8 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser =
       new LoggedDashboardChooser<>("Auto Chooser");
 
-  static final CommandXboxController controller = new CommandXboxController(Constants.DRIVER_CONTROLLER_PORT);
+  static final CommandXboxController controller =
+      new CommandXboxController(Constants.DRIVER_CONTROLLER_PORT);
   final Alert controllerDisconnectedAlert = new Alert("Controller Disconnected.", AlertType.kError);
 
   public static Supplier<ReefscapeCoralOnFly> simCoralProjectileSupplier = () -> null;
@@ -206,7 +207,7 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // Configure the button bindings
+    // Configure triggers and button bindings
     configureBindings();
   }
 
@@ -216,20 +217,17 @@ public class RobotContainer {
     /* Triggers for various robot behaviors */
 
     if (elevator != null) {
-    // When elevator is NO LONGER at (i.e. leaves) station/algae stow position,
-    // set drive to PRECISION max speed to avoid tipping
-    new Trigger(
-            () ->
-                elevator.getCurrentElevatorState() != ElevatorState.STATION
-                    && elevator.getCurrentElevatorState() != ElevatorState.ALGAE_STOW)
-        .onTrue(drive.setMaxSpeed(DriveSpeedMode.PRECISION));
 
-    // When elevator is set to target station/algae stow position, set drive to DEFAULT max speed
-    new Trigger(
-            () ->
-                elevator.getCurrentElevatorState() == ElevatorState.STATION
-                    || elevator.getCurrentElevatorState() == ElevatorState.ALGAE_STOW)
-        .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
+      // When elevator is set to target station/algae stow position, set drive to DEFAULT max speed
+      // When elevator is NO LONGER at (i.e. leaves) station/algae stow position,
+      // set drive to PRECISION max speed to avoid tipping
+      new Trigger(
+              () ->
+                  elevator.getCurrentElevatorState() == ElevatorState.STATION
+                      || elevator.getCurrentElevatorState() == ElevatorState.ALGAE_STOW
+                      || elevator.getCurrentElevatorState() == ElevatorState.NEUTRAL)
+          .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT))
+          .onFalse(drive.setMaxSpeed(DriveSpeedMode.PRECISION));
     }
 
     // When controller disconnects, show alert
@@ -238,9 +236,9 @@ public class RobotContainer {
         .onTrue(Commands.runOnce(() -> controllerDisconnectedAlert.set(false)));
 
     if (elevatorAndWristCommands != null)
-    RobotModeTriggers.teleop().onTrue(elevatorAndWristCommands.setNeutral());
+      RobotModeTriggers.teleop().onTrue(elevatorAndWristCommands.setNeutral());
 
-    //=====Controller bindings=====
+    // =====Controller bindings=====
 
     /* drive commands */
     if (drive != null) {
@@ -264,10 +262,24 @@ public class RobotContainer {
       // Auto align to nearest left/right branch
       controller
           .povLeft()
-          .whileTrue(DriveCommands.autoAlignToNearestBranch(drive, AutoAlignDirection.LEFT));
+          .whileTrue(
+              DriveCommands.autoAlignToNearestBranch(drive, AutoAlignDirection.LEFT)
+                  .finallyDo(
+                      interrupted -> {
+                        if (!interrupted) {
+                          rumbleCommand().schedule();
+                        }
+                      }));
       controller
           .povRight()
-          .whileTrue(DriveCommands.autoAlignToNearestBranch(drive, AutoAlignDirection.RIGHT));
+          .whileTrue(
+              DriveCommands.autoAlignToNearestBranch(drive, AutoAlignDirection.RIGHT)
+                  .finallyDo(
+                      interrupted -> {
+                        if (!interrupted) {
+                          rumbleCommand().schedule();
+                        }
+                      }));
 
       // Toggle drive max speed
       // #1 If the elevator is at station/algae stow, toggle between DEFAULT and SLOW.

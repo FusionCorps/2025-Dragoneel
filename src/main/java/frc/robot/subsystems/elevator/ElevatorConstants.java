@@ -11,8 +11,6 @@ import edu.wpi.first.units.measure.Distance;
 public class ElevatorConstants {
   public static final int MAIN_ELEVATOR_MOTOR_ID = 13;
   public static final int FOLLOWER_ELEVATOR_MOTOR_ID = 14;
-  // public static final int ELEVATOR_FORWARD_LIMIT_SWITCH_DIO_PORT = 2;
-  // public static final int ELEVATOR_REVERSE_LIMIT_SWITCH_DIO_PORT = 1;
 
   public static enum ElevatorState {
     PROCESSOR(Rotations.of(0.0)),

@@ -1,5 +1,7 @@
 package frc.robot.subsystems.vision;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -7,16 +9,13 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
-
-import static edu.wpi.first.units.Units.Meters;
-
 import java.util.List;
 
 public class VisionConstants {
   // AprilTag layout
   public static AprilTagFieldLayout aprilTagLayout =
       AprilTagFieldLayout.loadField(
-        //   AprilTagFields.k2025ReefscapeAndyMark
+          //   AprilTagFields.k2025ReefscapeAndyMark
           AprilTagFields.k2025ReefscapeWelded); // TODO: change the field type at comp
 
   public static List<Pose2d> blueReefTagPoses =

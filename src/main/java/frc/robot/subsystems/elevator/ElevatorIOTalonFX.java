@@ -79,6 +79,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
     followerElevatorMotor.setControl(new Follower(MAIN_ELEVATOR_MOTOR_ID, false));
 
+    // Zeros elevator on deploy
+    // MAKE SURE THE ELEVATOR IS AT THE BOTTOM BEFORE DEPLOYING
     mainElevatorMotor.setPosition(0);
     followerElevatorMotor.setPosition(0);
 

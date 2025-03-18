@@ -30,6 +30,8 @@ import frc.robot.subsystems.wrist.WristConstants.WristState;
  * (log replay from a file).
  */
 public final class Constants {
+  public static final int DRIVER_CONTROLLER_PORT = 0;
+
   public static final Mode SIM_MODE = Mode.SIM;
   public static final Mode CURRENT_MODE = RobotBase.isReal() ? Mode.REAL : SIM_MODE;
 
@@ -92,5 +94,4 @@ public final class Constants {
               DriveConstants.FRONT_LEFT.SlipCurrent,
               1),
           DriveConstants.MODULE_TRANSLATIONS);
-static final int DRIVER_CONTROLLER_PORT = 0;
 }

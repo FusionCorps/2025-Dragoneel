@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.TargetState.*;
 
 import edu.wpi.first.wpilibj.util.Color;
@@ -84,15 +85,26 @@ public class ElevatorAndWristCommands {
           boolean wasAlgaePosition = isAlgaePosition(previousTargetState);
           boolean isAlgaePosition = isAlgaePosition(newTargetState);
 
-          // If moving between algae positions, use direct movement with algae speeds
+          // If moving between algae positions, use default movement with algae speeds
           if (wasAlgaePosition && isAlgaePosition && scoringPieceType == ScoringPieceType.ALGAE) {
-            moveCommand = goToStateBetweenAlgae(newTargetState).beforeStarting(setToAlgaeSpeeds());
+            moveCommand = goToStateDefault(newTargetState).beforeStarting(setToAlgaeSpeeds());
           }
-          // If moving from coral to algae, use direct movement with coral speeds
+          // If moving from corresponding coral to algae, use default movement with coral speeds
           else if (!wasAlgaePosition && isAlgaePosition) {
-            moveCommand = goToStateBetweenAlgae(newTargetState).beforeStarting(setToCoralSpeeds());
+            moveCommand = goToStateDefault(newTargetState).beforeStarting(setToCoralSpeeds());
           }
-          // For all other transitions, use default movement with coral speeds
+          // Stow first when moving between station and L1/processor/algae stow
+          else if (previousTargetState == STATION
+                  && (newTargetState == L1
+                      || newTargetState == PROCESSOR
+                      || newTargetState == ALGAE_STOW)
+              || newTargetState == STATION
+                  && (previousTargetState == L1
+                      || previousTargetState == PROCESSOR
+                      || previousTargetState == ALGAE_STOW)) {
+            moveCommand = goToStateWithStow(newTargetState).beforeStarting(setToCoralSpeeds());
+          }
+          // For all other cases, use default movement with coral speeds
           else {
             moveCommand = goToStateDefault(newTargetState).beforeStarting(setToCoralSpeeds());
           }
@@ -111,7 +123,7 @@ public class ElevatorAndWristCommands {
    *
    * <p>- and when moving to the station.
    */
-  private Command goToStateDefault(TargetState targetState) {
+  private Command goToStateWithStow(TargetState targetState) {
     return Commands.sequence(
         wrist.setTargetState(WristState.STATION),
         Commands.waitUntil(wrist.hasReachedStation),
@@ -127,24 +139,31 @@ public class ElevatorAndWristCommands {
    *
    * <p>- between algae and coral states on the same level (excluding L4/net)
    */
-  private Command goToStateBetweenAlgae(TargetState targetState) {
-    // Special handling for ALGAE_STOW to ensure wrist movement completes
-    if (targetState == ALGAE_STOW) {
-      return Commands.sequence(
-          elevator.setTargetState(targetState.elevatorState),
-          Commands.waitUntil(elevator.hasReachedTargetState),
-          wrist.setTargetState(targetState.wristState),
-          // Add explicit wait for wrist to complete moving
-          Commands.waitUntil(() -> wrist.getCurrentWristState() == targetState.wristState));
-    }
+  // private Command goToStateDefault(TargetState targetState) {
+  //   // Special handling for ALGAE_STOW to ensure wrist movement completes
+  //   if (targetState == ALGAE_STOW) {
+  //     return Commands.sequence(
+  //         elevator.setTargetState(targetState.elevatorState),
+  //         Commands.waitUntil(elevator.hasReachedTargetState),
+  //         wrist.setTargetState(targetState.wristState),
+  //         // Add explicit wait for wrist to complete moving
+  //         Commands.waitUntil(() -> wrist.getCurrentWristState() == targetState.wristState));
+  //   }
 
-    // Normal behavior for other targets
+  //   // Normal behavior for other targets
+  //   return Commands.sequence(
+  //       Commands.print("a1"),
+  //       elevator.setTargetState(targetState.elevatorState),
+  //       Commands.print("a2"),
+  //       Commands.waitUntil(elevator.hasReachedTargetState),
+  //       Commands.print("a3"),
+  //       wrist.setTargetState(targetState.wristState));
+  // }
+
+  private Command goToStateDefault(TargetState targetState) {
     return Commands.sequence(
-        Commands.print("a1"),
         elevator.setTargetState(targetState.elevatorState),
-        Commands.print("a2"),
-        Commands.waitUntil(elevator.hasReachedTargetState),
-        Commands.print("a3"),
+        Commands.waitTime(Seconds.of(0.05)),
         wrist.setTargetState(targetState.wristState));
   }
 

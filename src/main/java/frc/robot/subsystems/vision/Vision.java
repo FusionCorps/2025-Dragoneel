@@ -106,9 +106,9 @@ public class Vision extends SubsystemBase {
         boolean rejectPose =
             observation.tagCount() == 0 // Must have at least one tag
                 || (observation.tagCount() == 1
-                // Cannot be high ambiguity or too far away if single tag
+                    // Cannot be high ambiguity or too far away if single tag
                     && (observation.ambiguity() > maxSingleTagAmbiguity
-                        || observation.averageTagDistance() > maxSingleTagDistance.in(Meters))) 
+                        || observation.averageTagDistance() > maxSingleTagDistance.in(Meters)))
                 || Math.abs(observation.pose().getZ())
                     > maxZError.in(Meters) // Must have realistic Z coordinate
 

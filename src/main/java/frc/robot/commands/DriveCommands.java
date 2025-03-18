@@ -13,6 +13,7 @@
 
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.MathUtil;
@@ -35,7 +36,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.DriveConstants.DriveSpeedMode;
@@ -48,9 +48,12 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
+  private static final double AUTO_DRIVE_MAX_SPEED =
+      0.7 * DriveConstants.SPEED_AT_12V.in(MetersPerSecond);
+  private static final double AUTO_DRIVE_MAX_ROT = Units.rotationsToRadians(1.00);
   private static final double DEADBAND = 0.1;
   private static final double ANGLE_KP = 2.0;
-  private static final double ANGLE_KD = 0.2;
+  private static final double ANGLE_KD = 0.0;
   private static final double ANGLE_MAX_VELOCITY = Units.rotationsToRadians(1.5);
   private static final double ANGLE_MAX_ACCELERATION = Units.rotationsToRadians(1.0);
   private static final double FF_START_DELAY = 2.0; // Secs
@@ -125,9 +128,9 @@ public class DriveCommands {
     angleController.enableContinuousInput(-Math.PI, Math.PI);
     angleController.setTolerance(Units.degreesToRadians(1.0));
 
-    PIDController xController = new PIDController(10.0, 0.0, 0.0);
+    PIDController xController = new PIDController(1.0, 0.0, 0.0);
     xController.setTolerance(0.02);
-    PIDController yController = new PIDController(10.0, 0.0, 0.0);
+    PIDController yController = new PIDController(1.0, 0.0, 0.0);
     yController.setTolerance(0.02);
 
     // Construct command
@@ -150,7 +153,10 @@ public class DriveCommands {
 
           // Convert to field relative speeds & send command
           ChassisSpeeds speeds =
-              new ChassisSpeeds(xVel * 0.3, yVel * 0.3, omega * Units.rotationsToRadians(0.75));
+              new ChassisSpeeds(
+                  xVel * AUTO_DRIVE_MAX_SPEED,
+                  yVel * AUTO_DRIVE_MAX_SPEED,
+                  omega * AUTO_DRIVE_MAX_ROT);
           drive.driveRobotCentric(
               ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
         },
@@ -163,7 +169,7 @@ public class DriveCommands {
           return xController.atSetpoint()
               && yController.atSetpoint()
               && angleController.atSetpoint();
-        }, // only end on interrupt
+        }, // end automatically when at setpoint
         drive);
   }
 
