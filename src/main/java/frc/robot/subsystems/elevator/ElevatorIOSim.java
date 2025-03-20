@@ -16,8 +16,6 @@ public class ElevatorIOSim extends ElevatorIOTalonFX {
 
   private final DCMotorSim elevatorSim;
 
-  private double appliedVolts = 0.0;
-
   boolean isOpenLoop = false;
 
   public ElevatorIOSim() {
