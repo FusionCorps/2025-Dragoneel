@@ -181,6 +181,8 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
     SmartDashboard.putData("Coast", setNeutralMode(true));
     SmartDashboard.putData("Brake", setNeutralMode(false));
+
+    // LoggedTunableNumber.ifChanged(hashCode(), null, null);
   }
 
   @Override

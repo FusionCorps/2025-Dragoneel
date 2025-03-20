@@ -59,8 +59,16 @@ public class ElevatorAndWristCommands {
         wrist.setTargetState(targetState.wristState));
   }
 
+  private Command goToStateWithStowAlt(TargetState targetState) {
+    return Commands.sequence(
+        elevator.setTargetState(targetState.elevatorState),
+        Commands.waitUntil(elevator.isAboveL1Intermediate),
+        wrist.setTargetState(targetState.wristState));
+  }
+
   /**
-   * Moves the elevator, then the wrist without stowing first. This is used when moving:
+   * Moves the elevator and the wrist simultaneously without stowing first. This is used when
+   * moving:
    *
    * <p>- between algae states
    *
@@ -69,7 +77,7 @@ public class ElevatorAndWristCommands {
   private Command goToStateDirect(TargetState targetState) {
     return Commands.sequence(
         elevator.setTargetState(targetState.elevatorState),
-        Commands.waitUntil(elevator.isAtTargetState),
+        // Commands.waitUntil(elevator.isAtTargetState),
         wrist.setTargetState(targetState.wristState));
   }
 
@@ -81,6 +89,7 @@ public class ElevatorAndWristCommands {
           if (targetPosition == STATION) {
             return Commands.none();
           }
+          // if at processor or L1, move up a little to safely stow wrist
           if (targetPosition == PROCESSOR || targetPosition == L1) {
             return goToL1Intermediate()
                 .andThen(Commands.waitUntil(elevator.isAtTargetState))
@@ -88,9 +97,14 @@ public class ElevatorAndWristCommands {
           }
           wrist.setToCoralSpeed();
           elevator.setToCoralSpeed();
-          // Otherwise set the target position first, then move
+          // If at algae stow or L1_intermediate prestow the wrist before moving elevator back down
+          if (targetPosition == ALGAE_STOW || targetPosition == L1_INTERMEDIATE) {
+            targetPosition = STATION;
+            return goToStateWithPreStow(targetPosition);
+          }
+          // otherwise simultaneously move wrist and elevator
           targetPosition = STATION;
-          return goToStateWithPreStow(targetPosition);
+          return goToStateDirect(targetPosition);
         },
         Set.of());
   }
@@ -104,15 +118,15 @@ public class ElevatorAndWristCommands {
             return Commands.none();
           }
 
+          // if at station, move up a little bit first
           if (targetPosition == STATION) {
             return goToL1Intermediate()
                 .andThen(Commands.waitUntil(elevator.isAtTargetState))
                 .andThen(goToL1());
           }
-          // Otherwise remember the old target, then set the new target
           targetPosition = L1;
-          // Decide how to move based on old target
-          return goToStateWithPreStow(targetPosition);
+          // Simultaneously move wrist and elevator
+          return goToStateDirect(targetPosition);
         },
         Set.of());
   }
@@ -134,6 +148,7 @@ public class ElevatorAndWristCommands {
           if (targetPosition == PROCESSOR) {
             return Commands.none();
           }
+          // if at station, move a little bit up first
           if (targetPosition == STATION) {
             return goToL1Intermediate()
                 .andThen(
@@ -144,15 +159,18 @@ public class ElevatorAndWristCommands {
                                   targetPosition = PROCESSOR;
                                   return wrist
                                       .setTargetState(PROCESSOR.wristState)
+                                      .andThen(Commands.waitUntil(wrist.isAtScoringState))
                                       .andThen(elevator.setTargetState(PROCESSOR.elevatorState));
                                 },
                                 Set.of())));
           }
+          // if moving from previous algae state, slow down wrist and elevator
           if (isAlgaeState(targetPosition)) {
             wrist.setToAlgaeSpeed();
             elevator.setToAlgaeSpeed();
           }
           targetPosition = PROCESSOR;
+          // Simultaneously move wrist and elevator
           return goToStateDirect(targetPosition);
         },
         Set.of());
@@ -167,7 +185,7 @@ public class ElevatorAndWristCommands {
             return Commands.none();
           }
           targetPosition = L2_CORAL;
-          return goToStateWithPreStow(targetPosition);
+          return goToStateWithStowAlt(targetPosition);
         },
         Set.of());
   }
@@ -201,7 +219,7 @@ public class ElevatorAndWristCommands {
 
           // Otherwise set movement method to L3 coral based on old target
           targetPosition = L3_CORAL;
-          return goToStateWithPreStow(targetPosition);
+          return goToStateWithStowAlt(targetPosition);
         },
         Set.of());
   }
@@ -254,7 +272,7 @@ public class ElevatorAndWristCommands {
           }
           // Otherwise move to L4 with stowing movement
           targetPosition = L4;
-          return goToStateWithPreStow(targetPosition);
+          return goToStateWithStowAlt(targetPosition);
         },
         Set.of());
   }

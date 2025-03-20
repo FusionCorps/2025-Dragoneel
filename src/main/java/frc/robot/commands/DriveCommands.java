@@ -38,6 +38,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.subsystems.drive.DriveConstants.AutoAlignDirection;
 import frc.robot.subsystems.drive.DriveConstants.DriveSpeedMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -196,12 +197,13 @@ public class DriveCommands {
                 .get()
                 .transformBy(
                     new Transform3d(
-                        (autoAlignDirection == DriveConstants.AutoAlignDirection.LEFT
-                            ? 0.64 // more negative means more to the left of the robot
-                            : 0.615), // more positive is further away
-                        (autoAlignDirection == DriveConstants.AutoAlignDirection.LEFT
-                            ? -0.41 // more negative means more to the left of the robot
-                            : -0.05),
+                        // chooses offsets based on left/right align direction
+                        (autoAlignDirection == AutoAlignDirection.LEFT
+                            ? DriveConstants.autoAlignOutwardLeft
+                            : DriveConstants.autoAlignOutwardRight),
+                        (autoAlignDirection == AutoAlignDirection.LEFT
+                            ? DriveConstants.autoAlignSidewaysLeft
+                            : DriveConstants.autoAlignSidewaysRight),
                         0,
                         new Rotation3d(Rotation2d.kPi)))
                 .toPose2d();
@@ -211,8 +213,9 @@ public class DriveCommands {
     return driveToPose(drive, tagPoseSupplierIn2DWOffset)
         .deadlineFor(
             Commands.run(
-                () ->
-                    Logger.recordOutput("targetAutoAlignPose", tagPoseSupplierIn2DWOffset.get())));
+                () -> {
+                    Logger.recordOutput("AutoAlign/targetAutoAlignPose", tagPoseSupplierIn2DWOffset.get());
+                  Logger.recordOutput("AutoAlign/autoAlignDirection", autoAlignDirection);}));
   }
 
   /**

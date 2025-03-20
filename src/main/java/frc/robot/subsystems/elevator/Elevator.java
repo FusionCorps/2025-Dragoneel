@@ -46,6 +46,10 @@ public class Elevator extends SubsystemBase {
               getCurrentElevatorPosition()
                   .isNear(currentElevatorState.rotations, Rotations.of(0.5)));
 
+  @AutoLogOutput
+  public Trigger isAboveL1Intermediate =
+      new Trigger(() -> getCurrentElevatorPosition().gte(ElevatorState.L1_INTERMEDIATE.rotations));
+
   LoggedTunableNumber elevatorProcessorPosition =
       new LoggedTunableNumber(
           "/Elevator/ProcessorPosition", ElevatorState.PROCESSOR.rotations.in(Rotations));

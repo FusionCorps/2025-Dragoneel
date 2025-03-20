@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -10,9 +12,6 @@ import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterConstants.ShooterState;
 import frc.robot.subsystems.wrist.WristConstants.WristState;
 import frc.robot.util.LoggedTunableNumber;
-
-import static edu.wpi.first.units.Units.Volts;
-
 import java.util.Set;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
@@ -33,10 +32,15 @@ public class Shooter extends SubsystemBase {
 
   @AutoLogOutput private ShooterState currentShooterState = ShooterState.IDLE;
 
-  LoggedTunableNumber shooterL4Volts = new LoggedTunableNumber("/Shooter/L4Volts", ShooterState.SHOOT_CORAL_L4.volts.in(Volts));
-  LoggedTunableNumber shooterL1Volts = new LoggedTunableNumber("/Shooter/L1Volts", ShooterState.SHOOT_CORAL_L1.volts.in(Volts));
-  LoggedTunableNumber shooterDefaultVolts = new LoggedTunableNumber("/Shooter/DefaultVolts", ShooterState.SHOOT_CORAL_DEFAULT.volts.in(Volts));
-  LoggedTunableNumber shooterAlgaeVolts = new LoggedTunableNumber("/Shooter/AlgaeVolts", ShooterState.SHOOT_ALGAE.volts.in(Volts));
+  LoggedTunableNumber shooterL4Volts =
+      new LoggedTunableNumber("/Shooter/L4Volts", ShooterState.SHOOT_CORAL_L4.volts.in(Volts));
+  LoggedTunableNumber shooterL1Volts =
+      new LoggedTunableNumber("/Shooter/L1Volts", ShooterState.SHOOT_CORAL_L1.volts.in(Volts));
+  LoggedTunableNumber shooterDefaultVolts =
+      new LoggedTunableNumber(
+          "/Shooter/DefaultVolts", ShooterState.SHOOT_CORAL_DEFAULT.volts.in(Volts));
+  LoggedTunableNumber shooterAlgaeVolts =
+      new LoggedTunableNumber("/Shooter/AlgaeVolts", ShooterState.SHOOT_ALGAE.volts.in(Volts));
 
   /* Construction method  */
   public Shooter(ShooterIO io) {
@@ -52,12 +56,7 @@ public class Shooter extends SubsystemBase {
     Logger.processInputs("Shooter", inputs);
     motorDisconnectedAlert.set(!inputs.connected);
 
-    LoggedTunableNumber.ifChanged(
-      hashCode(),
-      nums -> {
-        
-      }
-    );
+    // LoggedTunableNumber.ifChanged(hashCode(), nums -> {});
   }
 
   public void setState(ShooterState state) {
