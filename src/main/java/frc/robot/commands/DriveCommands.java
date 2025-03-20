@@ -199,11 +199,11 @@ public class DriveCommands {
                     new Transform3d(
                         // chooses offsets based on left/right align direction
                         (autoAlignDirection == AutoAlignDirection.LEFT
-                            ? DriveConstants.autoAlignOutwardLeft
-                            : DriveConstants.autoAlignOutwardRight),
+                            ? DriveConstants.autoAlignOutwardLeft.get()
+                            : DriveConstants.autoAlignOutwardRight.get()),
                         (autoAlignDirection == AutoAlignDirection.LEFT
-                            ? DriveConstants.autoAlignSidewaysLeft
-                            : DriveConstants.autoAlignSidewaysRight),
+                            ? DriveConstants.autoAlignSidewaysLeft.get()
+                            : DriveConstants.autoAlignSidewaysRight.get()),
                         0,
                         new Rotation3d(Rotation2d.kPi)))
                 .toPose2d();
@@ -214,8 +214,10 @@ public class DriveCommands {
         .deadlineFor(
             Commands.run(
                 () -> {
-                    Logger.recordOutput("AutoAlign/targetAutoAlignPose", tagPoseSupplierIn2DWOffset.get());
-                  Logger.recordOutput("AutoAlign/autoAlignDirection", autoAlignDirection);}));
+                  Logger.recordOutput(
+                      "AutoAlign/targetAutoAlignPose", tagPoseSupplierIn2DWOffset.get());
+                  Logger.recordOutput("AutoAlign/autoAlignDirection", autoAlignDirection);
+                }));
   }
 
   /**

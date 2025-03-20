@@ -380,7 +380,7 @@ public class RobotContainer {
       // mode
       // This will also set the drive to precision mode.
       controller
-          .povDown()
+          .povDown().or(controller.povDownLeft()).or(controller.povDownRight())
           .and(() -> currentScoringPieceType != ScoringPieceType.ALGAE)
           .whileTrue(climb.extendClimbCmd().alongWith(drive.setMaxSpeed(DriveSpeedMode.PRECISION)));
 
