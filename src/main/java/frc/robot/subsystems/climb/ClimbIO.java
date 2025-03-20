@@ -20,4 +20,8 @@ public interface ClimbIO {
   default void retract() {}
 
   default void zero() {}
+
+  default void setBrake() {}
+
+  default void setCoast() {}
 }
