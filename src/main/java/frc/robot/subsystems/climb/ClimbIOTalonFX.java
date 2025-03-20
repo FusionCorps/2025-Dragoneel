@@ -100,4 +100,14 @@ public class ClimbIOTalonFX implements ClimbIO {
   public void zero() {
     climbMotor.setControl(voltageOut.withOutput(0).withLimitReverseMotion(true));
   }
+
+  @Override
+  public void setBrake() {
+    climbMotor.setNeutralMode(NeutralModeValue.Brake);
+  }
+
+  @Override
+  public void setCoast() {
+    climbMotor.setNeutralMode(NeutralModeValue.Coast);
+  }
 }

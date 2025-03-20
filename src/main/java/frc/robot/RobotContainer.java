@@ -20,6 +20,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -242,6 +243,14 @@ public class RobotContainer {
         .onFalse(Commands.runOnce(() -> controllerDisconnectedAlert.set(true)))
         .onTrue(Commands.runOnce(() -> controllerDisconnectedAlert.set(false)));
 
+    // Log white color to dashboard when in coral mode, blue color otherwise
+    new Trigger(() -> currentScoringPieceType == ScoringPieceType.CORAL)
+        .whileTrue(
+            Commands.runOnce(
+                () ->
+                    Logger.recordOutput("RobotContainer/Scoring Mode", Color.kWhite.toHexString())))
+        .whileFalse(
+            Commands.runOnce(() -> Logger.recordOutput("RobotContainer/Scoring Mode", "#29ac9c")));
     // if (elevatorAndWristCommands != null)
     //   RobotModeTriggers.teleop().onTrue(elevatorAndWristCommands.setNeutral());
 
@@ -300,10 +309,6 @@ public class RobotContainer {
 
     /* elevator and wrist movement commands */
     if (elevatorAndWristCommands != null) {
-      /* When current scoring type changes between coral and algae, elevator and wrist will toggle speed accordingly. */
-      // new Trigger(() -> currentScoringPieceType == ScoringPieceType.CORAL)
-      //     .onChange(elevator.toggleElevatorSpeed().alongWith(wrist.toggleWristSpeed()));
-
       // When elevator changes scoring piece type, rumble controller
       new Trigger(() -> currentScoringPieceType == ScoringPieceType.ALGAE).onTrue(rumbleCommand());
 
@@ -379,8 +384,7 @@ public class RobotContainer {
       // Only works if in coral mode, because D-pad down is bound to moving to algae stow in algae
       // mode
       // This will also set the drive to precision mode.
-      controller
-          .povDown().or(controller.povDownLeft()).or(controller.povDownRight())
+      (controller.povDown().or(controller.povDownLeft()).or(controller.povDownRight()))
           .and(() -> currentScoringPieceType != ScoringPieceType.ALGAE)
           .whileTrue(climb.extendClimbCmd().alongWith(drive.setMaxSpeed(DriveSpeedMode.PRECISION)));
 
