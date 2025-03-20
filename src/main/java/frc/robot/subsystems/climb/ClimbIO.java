@@ -18,4 +18,6 @@ public interface ClimbIO {
   default void setVoltage(Voltage voltage) {}
 
   default void retract() {}
+
+  default void zero() {}
 }

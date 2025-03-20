@@ -308,4 +308,13 @@ public class DriveConstants {
     LEFT,
     RIGHT
   }
+
+  // more negative means more to the left of the robot
+  // more positive is further away
+  public static double autoAlignOutwardLeft = 0.64;
+  public static double autoAlignOutwardRight = 0.64;
+
+  // // more negative means more to the left of the robot
+  public static double autoAlignSidewaysLeft = -0.03;
+  public static double autoAlignSidewaysRight = -0.375;
 }

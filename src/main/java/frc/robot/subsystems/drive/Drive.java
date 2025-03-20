@@ -15,6 +15,7 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.drive.DriveConstants.SPEED_AT_12V;
+import static frc.robot.subsystems.drive.DriveConstants.autoAlignSidewaysRight;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -59,6 +60,7 @@ import frc.robot.subsystems.drive.module.ModuleIO;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.vision.Vision.VisionConsumer;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.LoggedTunableNumber;
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -82,6 +84,15 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   private final Alert pathPlannerSettingsLoadAlert =
       new Alert("PathPlanner could not load from GUI, using default settings", AlertType.kWarning);
   private final Alert wheelsInCoastAlert = new Alert("Drive in coast mode", AlertType.kWarning);
+
+  public static LoggedTunableNumber autoAlignOutwardLeft =
+      new LoggedTunableNumber("/Drive/AutoAlignOutwardLeft", DriveConstants.autoAlignOutwardLeft);
+  public static LoggedTunableNumber autoAlignOutwardRight =
+      new LoggedTunableNumber("/Drive/AutoAlignOutwardRight", DriveConstants.autoAlignOutwardRight);
+  public static LoggedTunableNumber autoAlignSidewaysLeft =
+      new LoggedTunableNumber("/Drive/AutoAlignInwardLeft", DriveConstants.autoAlignSidewaysLeft);
+  public static LoggedTunableNumber autoAlignSidewaysRight =
+      new LoggedTunableNumber("/Drive/AutoAlignInwardRight", DriveConstants.autoAlignSidewaysRight);
 
   private SwerveDriveKinematics kinematics =
       new SwerveDriveKinematics(DriveConstants.MODULE_TRANSLATIONS);
@@ -124,6 +135,11 @@ public class Drive extends SubsystemBase implements VisionConsumer {
     modules[2] = new Module(blModuleIO, 2, DriveConstants.BACK_LEFT);
     modules[3] = new Module(brModuleIO, 3, DriveConstants.BACK_RIGHT);
     this.resetSimulationPose = resetSimulationPose;
+
+    autoAlignOutwardLeft.initDefault(DriveConstants.autoAlignOutwardLeft);
+    autoAlignOutwardRight.initDefault(DriveConstants.autoAlignOutwardRight);
+    autoAlignSidewaysLeft.initDefault(DriveConstants.autoAlignSidewaysLeft);
+    autoAlignSidewaysRight.initDefault(DriveConstants.autoAlignSidewaysRight);
 
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
@@ -181,6 +197,8 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
     SmartDashboard.putData("Coast", setNeutralMode(true));
     SmartDashboard.putData("Brake", setNeutralMode(false));
+
+    // LoggedTunableNumber.ifChanged(hashCode(), null, null);
   }
 
   @Override

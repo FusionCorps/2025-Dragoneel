@@ -197,11 +197,13 @@ public class DriveCommands {
                 .transformBy(
                     new Transform3d(
                         (autoAlignDirection == DriveConstants.AutoAlignDirection.LEFT
-                            ? 0.64 // more negative means more to the left of the robot
-                            : 0.615), // more positive is further away
+                            ? Drive.autoAlignOutwardLeft
+                                .get() // more negative means more to the left of the robot
+                            : Drive.autoAlignOutwardRight.get()), // more positive is further away
                         (autoAlignDirection == DriveConstants.AutoAlignDirection.LEFT
-                            ? -0.41 // more negative means more to the left of the robot
-                            : -0.05),
+                            ? Drive.autoAlignSidewaysLeft
+                                .get() // more negative means more to the left of the robot
+                            : Drive.autoAlignSidewaysRight.get()),
                         0,
                         new Rotation3d(Rotation2d.kPi)))
                 .toPose2d();

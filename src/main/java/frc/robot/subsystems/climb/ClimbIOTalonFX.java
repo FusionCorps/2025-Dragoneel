@@ -92,7 +92,12 @@ public class ClimbIOTalonFX implements ClimbIO {
         voltageOut
             .withOutput(CLIMB_RETRACT_VOLTS)
             .withLimitReverseMotion(
-                MathUtil.isNear(48, climbMotor.getPosition().refresh().getValueAsDouble(), 1))
+                MathUtil.isNear(55, climbMotor.getPosition().refresh().getValueAsDouble(), 1))
             .withLimitForwardMotion(false));
+  }
+
+  @Override
+  public void zero() {
+    climbMotor.setControl(voltageOut.withOutput(0).withLimitReverseMotion(true));
   }
 }
