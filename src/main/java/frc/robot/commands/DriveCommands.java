@@ -129,9 +129,9 @@ public class DriveCommands {
     angleController.enableContinuousInput(-Math.PI, Math.PI);
     angleController.setTolerance(Units.degreesToRadians(1.0));
 
-    PIDController xController = new PIDController(1.0, 0.0, 0.0);
+    PIDController xController = new PIDController(11.0, 0.0, 0.0);
     xController.setTolerance(0.02);
-    PIDController yController = new PIDController(1.0, 0.0, 0.0);
+    PIDController yController = new PIDController(11.0, 0.0, 0.0);
     yController.setTolerance(0.02);
 
     // Construct command
@@ -154,10 +154,7 @@ public class DriveCommands {
 
           // Convert to field relative speeds & send command
           ChassisSpeeds speeds =
-              new ChassisSpeeds(
-                  xVel * AUTO_DRIVE_MAX_SPEED,
-                  yVel * AUTO_DRIVE_MAX_SPEED,
-                  omega * AUTO_DRIVE_MAX_ROT);
+              new ChassisSpeeds(xVel * 0.3, yVel * 0.3, omega * Units.rotationsToRadians(0.75));
           drive.driveRobotCentric(
               ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
         },
@@ -210,8 +207,8 @@ public class DriveCommands {
           }
         };
 
-    // return driveToPose(drive, tagPoseSupplierIn2DWOffset)
-    return Commands.runOnce(() -> {})
+    return driveToPose(drive, tagPoseSupplierIn2DWOffset)
+        // return Commands.runOnce(() -> {})
         .deadlineFor(
             Commands.run(
                 () -> {

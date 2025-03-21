@@ -48,7 +48,7 @@ public class VisionConstants {
   // Basic filtering thresholds
   public static double maxSingleTagAmbiguity = 0.4;
   public static Distance maxZError = Meters.of(0.1);
-  public static Distance maxSingleTagDistance = Meters.of(2.0);
+  public static Distance maxSingleTagDistance = Meters.of(3.0);
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)

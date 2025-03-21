@@ -92,7 +92,7 @@ public class ClimbIOTalonFX implements ClimbIO {
         voltageOut
             .withOutput(CLIMB_RETRACT_VOLTS)
             .withLimitReverseMotion(
-                MathUtil.isNear(55, climbMotor.getPosition().refresh().getValueAsDouble(), 1))
+                MathUtil.isNear(48.2, climbPosition.refresh().getValueAsDouble(), 1))
             .withLimitForwardMotion(false));
   }
 
@@ -104,10 +104,18 @@ public class ClimbIOTalonFX implements ClimbIO {
   @Override
   public void setBrake() {
     climbMotor.setNeutralMode(NeutralModeValue.Brake);
+    System.out.println("setting climb to brake");
   }
 
   @Override
   public void setCoast() {
     climbMotor.setNeutralMode(NeutralModeValue.Coast);
+    System.out.println("setting climb to coast");
+  }
+
+  @Override
+  public void zeroPosition() {
+    climbMotor.setPosition(0);
+    System.out.println("zeroing climb");
   }
 }
