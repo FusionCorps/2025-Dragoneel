@@ -151,7 +151,7 @@ task(eventDeploy) {
             def commitMessage = "Update at '${new Date().toString()}'"
 
             if (branch.startsWith(branchPrefix)) {
-                 exec {
+                exec {
                     workingDir(projectDir)
                     executable 'git'
                     args 'add', '-A'
