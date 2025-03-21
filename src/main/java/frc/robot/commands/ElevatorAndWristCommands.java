@@ -343,7 +343,7 @@ public class ElevatorAndWristCommands {
             //   return goToL3Algae();
             // }
           }
-          return Commands.none();
+          return goToStation();
         },
         Set.of());
   }
