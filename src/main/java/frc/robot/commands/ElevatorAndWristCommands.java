@@ -353,10 +353,9 @@ public class ElevatorAndWristCommands {
 
   public Command stowAllReset() {
     return Commands.sequence(
-      Commands.runOnce(() -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL),
-      wrist.setTargetState(WristState.STATION),
-      Commands.waitSeconds(1.0),
-      elevator.setTargetState(ElevatorState.STATION)
-    );
+        Commands.runOnce(() -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL),
+        wrist.setTargetState(WristState.STATION),
+        Commands.waitSeconds(1.0),
+        elevator.setTargetState(ElevatorState.STATION));
   }
 }
