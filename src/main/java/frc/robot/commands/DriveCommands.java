@@ -129,9 +129,9 @@ public class DriveCommands {
     angleController.enableContinuousInput(-Math.PI, Math.PI);
     angleController.setTolerance(Units.degreesToRadians(1.0));
 
-    PIDController xController = new PIDController(1.0, 0.0, 0.0);
+    PIDController xController = new PIDController(10.0, 0.0, 0.0);
     xController.setTolerance(0.02);
-    PIDController yController = new PIDController(1.0, 0.0, 0.0);
+    PIDController yController = new PIDController(10.0, 0.0, 0.0);
     yController.setTolerance(0.02);
 
     // Construct command
@@ -154,7 +154,7 @@ public class DriveCommands {
 
           // Convert to field relative speeds & send command
           ChassisSpeeds speeds =
-              new ChassisSpeeds(xVel * 2.0, yVel * 2.0, omega * Units.rotationsToRadians(1.25));
+              new ChassisSpeeds(xVel * 0.3, yVel * 0.3, omega * Units.rotationsToRadians(0.75));
           drive.driveRobotCentric(
               ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
         },
