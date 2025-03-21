@@ -133,7 +133,6 @@ public class DriveCommands {
     xController.setTolerance(0.005);
     PIDController yController = new PIDController(10.0, 0.0, 0.0);
     yController.setTolerance(0.005);
-    
 
     // Construct command
     return new FunctionalCommand(
