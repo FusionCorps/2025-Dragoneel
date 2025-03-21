@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants.AutoAlignDirection;
 import frc.robot.subsystems.elevator.Elevator;
@@ -179,7 +178,8 @@ public class Autos {
         // DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
         elevatorAndWristCommands.goToL4()
         // shooter
-        //     .shootCoralInAutoCmd(wrist.isAtScoringState, RobotContainer.simCoralProjectileSupplier)
+        //     .shootCoralInAutoCmd(wrist.isAtScoringState,
+        // RobotContainer.simCoralProjectileSupplier)
         //     .withTimeout(SHOOT_TIMEOUT)
         );
   }

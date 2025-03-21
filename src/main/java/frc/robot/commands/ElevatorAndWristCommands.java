@@ -61,10 +61,11 @@ public class ElevatorAndWristCommands {
   }
 
   public Command goToStateWithStowAlt(TargetState targetState, Trigger elevatorAbove) {
-    return Commands.sequence(
+    return Commands.defer(() -> Commands.sequence(
         elevator.setTargetState(targetState.elevatorState),
-        Commands.waitUntil(elevatorAbove),
-        wrist.setTargetState(targetState.wristState));
+        // Commands.waitUntil(elevatorAbove)
+        Commands.waitSeconds(0.2),
+        wrist.setTargetState(targetState.wristState)), Set.of());
   }
 
   /**
