@@ -137,43 +137,43 @@ public class Elevator extends SubsystemBase {
     SmartDashboard.putBoolean("L4", currentElevatorState == ElevatorState.L4);
     SmartDashboard.putBoolean("NET", currentElevatorState == ElevatorState.NET);
 
-    LoggedTunableNumber.ifChanged(
-        hashCode(),
-        nums -> {
-          ElevatorState.PROCESSOR.rotations = Rotations.of(nums[0]);
-          ElevatorState.L1.rotations = Rotations.of(nums[1]);
-          ElevatorState.L2.rotations = Rotations.of(nums[2]);
-          ElevatorState.STATION.rotations = Rotations.of(nums[3]);
-          ElevatorState.L3.rotations = Rotations.of(nums[4]);
-          ElevatorState.L4.rotations = Rotations.of(nums[5]);
-          ElevatorState.NET.rotations = Rotations.of(nums[6]);
+    // LoggedTunableNumber.ifChanged(
+    //     hashCode(),
+    //     nums -> {
+    //       ElevatorState.PROCESSOR.rotations = Rotations.of(nums[0]);
+    //       ElevatorState.L1.rotations = Rotations.of(nums[1]);
+    //       ElevatorState.L2.rotations = Rotations.of(nums[2]);
+    //       ElevatorState.STATION.rotations = Rotations.of(nums[3]);
+    //       ElevatorState.L3.rotations = Rotations.of(nums[4]);
+    //       ElevatorState.L4.rotations = Rotations.of(nums[5]);
+    //       ElevatorState.NET.rotations = Rotations.of(nums[6]);
 
-          Slot0Configs gains =
-              new Slot0Configs().withKP(nums[7]).withKV(nums[8]).withKS(nums[9]).withKG(nums[10]);
-          MotionMagicConfigs motmag =
-              new MotionMagicConfigs()
-                  .withMotionMagicCruiseVelocity(nums[11])
-                  .withMotionMagicAcceleration(nums[12]);
+    //       Slot0Configs gains =
+    //           new Slot0Configs().withKP(nums[7]).withKV(nums[8]).withKS(nums[9]).withKG(nums[10]);
+    //       MotionMagicConfigs motmag =
+    //           new MotionMagicConfigs()
+    //               .withMotionMagicCruiseVelocity(nums[11])
+    //               .withMotionMagicAcceleration(nums[12]);
 
-          ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(gains);
-          ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(gains);
+    //       ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(gains);
+    //       ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(gains);
 
-          ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(motmag);
-          ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(motmag);
-        },
-        elevatorProcessorPosition,
-        elevatorL1Position,
-        elevatorL2Position,
-        elevatorStationPosition,
-        elevatorL3Position,
-        elevatorL4Position,
-        elevatorNetPosition,
-        kP,
-        kV,
-        kS,
-        kG,
-        maxVel,
-        maxAccel);
+    //       ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(motmag);
+    //       ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(motmag);
+    //     },
+    //     elevatorProcessorPosition,
+    //     elevatorL1Position,
+    //     elevatorL2Position,
+    //     elevatorStationPosition,
+    //     elevatorL3Position,
+    //     elevatorL4Position,
+    //     elevatorNetPosition,
+    //     kP,
+    //     kV,
+    //     kS,
+    //     kG,
+    //     maxVel,
+    //     maxAccel);
   }
 
   public Command setTargetState(ElevatorState targetState) {
