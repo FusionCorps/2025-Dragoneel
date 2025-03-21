@@ -116,6 +116,10 @@ public class Autos {
     return Commands.sequence(resetOdometry(CenterStart_H), autoAlignAndScore(RIGHT));
   }
 
+  public Command onePieceFromCenterBlind() {
+    return Commands.sequence(resetOdometry(CenterStart_H), autoAlignAndScore(RIGHT));
+  }
+
   /* ========== Top autos JKLA ========== */
   public Command onePieceFromTop() {
     return Commands.sequence(resetOdometry(TStart_J), autoAlignAndScore(RIGHT));
@@ -173,6 +177,8 @@ public class Autos {
   public Command pushAndOnePieceFromBottom() {
     return Commands.sequence(resetOdometry(BOTTOM_PUSH), autoAlignAndScore(LEFT));
   }
+
+  private Command driveBlindAndScore()
 
   /* Helper commands for readability */
   private Command autoAlignAndScore(AutoAlignDirection direction) {
