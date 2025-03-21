@@ -153,11 +153,7 @@ public class DriveCommands {
                   drive.getRotation().getRadians(), poseSupplier.get().getRotation().getRadians());
 
           // Convert to field relative speeds & send command
-          ChassisSpeeds speeds =
-              new ChassisSpeeds(
-                  xVel * AUTO_DRIVE_MAX_SPEED,
-                  yVel * AUTO_DRIVE_MAX_SPEED,
-                  omega * AUTO_DRIVE_MAX_ROT);
+          ChassisSpeeds speeds = new ChassisSpeeds(xVel * 0.3, yVel * 0.3, omega * Units.rotationsToRadians(0.75));
           drive.driveRobotCentric(
               ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
         },
@@ -211,7 +207,7 @@ public class DriveCommands {
         };
 
     return driveToPose(drive, tagPoseSupplierIn2DWOffset)
-    // return Commands.runOnce(() -> {})
+        // return Commands.runOnce(() -> {})
         .deadlineFor(
             Commands.run(
                 () -> {
