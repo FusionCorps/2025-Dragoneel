@@ -113,11 +113,9 @@ public class ClimbIOTalonFX implements ClimbIO {
     System.out.println("setting climb to coast");
   }
 
-@Override
-public void zeroPosition() {
+  @Override
+  public void zeroPosition() {
     climbMotor.setPosition(0);
     System.out.println("zeroing climb");
-}
-
-  
+  }
 }
