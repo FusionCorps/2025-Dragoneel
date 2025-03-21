@@ -186,15 +186,15 @@ public class Autos {
         Commands.waitUntil(wrist.isAtStation),
         Commands.print("0"),
         elevator.runOnce(() -> elevator.currentElevatorState = ElevatorState.L4),
-        Commands.print("123")
-        elevator.runOnce(() -> elevator.io.setTargetPosition(ElevatorState.L4.rotations)),
+        Commands.print("123"),
+        elevator.runOnce(() -> elevator.io.setTargetPosition(ElevatorState.L4.rotations),
         Commands.print("1"),
         Commands.waitUntil(elevator.isAtTargetState),
         Commands.print("2"),
         wrist.runOnce(() -> wrist.currentWristState = WristState.L4),
         Commands.print("3"),
         // ),
-        shooter.shootCoralInAutoCmd(wrist.isAtScoringState).withTimeout(SHOOT_TIMEOUT));
+        shooter.shootCoralInAutoCmd(wrist.isAtScoringState).withTimeout(SHOOT_TIMEOUT)));
   }
 
   private Command resetOdometry(PathPlannerPath initialPath) {
