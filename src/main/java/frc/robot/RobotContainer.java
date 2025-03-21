@@ -18,6 +18,8 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.util.Color;
@@ -416,9 +418,10 @@ public class RobotContainer {
       // Only works if in coral mode, because D-pad down is bound to moving to algae stow in algae
       // mode
       // This will also set the drive to precision mode.
-      (controller.povDown().or(controller.povDownLeft()).or(controller.povDownRight()))
+      controller.povDown()
           .and(() -> currentScoringPieceType != ScoringPieceType.ALGAE)
-          .whileTrue(climb.extendClimbCmd().alongWith(drive.setMaxSpeed(DriveSpeedMode.PRECISION)));
+          .and(() -> DriverStation.getMatchTime() < 40.0)
+          .whileTrue(climb.extendClimbCmd());
 
       // Retract climb in/up. Use for the actual climb.
       controller.povUp().whileTrue(climb.retractClimbCmd());
