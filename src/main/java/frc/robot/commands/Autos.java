@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Seconds;
 import static frc.robot.Constants.TargetState.L4;
-import static frc.robot.RobotContainer.targetPosition;
 import static frc.robot.subsystems.drive.DriveConstants.AutoAlignDirection.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -182,13 +181,13 @@ public class Autos {
     return Commands.sequence(
         DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
         Commands.run(
-            () -> {
-              RobotContainer.targetPosition = L4;
-            }).andThen(
-              elevator.setTargetState(ElevatorState.L4),
-              Commands.waitUntil(elevator.isAboveL1Intermediate),
-              wrist.setTargetState(WristState.L4)
-            ),
+                () -> {
+                  RobotContainer.targetPosition = L4;
+                })
+            .andThen(
+                Commands.runOnce(() -> elevator.currentElevatorState = ElevatorState.L4),
+                Commands.waitUntil(elevator.isAboveL1Intermediate),
+                Commands.runOnce(() -> wrist.currentWristState = WristState.L4)),
         shooter
             .shootCoralInAutoCmd(wrist.isAtScoringState, RobotContainer.simCoralProjectileSupplier)
             .withTimeout(SHOOT_TIMEOUT));

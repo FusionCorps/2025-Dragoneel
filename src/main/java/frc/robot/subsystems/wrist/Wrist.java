@@ -25,7 +25,7 @@ public class Wrist extends SubsystemBase {
   private final WristIO io;
   private final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
-  @AutoLogOutput private WristState currentWristState = WristState.STATION;
+  @AutoLogOutput public WristState currentWristState = WristState.STATION;
 
   @AutoLogOutput
   public Trigger isAtStation =

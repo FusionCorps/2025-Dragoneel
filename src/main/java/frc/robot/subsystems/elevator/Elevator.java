@@ -37,7 +37,7 @@ public class Elevator extends SubsystemBase {
       new Alert("Follower Elevator Motor Disconnected.", AlertType.kError);
 
   /* State tracker for current height of the elevator */
-  private ElevatorState currentElevatorState = ElevatorState.STATION;
+  public ElevatorState currentElevatorState = ElevatorState.STATION;
 
   @AutoLogOutput
   public Trigger isAtTargetState =
