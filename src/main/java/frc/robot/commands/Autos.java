@@ -184,9 +184,10 @@ public class Autos {
         Commands.run(() -> elevator.io.setTargetPosition(ElevatorState.L4.rotations))
             .until(elevator.isAtL4),
         Commands.run(() -> wrist.currentWristState = WristState.L4).withTimeout(0.4),
-        shooter
-            .shootCoralInAutoCmd(wrist.isAtScoringState, RobotContainer.simCoralProjectileSupplier)
-            .withTimeout(SHOOT_TIMEOUT),
+        // shooter
+        //     .shootCoralInAutoCmd(wrist.isAtScoringState, RobotContainer.simCoralProjectileSupplier)
+        //     .withTimeout(SHOOT_TIMEOUT),
+        shooter.pulseShooterAutoCmd().withTimeout(2.0),
         // Commands.runOnce(() -> elevator.currentElevatorState = ElevatorState.L4),
         Commands.run(() -> wrist.currentWristState = WristState.STATION).withTimeout(0.4),
         Commands.run(() -> elevator.io.setTargetPosition(ElevatorState.STATION.rotations))
