@@ -64,7 +64,6 @@ import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
 import frc.robot.util.ShootingUtil;
-
 import java.util.Set;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -326,14 +325,21 @@ public class RobotContainer {
                       () ->
                           Commands.runOnce(
                               () -> {
-                                if (RobotContainer.currentScoringPieceType == ScoringPieceType.CORAL)
-                                RobotContainer.currentScoringPieceType = ScoringPieceType.ALGAE;
-                                else RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL;
+                                if (RobotContainer.currentScoringPieceType
+                                    == ScoringPieceType.CORAL)
+                                  RobotContainer.currentScoringPieceType = ScoringPieceType.ALGAE;
+                                else
+                                  RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL;
                               }),
                       Set.of())
                   .alongWith(rumbleCommand()));
 
-      controller.rightBumper().onTrue(Commands.runOnce(() -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL).andThen(elevatorAndWristCommands.goToStation()));
+      controller
+          .rightBumper()
+          .onTrue(
+              Commands.runOnce(
+                      () -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL)
+                  .andThen(elevatorAndWristCommands.goToStation()));
 
       // Set scoring mode to coral and move to station
       // controller
