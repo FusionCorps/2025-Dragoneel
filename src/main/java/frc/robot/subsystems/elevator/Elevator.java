@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 
-
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
@@ -16,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
@@ -104,6 +104,7 @@ public class Elevator extends SubsystemBase {
   /* Periodically running code */
   @Override
   public void periodic() {
+    if (!RobotModeTriggers.autonomous().getAsBoolean())
     io.setTargetPosition(currentElevatorState.rotations);
 
     io.updateInputs(inputs);
