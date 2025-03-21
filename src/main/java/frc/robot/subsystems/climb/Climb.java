@@ -29,6 +29,7 @@ public class Climb extends SubsystemBase {
 
     SmartDashboard.putData("Climb/Coast", Commands.runOnce(() -> io.setCoast()));
     SmartDashboard.putData("Climb/Brake", Commands.runOnce(() -> io.setBrake()));
+    SmartDashboard.putData("CLimb/Zero", Commands.runOnce(() -> io.zeroPosition()));
   }
 
   /* Periodic */

@@ -24,4 +24,6 @@ public interface ClimbIO {
   default void setBrake() {}
 
   default void setCoast() {}
+
+  default void zeroPosition() {}
 }
