@@ -176,11 +176,12 @@ public class Autos {
   /* Helper commands for readability */
   private Command autoAlignAndScore(AutoAlignDirection direction) {
     return Commands.sequence(
-        DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
-        elevatorAndWristCommands.goToL4(),
-        shooter
-            .shootCoralInAutoCmd(wrist.isAtScoringState, RobotContainer.simCoralProjectileSupplier)
-            .withTimeout(SHOOT_TIMEOUT));
+        // DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
+        elevatorAndWristCommands.goToL4()
+        // shooter
+        //     .shootCoralInAutoCmd(wrist.isAtScoringState, RobotContainer.simCoralProjectileSupplier)
+        //     .withTimeout(SHOOT_TIMEOUT)
+        );
   }
 
   private Command resetOdometry(PathPlannerPath initialPath) {
