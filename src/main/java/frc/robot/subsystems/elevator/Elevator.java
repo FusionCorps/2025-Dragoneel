@@ -105,7 +105,7 @@ public class Elevator extends SubsystemBase {
   @Override
   public void periodic() {
     if (!RobotModeTriggers.autonomous().getAsBoolean())
-    io.setTargetPosition(currentElevatorState.rotations);
+      io.setTargetPosition(currentElevatorState.rotations);
 
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);

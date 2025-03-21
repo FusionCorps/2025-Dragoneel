@@ -181,11 +181,14 @@ public class Autos {
         DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
         wrist.setTargetState(WristState.STATION),
         Commands.waitUntil(wrist.isAtStation),
-        Commands.run(() -> elevator.io.setTargetPosition(ElevatorState.L4.rotations)).until(elevator.isAtL4),
+        Commands.run(() -> elevator.io.setTargetPosition(ElevatorState.L4.rotations))
+            .until(elevator.isAtL4),
         Commands.run(() -> wrist.currentWristState = WristState.L4).withTimeout(0.4),
         shooter
             .shootCoralInAutoCmd(wrist.isAtScoringState, RobotContainer.simCoralProjectileSupplier)
-            .withTimeout(SHOOT_TIMEOUT));
+            .withTimeout(SHOOT_TIMEOUT),
+        Commands.runOnce(() -> elevator.currentElevatorState = ElevatorState.L4),
+        elevatorAndWristCommands.goToStation());
   }
 
   private Command resetOdometry(PathPlannerPath initialPath) {
