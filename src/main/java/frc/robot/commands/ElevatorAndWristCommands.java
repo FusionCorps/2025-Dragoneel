@@ -3,6 +3,7 @@ package frc.robot.commands;
 import static frc.robot.Constants.TargetState.*;
 import static frc.robot.RobotContainer.targetPosition;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -23,6 +24,8 @@ public class ElevatorAndWristCommands {
   public ElevatorAndWristCommands(Elevator elevator, Wrist wrist) {
     this.elevator = elevator;
     this.wrist = wrist;
+
+    SmartDashboard.putData("Stow E+W", stowAllReset());
   }
 
   private boolean isAlgaeState(TargetState targetState) {
@@ -346,5 +349,14 @@ public class ElevatorAndWristCommands {
           return goToStation();
         },
         Set.of());
+  }
+
+  public Command stowAllReset() {
+    return Commands.sequence(
+      Commands.runOnce(() -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL),
+      wrist.setTargetState(WristState.STATION),
+      Commands.waitSeconds(1.0),
+      elevator.setTargetState(ElevatorState.STATION)
+    );
   }
 }

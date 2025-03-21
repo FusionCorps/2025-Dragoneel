@@ -318,11 +318,7 @@ public class RobotContainer {
 
       controller.leftBumper().onTrue(elevatorAndWristCommands.setScoringPieceToAlgae());
 
-      controller
-          .rightBumper()
-          .onTrue(
-              elevatorAndWristCommands
-                  .setScoringPieceToCoral());
+      controller.rightBumper().onTrue(elevatorAndWristCommands.setScoringPieceToCoral());
 
       // Set scoring mode to coral and move to station
       // controller
