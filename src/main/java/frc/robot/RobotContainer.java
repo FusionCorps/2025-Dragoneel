@@ -241,6 +241,8 @@ public class RobotContainer {
           .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT))
           .onFalse(drive.setMaxSpeed(DriveSpeedMode.PRECISION));
     }
+    
+    
 
     RobotModeTriggers.teleop().onTrue(Commands.runOnce(() -> Vision.blind = false));
 
