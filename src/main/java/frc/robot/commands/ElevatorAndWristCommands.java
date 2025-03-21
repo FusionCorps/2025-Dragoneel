@@ -61,11 +61,14 @@ public class ElevatorAndWristCommands {
   }
 
   public Command goToStateWithStowAlt(TargetState targetState, Trigger elevatorAbove) {
-    return Commands.defer(() -> Commands.sequence(
-        elevator.setTargetState(targetState.elevatorState),
-        // Commands.waitUntil(elevatorAbove)
-        Commands.waitSeconds(0.2),
-        wrist.setTargetState(targetState.wristState)), Set.of());
+    return Commands.defer(
+        () ->
+            Commands.sequence(
+                elevator.setTargetState(targetState.elevatorState),
+                // Commands.waitUntil(elevatorAbove)
+                Commands.waitSeconds(0.2),
+                wrist.setTargetState(targetState.wristState)),
+        Set.of());
   }
 
   /**
@@ -274,7 +277,8 @@ public class ElevatorAndWristCommands {
           }
           // Otherwise move to L4 with stowing movement
           targetPosition = L4;
-          return goToStateWithStowAlt(targetPosition, elevator.isAboveL1Intermediate);
+          // return goToStateWithStowAlt(targetPosition, elevator.isAboveL1Intermediate);
+          return goToStateDirect(L4);
         },
         Set.of());
   }
