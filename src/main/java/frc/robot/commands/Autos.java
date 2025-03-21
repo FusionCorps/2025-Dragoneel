@@ -49,9 +49,9 @@ public class Autos {
   private PathPlannerPath TOP_PUSH;
   private PathPlannerPath BOTTOM_PUSH;
 
-  private final Time STATION_WAIT_TIME = Seconds.of(0.5);
-  private final Time AUTO_ALIGN_TIMEOUT = Seconds.of(5.0);
-  private final Time SHOOT_TIMEOUT = Seconds.of(2.5);
+  private final Time STATION_WAIT_TIME = Seconds.of(0.75);
+  private final Time AUTO_ALIGN_TIMEOUT = Seconds.of(4.0);
+  private final Time SHOOT_TIMEOUT = Seconds.of(2.0);
 
   public Autos(Drive drive, Elevator elevator, Wrist wrist, Shooter shooter) {
     this.drive = drive;
