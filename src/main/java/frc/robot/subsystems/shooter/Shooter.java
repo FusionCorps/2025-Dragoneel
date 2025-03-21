@@ -138,8 +138,7 @@ public class Shooter extends SubsystemBase {
 
   public Command pulseShooterAutoCmd() {
     // turn shooter on and off quickly repeatedly
-    return (startEnd(
-                () -> setState(ShooterState.SHOOT_CORAL_L4), () -> setState(ShooterState.IDLE))
+    return (startEnd(() -> setState(ShooterState.SHOOT_CORAL_L4), () -> setState(ShooterState.IDLE))
             .withTimeout(0.6))
         .repeatedly();
   }
