@@ -232,15 +232,26 @@ public class RobotContainer {
       // When elevator is set to target station/algae stow position, set drive to DEFAULT max speed
       // When elevator is NO LONGER at (i.e. leaves) station/algae stow position,
       // set drive to PRECISION max speed to avoid tipping
-      new Trigger(
-              () ->
-                  elevator.getCurrentElevatorState() == ElevatorState.STATION
-                      || elevator.getCurrentElevatorState() == ElevatorState.ALGAE_STOW
-                      || elevator.getCurrentElevatorState() == ElevatorState.PROCESSOR
-                      || elevator.getCurrentElevatorState() == ElevatorState.NEUTRAL)
-          .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT))
-          .onFalse(drive.setMaxSpeed(DriveSpeedMode.PRECISION));
+      // new Trigger(
+      //         () ->
+      //             elevator.getCurrentElevatorState() == ElevatorState.STATION
+      //                 || elevator.getCurrentElevatorState() == ElevatorState.ALGAE_STOW
+      //                 || elevator.getCurrentElevatorState() == ElevatorState.PROCESSOR
+      //                 || elevator.getCurrentElevatorState() == ElevatorState.NEUTRAL)
+      //     .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT))
+      //     .onFalse(drive.setMaxSpeed(DriveSpeedMode.PRECISION));
     }
+
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.NET).onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L1).onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L2).onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L3).onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L4).onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
+    
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.STATION).onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.PROCESSOR).onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.ALGAE_STOW).onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
+
 
     RobotModeTriggers.teleop().onTrue(Commands.runOnce(() -> Vision.blind = false));
 
@@ -342,18 +353,6 @@ public class RobotContainer {
                       () -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL)
                   .andThen(elevatorAndWristCommands.goToStation()));
 
-      // Set scoring mode to coral and move to station
-      // controller
-      //     .rightBumper()
-      //     .onTrue(
-      //         Commands.defer(
-      //             // () ->
-      //             //     Commands.runOnce(
-      //             //             () -> RobotContainer.currentScoringPieceType =
-      // ScoringPieceType.CORAL)
-
-      //                     .andThen(elevatorAndWristCommands.goToStation()),
-      //             Set.of()));
 
       // Goes to L1 or processor based on current scoring type
       controller
@@ -421,7 +420,7 @@ public class RobotContainer {
           .povDown()
           .and(() -> currentScoringPieceType != ScoringPieceType.ALGAE)
           .and(() -> DriverStation.getMatchTime() < 40.0)
-          .whileTrue(climb.extendClimbCmd());
+          .whileTrue(climb.extendClimbCmd().alongWith(drive.setMaxSpeed(DriveSpeedMode.SLOW)));
 
       // Retract climb in/up. Use for the actual climb.
       controller.povUp().whileTrue(climb.retractClimbCmd());
