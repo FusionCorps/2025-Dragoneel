@@ -2,7 +2,6 @@ package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 
@@ -47,9 +46,9 @@ public class Elevator extends SubsystemBase {
               getCurrentElevatorPosition()
                   .isNear(currentElevatorState.rotations, Rotations.of(0.5)));
 
-  public Trigger isAtL4 = 
-   new Trigger(() -> getCurrentElevatorPosition().isNear(ElevatorState.L4.rotations, Rotations.of(1)));
-
+  public Trigger isAtL4 =
+      new Trigger(
+          () -> getCurrentElevatorPosition().isNear(ElevatorState.L4.rotations, Rotations.of(2)));
   @AutoLogOutput
   public Trigger isAboveL1Intermediate =
       new Trigger(() -> getCurrentElevatorPosition().gte(ElevatorState.L1_INTERMEDIATE.rotations));
