@@ -329,4 +329,22 @@ public class ElevatorAndWristCommands {
         },
         Set.of());
   }
+
+  public Command setScoringPieceToCoral() {
+    return Commands.defer(
+        () -> {
+          if (RobotContainer.currentScoringPieceType == ScoringPieceType.ALGAE) {
+            RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL;
+            // if (targetPosition == L1) {
+            //   return goToProcessor();
+            // } else if (targetPosition == L2_CORAL) {
+            //   return goToL2Algae();
+            // } else if (targetPosition == L3_CORAL) {
+            //   return goToL3Algae();
+            // }
+          }
+          return Commands.none();
+        },
+        Set.of());
+  }
 }
