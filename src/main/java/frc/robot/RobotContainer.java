@@ -64,6 +64,8 @@ import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
 import frc.robot.util.ShootingUtil;
+
+import java.util.Set;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
@@ -316,9 +318,22 @@ public class RobotContainer {
       // When elevator changes scoring piece type, rumble controller
       new Trigger(() -> currentScoringPieceType == ScoringPieceType.ALGAE).onTrue(rumbleCommand());
 
-      controller.leftBumper().onTrue(elevatorAndWristCommands.setScoringPieceToAlgae());
+      // switch between coral and algae scoring
+      controller
+          .leftBumper()
+          .onTrue(
+              Commands.defer(
+                      () ->
+                          Commands.runOnce(
+                              () -> {
+                                if (RobotContainer.currentScoringPieceType == ScoringPieceType.CORAL)
+                                RobotContainer.currentScoringPieceType = ScoringPieceType.ALGAE;
+                                else RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL;
+                              }),
+                      Set.of())
+                  .alongWith(rumbleCommand()));
 
-      controller.rightBumper().onTrue(elevatorAndWristCommands.setScoringPieceToCoral());
+      controller.rightBumper().onTrue(Commands.runOnce(() -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL).andThen(elevatorAndWristCommands.goToStation()));
 
       // Set scoring mode to coral and move to station
       // controller
