@@ -64,6 +64,8 @@ import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
 import frc.robot.util.ShootingUtil;
+
+import java.util.Set;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
@@ -322,9 +324,10 @@ public class RobotContainer {
       controller
           .rightBumper()
           .onTrue(
-              Commands.runOnce(
-                      () -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL)
-                  .andThen(elevatorAndWristCommands.goToStation()));
+              Commands.defer(() ->
+                 Commands.runOnce(
+                      () -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL).andThen(elevatorAndWristCommands.goToStation()), Set.of())
+                );
 
       // Goes to L1 or processor based on current scoring type
       controller
