@@ -49,6 +49,7 @@ public class Elevator extends SubsystemBase {
   public Trigger isAtL4 =
       new Trigger(
           () -> getCurrentElevatorPosition().isNear(ElevatorState.L4.rotations, Rotations.of(2)));
+
   @AutoLogOutput
   public Trigger isAboveL1Intermediate =
       new Trigger(() -> getCurrentElevatorPosition().gte(ElevatorState.L1_INTERMEDIATE.rotations));

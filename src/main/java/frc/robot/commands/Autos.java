@@ -186,8 +186,13 @@ public class Autos {
                     wrist.setTargetState(WristState.STATION),
                     Commands.waitUntil(wrist.isAtStation),
                     elevator.setTargetState(ElevatorState.L4),
+                    Commands.print("1"),
                     Commands.waitUntil(elevator.isAtTargetState),
-                    wrist.setTargetState(WristState.L4))),
+                    Commands.print("2"),
+                    wrist.setTargetState(WristState.L4),
+                    Commands.print("3")
+                    ))
+                    ,
         shooter.shootCoralInAutoCmd(wrist.isAtScoringState).withTimeout(SHOOT_TIMEOUT));
   }
 
