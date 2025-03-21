@@ -130,9 +130,9 @@ public class DriveCommands {
     angleController.setTolerance(Units.degreesToRadians(1.0));
 
     PIDController xController = new PIDController(10.0, 0.0, 0.0);
-    xController.setTolerance(0.0025);
+    xController.setTolerance(0.0075);
     PIDController yController = new PIDController(10.0, 0.0, 0.0);
-    yController.setTolerance(0.0025);
+    yController.setTolerance(0.0075);
 
     // Construct command
     return new FunctionalCommand(
