@@ -5,6 +5,7 @@ import static frc.robot.RobotContainer.targetPosition;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ScoringPieceType;
 import frc.robot.Constants.TargetState;
 import frc.robot.RobotContainer;
@@ -59,7 +60,7 @@ public class ElevatorAndWristCommands {
         wrist.setTargetState(targetState.wristState));
   }
 
-  private Command goToStateWithStowAlt(TargetState targetState) {
+  private Command goToStateWithStowAlt(TargetState targetState, Trigger elevatorAbove) {
     return Commands.sequence(
         elevator.setTargetState(targetState.elevatorState),
         Commands.waitUntil(elevator.isAboveL1Intermediate),
@@ -185,7 +186,7 @@ public class ElevatorAndWristCommands {
             return Commands.none();
           }
           targetPosition = L2_CORAL;
-          return goToStateWithStowAlt(targetPosition);
+          return goToStateWithStowAlt(targetPosition, elevator.isAboveL1Intermediate);
         },
         Set.of());
   }
@@ -219,7 +220,7 @@ public class ElevatorAndWristCommands {
 
           // Otherwise set movement method to L3 coral based on old target
           targetPosition = L3_CORAL;
-          return goToStateWithStowAlt(targetPosition);
+          return goToStateWithStowAlt(targetPosition, elevator.isAboveL1Intermediate);
         },
         Set.of());
   }
@@ -272,7 +273,7 @@ public class ElevatorAndWristCommands {
           }
           // Otherwise move to L4 with stowing movement
           targetPosition = L4;
-          return goToStateWithStowAlt(targetPosition);
+          return goToStateWithStowAlt(targetPosition, elevator.isAboveL1Intermediate);
         },
         Set.of());
   }

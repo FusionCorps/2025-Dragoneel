@@ -50,6 +50,12 @@ public class Elevator extends SubsystemBase {
   public Trigger isAboveL1Intermediate =
       new Trigger(() -> getCurrentElevatorPosition().gte(ElevatorState.L1_INTERMEDIATE.rotations));
 
+  public Trigger isAboveL2 =
+      new Trigger(() -> getCurrentElevatorPosition().gte(ElevatorState.L2.rotations));
+
+  public Trigger isAboveL3 =
+      new Trigger(() -> getCurrentElevatorPosition().gte(ElevatorState.L3.rotations));
+
   LoggedTunableNumber elevatorProcessorPosition =
       new LoggedTunableNumber(
           "/Elevator/ProcessorPosition", ElevatorState.PROCESSOR.rotations.in(Rotations));
