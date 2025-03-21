@@ -187,8 +187,11 @@ public class Autos {
         shooter
             .shootCoralInAutoCmd(wrist.isAtScoringState, RobotContainer.simCoralProjectileSupplier)
             .withTimeout(SHOOT_TIMEOUT),
-        Commands.runOnce(() -> elevator.currentElevatorState = ElevatorState.L4),
-        elevatorAndWristCommands.goToStation());
+        // Commands.runOnce(() -> elevator.currentElevatorState = ElevatorState.L4),
+        Commands.run(() -> wrist.currentWristState = WristState.STATION).withTimeout(0.4),
+        Commands.run(() -> elevator.io.setTargetPosition(ElevatorState.STATION.rotations))
+            .until(elevator.isAtTargetState)
+        );
   }
 
   private Command resetOdometry(PathPlannerPath initialPath) {
@@ -207,7 +210,7 @@ public class Autos {
   private Command moveToStationAndPickup(PathPlannerPath path) {
     return Commands.sequence(
         // Commands.runOnce(() -> RobotContainer.isAutoAligning = false),
-        elevatorAndWristCommands.goToStation(),
+        // elevatorAndWristCommands.goToStation(),
         AutoBuilder.followPath(path),
         Commands.waitTime(STATION_WAIT_TIME));
   }
