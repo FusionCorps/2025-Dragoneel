@@ -52,7 +52,7 @@ public class Autos {
 
   private final Time STATION_WAIT_TIME = Seconds.of(0.5);
   private final Time AUTO_ALIGN_TIMEOUT = Seconds.of(5.0);
-  private final Time SHOOT_TIMEOUT = Seconds.of(0.75);
+  private final Time SHOOT_TIMEOUT = Seconds.of(2.5);
 
   public Autos(Drive drive, Elevator elevator, Wrist wrist, Shooter shooter) {
     this.drive = drive;
@@ -190,8 +190,7 @@ public class Autos {
         // Commands.runOnce(() -> elevator.currentElevatorState = ElevatorState.L4),
         Commands.run(() -> wrist.currentWristState = WristState.STATION).withTimeout(0.4),
         Commands.run(() -> elevator.io.setTargetPosition(ElevatorState.STATION.rotations))
-            .until(elevator.isAtTargetState)
-        );
+            .until(elevator.isAtTargetState));
   }
 
   private Command resetOdometry(PathPlannerPath initialPath) {
@@ -211,7 +210,6 @@ public class Autos {
     return Commands.sequence(
         // Commands.runOnce(() -> RobotContainer.isAutoAligning = false),
         // elevatorAndWristCommands.goToStation(),
-        AutoBuilder.followPath(path),
-        Commands.waitTime(STATION_WAIT_TIME));
+        AutoBuilder.followPath(path), Commands.waitTime(STATION_WAIT_TIME));
   }
 }
