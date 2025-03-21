@@ -322,5 +322,5 @@ public class DriveConstants {
   public static LoggedTunableNumber autoAlignSidewaysLeft =
       new LoggedTunableNumber("AutoAlign/sideLeft", -0.365);
   public static LoggedTunableNumber autoAlignSidewaysRight =
-      new LoggedTunableNumber("AutoAlign/sideRight", 0.02);
+      new LoggedTunableNumber("AutoAlign/sideRight", 0.025);
 }
