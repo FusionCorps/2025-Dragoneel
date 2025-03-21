@@ -56,7 +56,7 @@ public class ElevatorAndWristCommands {
         wrist.setTargetState(WristState.STATION),
         Commands.waitUntil(wrist.isAtStation),
         elevator.setTargetState(targetState.elevatorState),
-        Commands.waitUntil(elevator.isAtTargetState),
+        Commands.waitUntil(elevator.isAtL4),
         wrist.setTargetState(targetState.wristState));
   }
 

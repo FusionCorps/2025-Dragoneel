@@ -180,18 +180,15 @@ public class Autos {
   private Command autoAlignAndScore(AutoAlignDirection direction) {
     return Commands.sequence(
         DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
-        Commands.runOnce(() -> RobotContainer.targetPosition = L4).andThen(
-          Commands.sequence(
-        wrist.setTargetState(WristState.STATION),
-        Commands.waitUntil(wrist.isAtStation),
-        elevator.setTargetState(ElevatorState.L4),
-        Commands.waitUntil(elevator.isAtTargetState),
-        wrist.setTargetState(WristState.L4))
-        ),
-        shooter
-            .shootCoralInAutoCmd(wrist.isAtScoringState)
-            .withTimeout(SHOOT_TIMEOUT)
-        );
+        Commands.runOnce(() -> RobotContainer.targetPosition = L4)
+            .andThen(
+                Commands.sequence(
+                    wrist.setTargetState(WristState.STATION),
+                    Commands.waitUntil(wrist.isAtStation),
+                    elevator.setTargetState(ElevatorState.L4),
+                    Commands.waitUntil(elevator.isAtTargetState),
+                    wrist.setTargetState(WristState.L4))),
+        shooter.shootCoralInAutoCmd(wrist.isAtScoringState).withTimeout(SHOOT_TIMEOUT));
   }
 
   private Command resetOdometry(PathPlannerPath initialPath) {
