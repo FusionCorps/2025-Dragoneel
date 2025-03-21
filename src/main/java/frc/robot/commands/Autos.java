@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Seconds;
-import static frc.robot.Constants.TargetState.L4;
 import static frc.robot.subsystems.drive.DriveConstants.AutoAlignDirection.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -10,7 +9,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants.AutoAlignDirection;
 import frc.robot.subsystems.elevator.Elevator;
@@ -181,20 +179,19 @@ public class Autos {
     return Commands.sequence(
         DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
         // Commands.runOnce(() -> RobotContainer.targetPosition = L4)
-            // .andThen(
-                Commands.sequence(
-                    Commands.print("-2"),
-                    wrist.setTargetState(WristState.STATION),
-                    Commands.print("-1"),
-                    Commands.waitUntil(wrist.isAtStation),
-                    Commands.print("0"),
-                    elevator.runOnce(()->  elevator.currentElevatorState = ElevatorState.L4),
-                    Commands.print("1"),
-                    Commands.waitUntil(elevator.isAtTargetState),
-                    Commands.print("2"),
-                    wrist.runOnce(() -> wrist.currentWristState = WristState.L4),
-                    Commands.print("3")),
-                    // ),
+        // .andThen(
+            Commands.print("-2"),
+            wrist.runOnce(() -> wrist.currentWristState = WristState.STATION),
+            Commands.print("-1"),
+            Commands.waitUntil(wrist.isAtStation),
+            Commands.print("0"),
+            elevator.runOnce(() -> elevator.currentElevatorState = ElevatorState.L4),
+            Commands.print("1"),
+            Commands.waitUntil(elevator.isAtTargetState),
+            Commands.print("2"),
+            wrist.runOnce(() -> wrist.currentWristState = WristState.L4),
+            Commands.print("3"),
+        // ),
         shooter.shootCoralInAutoCmd(wrist.isAtScoringState).withTimeout(SHOOT_TIMEOUT));
   }
 
