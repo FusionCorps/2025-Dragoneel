@@ -240,7 +240,7 @@ public class RobotContainer {
           .onFalse(drive.setMaxSpeed(DriveSpeedMode.PRECISION));
     }
 
-    RobotModeTriggers.teleop().onTrue(Commands.runOnce(() -> Vision.blind =false));
+    RobotModeTriggers.teleop().onTrue(Commands.runOnce(() -> Vision.blind = false));
 
     // When controller disconnects, show alert
     new Trigger(() -> controller.isConnected())

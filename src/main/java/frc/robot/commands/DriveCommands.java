@@ -154,7 +154,7 @@ public class DriveCommands {
 
           // Convert to field relative speeds & send command
           ChassisSpeeds speeds =
-              new ChassisSpeeds(xVel * 1.0, yVel * 1.0, omega * Units.rotationsToRadians(1.0));
+              new ChassisSpeeds(xVel * 2.0, yVel * 2.0, omega * Units.rotationsToRadians(1.25));
           drive.driveRobotCentric(
               ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
         },

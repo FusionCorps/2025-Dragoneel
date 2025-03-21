@@ -118,7 +118,10 @@ public class Autos {
   }
 
   public Command onePieceFromCenterBlind() {
-    return Commands.sequence(Commands.runOnce(() -> Vision.blind = true), resetOdometry(CenterStart_H), driveBlindAndScore());
+    return Commands.sequence(
+        Commands.runOnce(() -> Vision.blind = true),
+        resetOdometry(CenterStart_H),
+        driveBlindAndScore());
   }
 
   /* ========== Top autos JKLA ========== */
