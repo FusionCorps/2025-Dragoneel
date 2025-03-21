@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ScoringPieceType;
@@ -188,6 +189,7 @@ public class RobotContainer {
       autoChooser.addOption("1 Piece Center", autos.onePieceFromCenter());
       autoChooser.addOption("1 Piece Top", autos.onePieceFromTop());
       autoChooser.addOption("1 Piece Bottom", autos.onePieceFromBottom());
+      autoChooser.addOption("1 Piece Center Blind", autos.onePieceFromCenterBlind());
       autoChooser.addOption("2 Piece Top", autos.twoPieceFromTop());
       autoChooser.addOption("2 Piece Bottom", autos.twoPieceFromBottom());
       autoChooser.addOption("3 Piece Top", autos.threePieceFromTop());
@@ -237,6 +239,8 @@ public class RobotContainer {
           .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT))
           .onFalse(drive.setMaxSpeed(DriveSpeedMode.PRECISION));
     }
+
+    RobotModeTriggers.teleop().onTrue(Commands.runOnce(() -> Vision.blind =false));
 
     // When controller disconnects, show alert
     new Trigger(() -> controller.isConnected())
