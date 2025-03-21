@@ -180,17 +180,17 @@ public class Autos {
         DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
         // Commands.runOnce(() -> RobotContainer.targetPosition = L4)
         // .andThen(
-            Commands.print("-2"),
-            wrist.runOnce(() -> wrist.currentWristState = WristState.STATION),
-            Commands.print("-1"),
-            Commands.waitUntil(wrist.isAtStation),
-            Commands.print("0"),
-            elevator.runOnce(() -> elevator.currentElevatorState = ElevatorState.L4),
-            Commands.print("1"),
-            Commands.waitUntil(elevator.isAtTargetState),
-            Commands.print("2"),
-            wrist.runOnce(() -> wrist.currentWristState = WristState.L4),
-            Commands.print("3"),
+        Commands.print("-2"),
+        wrist.runOnce(() -> wrist.currentWristState = WristState.STATION),
+        Commands.print("-1"),
+        Commands.waitUntil(wrist.isAtStation),
+        Commands.print("0"),
+        elevator.runOnce(() -> elevator.currentElevatorState = ElevatorState.L4),
+        Commands.print("1"),
+        Commands.waitUntil(elevator.isAtTargetState),
+        Commands.print("2"),
+        wrist.runOnce(() -> wrist.currentWristState = WristState.L4),
+        Commands.print("3"),
         // ),
         shooter.shootCoralInAutoCmd(wrist.isAtScoringState).withTimeout(SHOOT_TIMEOUT));
   }
