@@ -242,16 +242,23 @@ public class RobotContainer {
       //     .onFalse(drive.setMaxSpeed(DriveSpeedMode.PRECISION));
     }
 
-    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.NET).onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
-    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L1).onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
-    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L2).onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
-    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L3).onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
-    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L4).onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
-    
-    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.STATION).onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
-    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.PROCESSOR).onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
-    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.ALGAE_STOW).onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.NET)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L1)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L2)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L3)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L4)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
 
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.STATION)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.PROCESSOR)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.ALGAE_STOW)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
 
     RobotModeTriggers.teleop().onTrue(Commands.runOnce(() -> Vision.blind = false));
 
@@ -352,7 +359,6 @@ public class RobotContainer {
               Commands.runOnce(
                       () -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL)
                   .andThen(elevatorAndWristCommands.goToStation()));
-
 
       // Goes to L1 or processor based on current scoring type
       controller
