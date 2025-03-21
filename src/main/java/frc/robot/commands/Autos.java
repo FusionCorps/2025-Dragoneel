@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Seconds;
+import static frc.robot.Constants.TargetState.L4;
 import static frc.robot.subsystems.drive.DriveConstants.AutoAlignDirection.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -9,11 +10,14 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants.AutoAlignDirection;
 import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.wrist.Wrist;
+import frc.robot.subsystems.wrist.WristConstants.WristState;
 
 public class Autos {
   private Drive drive;
@@ -175,12 +179,18 @@ public class Autos {
   /* Helper commands for readability */
   private Command autoAlignAndScore(AutoAlignDirection direction) {
     return Commands.sequence(
-        // DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
-        elevatorAndWristCommands.goToL4()
-        // shooter
-        //     .shootCoralInAutoCmd(wrist.isAtScoringState,
-        // RobotContainer.simCoralProjectileSupplier)
-        //     .withTimeout(SHOOT_TIMEOUT)
+        DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
+        Commands.runOnce(() -> RobotContainer.targetPosition = L4).andThen(
+          Commands.sequence(
+        wrist.setTargetState(WristState.STATION),
+        Commands.waitUntil(wrist.isAtStation),
+        elevator.setTargetState(ElevatorState.L4),
+        Commands.waitUntil(elevator.isAtTargetState),
+        wrist.setTargetState(WristState.L4))
+        ),
+        shooter
+            .shootCoralInAutoCmd(wrist.isAtScoringState)
+            .withTimeout(SHOOT_TIMEOUT)
         );
   }
 
