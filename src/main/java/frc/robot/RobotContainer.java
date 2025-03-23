@@ -279,7 +279,10 @@ public class RobotContainer {
       controller
           .povLeft()
           .whileTrue(
-              DriveCommands.autoAlignToNearestBranch(drive, AutoAlignDirection.LEFT)
+              Commands.either(
+                      DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.LEFT),
+                      DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.ALGAE),
+                      () -> currentScoringPieceType == ScoringPieceType.CORAL)
                   .finallyDo(
                       interrupted -> {
                         if (!interrupted) {
@@ -289,7 +292,10 @@ public class RobotContainer {
       controller
           .povRight()
           .whileTrue(
-              DriveCommands.autoAlignToNearestBranch(drive, AutoAlignDirection.RIGHT)
+              Commands.either(
+                      DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.RIGHT),
+                      DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.ALGAE),
+                      () -> currentScoringPieceType == ScoringPieceType.CORAL)
                   .finallyDo(
                       interrupted -> {
                         if (!interrupted) {

@@ -176,7 +176,7 @@ public class Autos {
   /* Helper commands for readability */
   private Command autoAlignAndScore(AutoAlignDirection direction) {
     return Commands.sequence(
-        DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
+        DriveCommands.autoAlignToNearest(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
         elevatorAndWristCommands.goToL4(),
         shooter
             .shootCoralInAutoCmd(wrist.isAtScoringState, RobotContainer.simCoralProjectileSupplier)
