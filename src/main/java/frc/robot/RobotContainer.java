@@ -293,7 +293,7 @@ public class RobotContainer {
       controller
           .povLeft()
           .whileTrue(
-              DriveCommands.autoAlignToNearestBranch(drive, AutoAlignDirection.LEFT)
+              DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.LEFT)
                   .finallyDo(
                       interrupted -> {
                         if (!interrupted) {
@@ -303,7 +303,29 @@ public class RobotContainer {
       controller
           .povRight()
           .whileTrue(
-              DriveCommands.autoAlignToNearestBranch(drive, AutoAlignDirection.RIGHT)
+              DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.RIGHT)
+                  .finallyDo(
+                      interrupted -> {
+                        if (!interrupted) {
+                          rumbleCommand().schedule();
+                        }
+                      }));
+
+      controller
+          .leftStick()
+          .whileTrue(
+              DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.ALGAE)
+                  .finallyDo(
+                      interrupted -> {
+                        if (!interrupted) {
+                          rumbleCommand().schedule();
+                        }
+                      }));
+
+      controller
+          .rightStick()
+          .whileTrue(
+              DriveCommands.autoAlignToBarge(drive)
                   .finallyDo(
                       interrupted -> {
                         if (!interrupted) {

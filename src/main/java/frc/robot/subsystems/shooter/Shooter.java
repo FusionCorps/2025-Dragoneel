@@ -77,7 +77,8 @@ public class Shooter extends SubsystemBase {
                     setState(ShooterState.SHOOT_CORAL_L1);
                   } else if (wristStateSupplier.get() == WristState.L4) {
                     setState(ShooterState.SHOOT_CORAL_L4);
-                  } else if (wristStateSupplier.get() == WristState.L3_ALGAE)
+                  } else if (wristStateSupplier.get() == WristState.L3_ALGAE
+                      || wristStateSupplier.get() == WristState.L2_ALGAE)
                     setState(ShooterState.PULL_IN_ALGAE);
                   else setState(ShooterState.SHOOT_CORAL_DEFAULT);
                 },

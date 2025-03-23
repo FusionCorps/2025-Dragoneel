@@ -191,8 +191,7 @@ public class Autos {
   /* Helper commands for readability */
   private Command autoAlignAndScore(AutoAlignDirection direction) {
     return Commands.parallel(
-            DriveCommands.autoAlignToNearestBranch(drive, direction)
-                .withTimeout(AUTO_ALIGN_TIMEOUT),
+            DriveCommands.autoAlignToNearest(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
             Commands.waitUntil(
                     () ->
                         drive

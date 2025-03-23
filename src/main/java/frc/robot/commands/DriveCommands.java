@@ -191,10 +191,10 @@ public class DriveCommands {
    * @param tagPoseSupplier A supplier for the tag pose - should be the actual tag pose, not the
    *     pose of the robot relative to the tag or any offset pose.
    */
-  private static Command autoAlignToBranch(
+  private static Command autoAlignTo(
       Drive drive,
       Supplier<Pose3d> tagPoseSupplierNoOffset,
-      DriveConstants.AutoAlignDirection autoAlignDirection) {
+      AutoAlignDirection autoAlignDirection) {
     // applies x/y offsets from the tag pose
     // rotate, because apriltag will always be 180° from robot
     Supplier<Pose2d> tagPoseSupplierIn2DWOffset =
@@ -202,19 +202,27 @@ public class DriveCommands {
           if (tagPoseSupplierNoOffset.get() == null) {
             return drive.getPose();
           } else {
+            double outOffset;
+            double sideOffset;
+            if (autoAlignDirection == AutoAlignDirection.LEFT) {
+              outOffset = DriveConstants.autoAlignOutwardLeft.get();
+              sideOffset = DriveConstants.autoAlignSidewaysLeft.get();
+            } else if (autoAlignDirection == AutoAlignDirection.RIGHT) {
+              outOffset = DriveConstants.autoAlignOutwardRight.get();
+              sideOffset = DriveConstants.autoAlignSidewaysRight.get();
+            } else if (autoAlignDirection == AutoAlignDirection.ALGAE) { // AutoAlignDirection.ALGAE
+              // TODO: add custom offsets for algae if necessary
+              outOffset = DriveConstants.autoAlignOutwardRight.get();
+              sideOffset = -0.03;
+            } else {
+              outOffset = 0;
+              sideOffset = 0;
+            }
+
             return tagPoseSupplierNoOffset
                 .get()
                 .transformBy(
-                    new Transform3d(
-                        // chooses offsets based on left/right align direction
-                        (autoAlignDirection == AutoAlignDirection.LEFT
-                            ? DriveConstants.autoAlignOutwardLeft.get()
-                            : DriveConstants.autoAlignOutwardRight.get()),
-                        (autoAlignDirection == AutoAlignDirection.LEFT
-                            ? DriveConstants.autoAlignSidewaysLeft.get()
-                            : DriveConstants.autoAlignSidewaysRight.get()),
-                        0,
-                        new Rotation3d(Rotation2d.kPi)))
+                    new Transform3d(outOffset, sideOffset, 0, new Rotation3d(Rotation2d.kPi)))
                 .toPose2d();
           }
         };
@@ -238,9 +246,9 @@ public class DriveCommands {
    * (doesn't have to be seen). Separate commands should be created for aligning to left and right
    * branches.
    */
-  public static Command autoAlignToNearestBranch(
+  public static Command autoAlignToNearest(
       Drive drive, DriveConstants.AutoAlignDirection autoAlignDirection) {
-    return autoAlignToBranch(
+    return autoAlignTo(
         drive,
         () ->
             new Pose3d(
@@ -254,6 +262,17 @@ public class DriveCommands {
         autoAlignDirection);
   }
 
+  public static Command autoAlignToBarge(Drive drive) {
+    return autoAlignTo(
+        drive,
+        () ->
+            new Pose3d(
+                DriverStation.getAlliance().isPresent()
+                        && DriverStation.getAlliance().get() == Alliance.Red
+                    ? aprilTagLayout.getTagPose(5).get().toPose2d()
+                    : aprilTagLayout.getTagPose(14).get().toPose2d()),
+        AutoAlignDirection.BARGE);
+  }
   /**
    * Field relative drive command using joystick for linear control and PID for angular control.
    * Possible use cases include snapping to an angle, aiming at a vision target, or controlling

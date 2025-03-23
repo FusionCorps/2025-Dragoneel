@@ -38,7 +38,7 @@ public class Climb extends SubsystemBase {
             .alongWith(Commands.print("climb brake"))
             .ignoringDisable(true));
     SmartDashboard.putData(
-        "CLimb/Zero",
+        "Climb/Zero",
         runOnce(() -> io.zeroPosition())
             .alongWith(Commands.print("climb zero"))
             .ignoringDisable(true));

@@ -307,7 +307,9 @@ public class DriveConstants {
   /** Robot-relative auto align directions */
   public static enum AutoAlignDirection {
     LEFT,
-    RIGHT
+    RIGHT,
+    ALGAE,
+    BARGE
   }
 
   // more negative is CLOSER to the reef
