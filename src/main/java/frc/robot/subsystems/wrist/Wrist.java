@@ -22,7 +22,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Wrist extends SubsystemBase {
-  private final WristIO io;
+  public final WristIO io;
   private final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
   @AutoLogOutput public WristState currentWristState = WristState.STATION;
@@ -92,12 +92,11 @@ public class Wrist extends SubsystemBase {
   }
 
   public Command runTargetState(WristState targetState) {
-    return runOnce(() -> currentWristState = targetState)
-        .andThen(
-            run(
-                () ->
-                    io.setTargetPosition(
-                        targetState.rotations, RobotContainer::getCurrentScoringPieceType)));
+    return run(
+        () -> {
+          io.setTargetPosition(targetState.rotations, RobotContainer::getCurrentScoringPieceType);
+          currentWristState = targetState;
+        });
   }
 
   public Command toggleWristSpeed() {

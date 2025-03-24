@@ -64,8 +64,6 @@ import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
-import frc.robot.util.ShootingUtil;
-import java.util.Set;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
@@ -156,8 +154,8 @@ public class RobotContainer {
         shooter = new Shooter(new ShooterIOSim());
         wrist = new Wrist(new WristIOSim());
 
-        simCoralProjectileSupplier =
-            () -> ShootingUtil.createCoralProjectile(drive, elevator, wrist, shooter);
+        // simCoralProjectileSupplier =
+        //     () -> ShootingUtil.createCoralProjectile(drive, elevator, wrist, shooter);
         break;
 
       default:

@@ -13,7 +13,6 @@
 
 package frc.robot.commands;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.MathUtil;
@@ -49,8 +48,7 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
-  private static final double AUTO_DRIVE_MAX_SPEED =
-      0.7 * DriveConstants.SPEED_AT_12V.in(MetersPerSecond);
+  private static final double AUTO_DRIVE_MAX_SPEED = 2.0;
   private static final double AUTO_DRIVE_MAX_ROT = Units.rotationsToRadians(1.00);
   private static final double DEADBAND = 0.1;
   private static final double ANGLE_KP = 2.0;

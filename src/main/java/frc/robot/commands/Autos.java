@@ -193,8 +193,9 @@ public class Autos {
   private Command autoAlignAndScore(AutoAlignDirection direction) {
     return Commands.sequence(
         DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
+        // Commands.runOnce(() -> {}),
         elevatorAndWristCommands.goToL4(),
-        shooter.pulseShooterAutoCmd().withTimeout(SHOOT_TIMEOUT));
+        shooter.shootCoralInAutoCmd(wrist.isAtScoringState).withTimeout(SHOOT_TIMEOUT));
   }
 
   private Command resetOdometry(PathPlannerPath initialPath) {

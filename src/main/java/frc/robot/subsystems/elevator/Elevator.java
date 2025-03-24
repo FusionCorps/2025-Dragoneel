@@ -174,8 +174,11 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command runTargetState(ElevatorState targetState) {
-    return runOnce(() -> currentElevatorState = targetState)
-        .andThen(run(() -> io.setTargetPosition(targetState.rotations)));
+    return run(
+        () -> {
+          io.setTargetPosition(targetState.rotations);
+          currentElevatorState = targetState;
+        });
   }
 
   public Command toggleElevatorSpeed() {
