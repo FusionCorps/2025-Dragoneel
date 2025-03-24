@@ -255,7 +255,7 @@ public class ElevatorAndWristCommands {
           // Otherwise move to L4 with stowing movement
           targetPosition = L4;
           // return goToStateWithStowAlt(targetPosition, elevator.isAboveL1Intermediate);
-          return goToStateWithPreStow(L4);
+          return goToStateWithStowAlt(L4);
         },
         Set.of(elevator, wrist));
   }
