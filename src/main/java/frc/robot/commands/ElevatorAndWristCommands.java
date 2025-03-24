@@ -3,8 +3,10 @@ package frc.robot.commands;
 import static frc.robot.Constants.TargetState.*;
 import static frc.robot.RobotContainer.targetPosition;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ScoringPieceType;
 import frc.robot.Constants.TargetState;
 import frc.robot.RobotContainer;
@@ -22,6 +24,8 @@ public class ElevatorAndWristCommands {
   public ElevatorAndWristCommands(Elevator elevator, Wrist wrist) {
     this.elevator = elevator;
     this.wrist = wrist;
+
+    SmartDashboard.putData("Stow E+W", stowAllReset());
   }
 
   private boolean isAlgaeState(TargetState targetState) {
@@ -55,15 +59,19 @@ public class ElevatorAndWristCommands {
         wrist.setTargetState(WristState.STATION),
         Commands.waitUntil(wrist.isAtStation),
         elevator.setTargetState(targetState.elevatorState),
-        Commands.waitUntil(elevator.isAtTargetState),
+        Commands.waitUntil(elevator.isAtL4),
         wrist.setTargetState(targetState.wristState));
   }
 
-  private Command goToStateWithStowAlt(TargetState targetState) {
-    return Commands.sequence(
-        elevator.setTargetState(targetState.elevatorState),
-        Commands.waitUntil(elevator.isAboveL1Intermediate),
-        wrist.setTargetState(targetState.wristState));
+  public Command goToStateWithStowAlt(TargetState targetState, Trigger elevatorAbove) {
+    return Commands.defer(
+        () ->
+            Commands.sequence(
+                elevator.setTargetState(targetState.elevatorState),
+                // Commands.waitUntil(elevatorAbove)
+                Commands.waitSeconds(0.2),
+                wrist.setTargetState(targetState.wristState)),
+        Set.of());
   }
 
   /**
@@ -185,7 +193,7 @@ public class ElevatorAndWristCommands {
             return Commands.none();
           }
           targetPosition = L2_CORAL;
-          return goToStateWithStowAlt(targetPosition);
+          return goToStateWithStowAlt(targetPosition, elevator.isAboveL1Intermediate);
         },
         Set.of());
   }
@@ -219,7 +227,7 @@ public class ElevatorAndWristCommands {
 
           // Otherwise set movement method to L3 coral based on old target
           targetPosition = L3_CORAL;
-          return goToStateWithStowAlt(targetPosition);
+          return goToStateWithStowAlt(targetPosition, elevator.isAboveL1Intermediate);
         },
         Set.of());
   }
@@ -272,7 +280,8 @@ public class ElevatorAndWristCommands {
           }
           // Otherwise move to L4 with stowing movement
           targetPosition = L4;
-          return goToStateWithStowAlt(targetPosition);
+          // return goToStateWithStowAlt(targetPosition, elevator.isAboveL1Intermediate);
+          return goToStateWithPreStow(L4);
         },
         Set.of());
   }
@@ -322,5 +331,31 @@ public class ElevatorAndWristCommands {
           return Commands.none();
         },
         Set.of());
+  }
+
+  public Command setScoringPieceToCoral() {
+    return Commands.defer(
+        () -> {
+          if (RobotContainer.currentScoringPieceType == ScoringPieceType.ALGAE) {
+            RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL;
+            // if (targetPosition == L1) {
+            //   return goToProcessor();
+            // } else if (targetPosition == L2_CORAL) {
+            //   return goToL2Algae();
+            // } else if (targetPosition == L3_CORAL) {
+            //   return goToL3Algae();
+            // }
+          }
+          return goToStation();
+        },
+        Set.of());
+  }
+
+  public Command stowAllReset() {
+    return Commands.sequence(
+        Commands.runOnce(() -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL),
+        wrist.setTargetState(WristState.STATION),
+        Commands.waitSeconds(1.0),
+        elevator.setTargetState(ElevatorState.STATION));
   }
 }

@@ -9,12 +9,14 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants.AutoAlignDirection;
 import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.wrist.Wrist;
+import frc.robot.subsystems.wrist.WristConstants.WristState;
 
 public class Autos {
   private Drive drive;
@@ -48,16 +50,16 @@ public class Autos {
   private PathPlannerPath TOP_PUSH;
   private PathPlannerPath BOTTOM_PUSH;
 
-  private final Time STATION_WAIT_TIME = Seconds.of(1.0);
+  private final Time STATION_WAIT_TIME = Seconds.of(0.75);
   private final Time AUTO_ALIGN_TIMEOUT = Seconds.of(4.0);
-  private final Time SHOOT_TIMEOUT = Seconds.of(1.5);
+  private final Time SHOOT_TIMEOUT = Seconds.of(1.25);
 
   public Autos(Drive drive, Elevator elevator, Wrist wrist, Shooter shooter) {
     this.drive = drive;
     this.elevator = elevator;
     this.wrist = wrist;
     this.shooter = shooter;
-    this.elevatorAndWristCommands = new ElevatorAndWristCommands(this.elevator, this.wrist);
+    this.elevatorAndWristCommands = new ElevatorAndWristCommands(elevator, wrist);
 
     // Load all the paths
     try {
@@ -115,6 +117,13 @@ public class Autos {
     return Commands.sequence(resetOdometry(CenterStart_H), autoAlignAndScore(RIGHT));
   }
 
+  public Command onePieceFromCenterBlind() {
+    return Commands.sequence(
+        Commands.runOnce(() -> Vision.blind = true),
+        resetOdometry(CenterStart_H),
+        driveBlindAndScore());
+  }
+
   /* ========== Top autos JKLA ========== */
   public Command onePieceFromTop() {
     return Commands.sequence(resetOdometry(TStart_J), autoAlignAndScore(RIGHT));
@@ -122,12 +131,14 @@ public class Autos {
 
   public Command twoPieceFromTop() {
     return Commands.sequence(
-        onePieceFromTop(), moveToStationAndPickup(J_TCor), autoAlignAndScore(LEFT));
+        onePieceFromTop(), moveToStationAndPickup(J_TCor), autoAlignAndScore(RIGHT));
   }
 
   public Command threePieceFromTop() {
     return Commands.sequence(
-        twoPieceFromTop(), moveToStationAndPickup(K_TCor), autoAlignAndScore(RIGHT));
+        twoPieceFromTop(), moveToStationAndPickup(K_TCor)
+        // autoAlignAndScore(LEFTIGHT)
+        );
   }
 
   public Command fourPieceFromTop() {
@@ -173,14 +184,44 @@ public class Autos {
     return Commands.sequence(resetOdometry(BOTTOM_PUSH), autoAlignAndScore(LEFT));
   }
 
+  private Command driveBlindAndScore() {
+    return Commands.sequence(
+        AutoBuilder.followPath(CenterStart_H),
+        Commands.waitSeconds(0.5),
+        wrist.setTargetState(WristState.STATION),
+        Commands.waitUntil(wrist.isAtStation),
+        Commands.run(() -> elevator.io.setTargetPosition(ElevatorState.L4.rotations))
+            .until(elevator.isAtL4),
+        Commands.run(() -> wrist.currentWristState = WristState.L4).withTimeout(0.4),
+        // shooter
+        //     .shootCoralInAutoCmd(wrist.isAtScoringState,
+        // RobotContainer.simCoralProjectileSupplier)
+        //     .withTimeout(SHOOT_TIMEOUT),
+        shooter.pulseShooterAutoCmd().withTimeout(SHOOT_TIMEOUT),
+        // Commands.runOnce(() -> elevator.currentElevatorState = ElevatorState.L4),
+        Commands.run(() -> wrist.currentWristState = WristState.STATION).withTimeout(0.4),
+        Commands.run(() -> elevator.io.setTargetPosition(ElevatorState.STATION.rotations))
+            .until(elevator.isAtTargetState));
+  }
+
   /* Helper commands for readability */
   private Command autoAlignAndScore(AutoAlignDirection direction) {
     return Commands.sequence(
         DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
-        elevatorAndWristCommands.goToL4(),
-        shooter
-            .shootCoralInAutoCmd(wrist.isAtScoringState, RobotContainer.simCoralProjectileSupplier)
-            .withTimeout(SHOOT_TIMEOUT));
+        wrist.setTargetState(WristState.STATION),
+        Commands.waitUntil(wrist.isAtStation),
+        Commands.run(() -> elevator.io.setTargetPosition(ElevatorState.L4.rotations))
+            .until(elevator.isAtL4),
+        Commands.run(() -> wrist.currentWristState = WristState.L4).withTimeout(0.4),
+        // shooter
+        //     .shootCoralInAutoCmd(wrist.isAtScoringState,
+        // RobotContainer.simCoralProjectileSupplier)
+        //     .withTimeout(SHOOT_TIMEOUT),
+        shooter.pulseShooterAutoCmd().withTimeout(SHOOT_TIMEOUT),
+        // Commands.runOnce(() -> elevator.currentElevatorState = ElevatorState.L4),
+        Commands.run(() -> wrist.currentWristState = WristState.STATION).withTimeout(0.4),
+        Commands.run(() -> elevator.io.setTargetPosition(ElevatorState.STATION.rotations))
+            .until(elevator.isAtTargetState));
   }
 
   private Command resetOdometry(PathPlannerPath initialPath) {
@@ -198,8 +239,8 @@ public class Autos {
 
   private Command moveToStationAndPickup(PathPlannerPath path) {
     return Commands.sequence(
-        elevatorAndWristCommands.goToStation(),
-        AutoBuilder.followPath(path),
-        Commands.waitTime(STATION_WAIT_TIME));
+        // Commands.runOnce(() -> RobotContainer.isAutoAligning = false),
+        // elevatorAndWristCommands.goToStation(),
+        AutoBuilder.followPath(path), Commands.waitTime(STATION_WAIT_TIME));
   }
 }

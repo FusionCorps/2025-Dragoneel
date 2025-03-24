@@ -5,8 +5,6 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.subsystems.elevator.ElevatorConstants.*;
 
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
@@ -17,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
@@ -27,7 +26,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends SubsystemBase {
   /* IO and hardware inputs */
-  private final ElevatorIO io;
+  public final ElevatorIO io;
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
   /* Connection Alerts */
@@ -37,7 +36,7 @@ public class Elevator extends SubsystemBase {
       new Alert("Follower Elevator Motor Disconnected.", AlertType.kError);
 
   /* State tracker for current height of the elevator */
-  private ElevatorState currentElevatorState = ElevatorState.STATION;
+  public ElevatorState currentElevatorState = ElevatorState.STATION;
 
   @AutoLogOutput
   public Trigger isAtTargetState =
@@ -46,9 +45,19 @@ public class Elevator extends SubsystemBase {
               getCurrentElevatorPosition()
                   .isNear(currentElevatorState.rotations, Rotations.of(0.5)));
 
+  public Trigger isAtL4 =
+      new Trigger(
+          () -> getCurrentElevatorPosition().isNear(ElevatorState.L4.rotations, Rotations.of(2)));
+
   @AutoLogOutput
   public Trigger isAboveL1Intermediate =
       new Trigger(() -> getCurrentElevatorPosition().gte(ElevatorState.L1_INTERMEDIATE.rotations));
+
+  public Trigger isAboveL2 =
+      new Trigger(() -> getCurrentElevatorPosition().gte(ElevatorState.L2.rotations));
+
+  public Trigger isAboveL3 =
+      new Trigger(() -> getCurrentElevatorPosition().gte(ElevatorState.L3.rotations));
 
   LoggedTunableNumber elevatorProcessorPosition =
       new LoggedTunableNumber(
@@ -95,7 +104,8 @@ public class Elevator extends SubsystemBase {
   /* Periodically running code */
   @Override
   public void periodic() {
-    io.setTargetPosition(currentElevatorState.rotations);
+    if (!RobotModeTriggers.autonomous().getAsBoolean())
+      io.setTargetPosition(currentElevatorState.rotations);
 
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
@@ -127,43 +137,44 @@ public class Elevator extends SubsystemBase {
     SmartDashboard.putBoolean("L4", currentElevatorState == ElevatorState.L4);
     SmartDashboard.putBoolean("NET", currentElevatorState == ElevatorState.NET);
 
-    LoggedTunableNumber.ifChanged(
-        hashCode(),
-        nums -> {
-          ElevatorState.PROCESSOR.rotations = Rotations.of(nums[0]);
-          ElevatorState.L1.rotations = Rotations.of(nums[1]);
-          ElevatorState.L2.rotations = Rotations.of(nums[2]);
-          ElevatorState.STATION.rotations = Rotations.of(nums[3]);
-          ElevatorState.L3.rotations = Rotations.of(nums[4]);
-          ElevatorState.L4.rotations = Rotations.of(nums[5]);
-          ElevatorState.NET.rotations = Rotations.of(nums[6]);
+    // LoggedTunableNumber.ifChanged(
+    //     hashCode(),
+    //     nums -> {
+    //       ElevatorState.PROCESSOR.rotations = Rotations.of(nums[0]);
+    //       ElevatorState.L1.rotations = Rotations.of(nums[1]);
+    //       ElevatorState.L2.rotations = Rotations.of(nums[2]);
+    //       ElevatorState.STATION.rotations = Rotations.of(nums[3]);
+    //       ElevatorState.L3.rotations = Rotations.of(nums[4]);
+    //       ElevatorState.L4.rotations = Rotations.of(nums[5]);
+    //       ElevatorState.NET.rotations = Rotations.of(nums[6]);
 
-          Slot0Configs gains =
-              new Slot0Configs().withKP(nums[7]).withKV(nums[8]).withKS(nums[9]).withKG(nums[10]);
-          MotionMagicConfigs motmag =
-              new MotionMagicConfigs()
-                  .withMotionMagicCruiseVelocity(nums[11])
-                  .withMotionMagicAcceleration(nums[12]);
+    //       Slot0Configs gains =
+    //           new
+    // Slot0Configs().withKP(nums[7]).withKV(nums[8]).withKS(nums[9]).withKG(nums[10]);
+    //       MotionMagicConfigs motmag =
+    //           new MotionMagicConfigs()
+    //               .withMotionMagicCruiseVelocity(nums[11])
+    //               .withMotionMagicAcceleration(nums[12]);
 
-          ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(gains);
-          ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(gains);
+    //       ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(gains);
+    //       ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(gains);
 
-          ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(motmag);
-          ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(motmag);
-        },
-        elevatorProcessorPosition,
-        elevatorL1Position,
-        elevatorL2Position,
-        elevatorStationPosition,
-        elevatorL3Position,
-        elevatorL4Position,
-        elevatorNetPosition,
-        kP,
-        kV,
-        kS,
-        kG,
-        maxVel,
-        maxAccel);
+    //       ((ElevatorIOTalonFX) io).mainElevatorMotor.getConfigurator().apply(motmag);
+    //       ((ElevatorIOTalonFX) io).followerElevatorMotor.getConfigurator().apply(motmag);
+    //     },
+    //     elevatorProcessorPosition,
+    //     elevatorL1Position,
+    //     elevatorL2Position,
+    //     elevatorStationPosition,
+    //     elevatorL3Position,
+    //     elevatorL4Position,
+    //     elevatorNetPosition,
+    //     kP,
+    //     kV,
+    //     kS,
+    //     kG,
+    //     maxVel,
+    //     maxAccel);
   }
 
   public Command setTargetState(ElevatorState targetState) {

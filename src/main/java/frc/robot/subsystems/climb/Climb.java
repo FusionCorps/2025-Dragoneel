@@ -27,8 +27,21 @@ public class Climb extends SubsystemBase {
   public Climb(ClimbIO io) {
     this.io = io;
 
-    SmartDashboard.putData("Climb/Coast", Commands.runOnce(() -> io.setCoast()));
-    SmartDashboard.putData("Climb/Brake", Commands.runOnce(() -> io.setBrake()));
+    SmartDashboard.putData(
+        "Climb/Coast",
+        runOnce(() -> io.setCoast())
+            .alongWith(Commands.print("climb coast"))
+            .ignoringDisable(true));
+    SmartDashboard.putData(
+        "Climb/Brake",
+        runOnce(() -> io.setBrake())
+            .alongWith(Commands.print("climb brake"))
+            .ignoringDisable(true));
+    SmartDashboard.putData(
+        "CLimb/Zero",
+        runOnce(() -> io.zeroPosition())
+            .alongWith(Commands.print("climb zero"))
+            .ignoringDisable(true));
   }
 
   /* Periodic */

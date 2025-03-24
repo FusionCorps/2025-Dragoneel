@@ -40,7 +40,7 @@ public class ElevatorConstants {
   public static final double ELEVATOR_kA = 0;
 
   public static final double ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY = 100;
-  public static final double ELEVATOR_MOTION_MAGIC_ACCELERATION = 300;
+  public static final double ELEVATOR_MOTION_MAGIC_ACCELERATION = 125;
 
   public static final CurrentLimitsConfigs ELEVATOR_CURRENT_LIMITS_CONFIGS =
       new CurrentLimitsConfigs()

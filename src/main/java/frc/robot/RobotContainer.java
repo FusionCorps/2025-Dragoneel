@@ -19,11 +19,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ScoringPieceType;
@@ -63,6 +65,7 @@ import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
 import frc.robot.util.ShootingUtil;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
@@ -188,6 +191,7 @@ public class RobotContainer {
       autoChooser.addOption("1 Piece Center", autos.onePieceFromCenter());
       autoChooser.addOption("1 Piece Top", autos.onePieceFromTop());
       autoChooser.addOption("1 Piece Bottom", autos.onePieceFromBottom());
+      autoChooser.addOption("1 Piece Center Blind", autos.onePieceFromCenterBlind());
       autoChooser.addOption("2 Piece Top", autos.twoPieceFromTop());
       autoChooser.addOption("2 Piece Bottom", autos.twoPieceFromBottom());
       autoChooser.addOption("3 Piece Top", autos.threePieceFromTop());
@@ -228,15 +232,35 @@ public class RobotContainer {
       // When elevator is set to target station/algae stow position, set drive to DEFAULT max speed
       // When elevator is NO LONGER at (i.e. leaves) station/algae stow position,
       // set drive to PRECISION max speed to avoid tipping
-      new Trigger(
-              () ->
-                  elevator.getCurrentElevatorState() == ElevatorState.STATION
-                      || elevator.getCurrentElevatorState() == ElevatorState.ALGAE_STOW
-                      || elevator.getCurrentElevatorState() == ElevatorState.PROCESSOR
-                      || elevator.getCurrentElevatorState() == ElevatorState.NEUTRAL)
-          .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT))
-          .onFalse(drive.setMaxSpeed(DriveSpeedMode.PRECISION));
+      // new Trigger(
+      //         () ->
+      //             elevator.getCurrentElevatorState() == ElevatorState.STATION
+      //                 || elevator.getCurrentElevatorState() == ElevatorState.ALGAE_STOW
+      //                 || elevator.getCurrentElevatorState() == ElevatorState.PROCESSOR
+      //                 || elevator.getCurrentElevatorState() == ElevatorState.NEUTRAL)
+      //     .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT))
+      //     .onFalse(drive.setMaxSpeed(DriveSpeedMode.PRECISION));
     }
+
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.NET)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L1)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L2)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L3)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.L4)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.SLOW));
+
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.STATION)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.PROCESSOR)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
+    new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.ALGAE_STOW)
+        .onTrue(drive.setMaxSpeed(DriveSpeedMode.DEFAULT));
+
+    RobotModeTriggers.teleop().onTrue(Commands.runOnce(() -> Vision.blind = false));
 
     // When controller disconnects, show alert
     new Trigger(() -> controller.isConnected())
@@ -312,9 +336,23 @@ public class RobotContainer {
       // When elevator changes scoring piece type, rumble controller
       new Trigger(() -> currentScoringPieceType == ScoringPieceType.ALGAE).onTrue(rumbleCommand());
 
-      controller.leftBumper().onTrue(elevatorAndWristCommands.setScoringPieceToAlgae());
+      // switch between coral and algae scoring
+      controller
+          .leftBumper()
+          .onTrue(
+              Commands.defer(
+                      () ->
+                          Commands.runOnce(
+                              () -> {
+                                if (RobotContainer.currentScoringPieceType
+                                    == ScoringPieceType.CORAL)
+                                  RobotContainer.currentScoringPieceType = ScoringPieceType.ALGAE;
+                                else
+                                  RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL;
+                              }),
+                      Set.of())
+                  .alongWith(rumbleCommand()));
 
-      // Set scoring mode to coral and move to station
       controller
           .rightBumper()
           .onTrue(
@@ -384,9 +422,11 @@ public class RobotContainer {
       // Only works if in coral mode, because D-pad down is bound to moving to algae stow in algae
       // mode
       // This will also set the drive to precision mode.
-      (controller.povDown().or(controller.povDownLeft()).or(controller.povDownRight()))
+      controller
+          .povDown()
           .and(() -> currentScoringPieceType != ScoringPieceType.ALGAE)
-          .whileTrue(climb.extendClimbCmd().alongWith(drive.setMaxSpeed(DriveSpeedMode.PRECISION)));
+          .and(() -> DriverStation.getMatchTime() < 40.0)
+          .whileTrue(climb.extendClimbCmd().alongWith(drive.setMaxSpeed(DriveSpeedMode.SLOW)));
 
       // Retract climb in/up. Use for the actual climb.
       controller.povUp().whileTrue(climb.retractClimbCmd());
