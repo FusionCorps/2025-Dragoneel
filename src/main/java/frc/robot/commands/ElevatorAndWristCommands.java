@@ -133,8 +133,9 @@ public class ElevatorAndWristCommands {
   }
 
   private Command goToL1Intermediate() {
-    return Commands.runOnce(() -> targetPosition = L1_INTERMEDIATE)
-        .andThen(elevator.runTargetState(L1_INTERMEDIATE.elevatorState));
+    return Commands.print("12#")
+        .andThen(Commands.runOnce(() -> targetPosition = L1_INTERMEDIATE))
+        .andThen(elevator.runTargetState(ElevatorState.L1_INTERMEDIATE));
   }
 
   /* Move to processor with appropriate state movement. */
@@ -149,12 +150,21 @@ public class ElevatorAndWristCommands {
               if (targetPosition == STATION) {
                 return goToL1Intermediate()
                     .until(elevator.isAtTargetState)
-                    .andThen(goToProcessor());
+                    .andThen(
+                        // move out wrist to processor, then elevator to processor
+                        wrist
+                            .runTargetState(WristState.PROCESSOR)
+                            .until(wrist.isAtScoringState)
+                            .andThen(goToProcessor()));
               }
               // if moving from previous algae state, slow down wrist and elevator
               if (isAlgaeState(targetPosition)) {
                 wrist.setToAlgaeSpeed();
                 elevator.setToAlgaeSpeed();
+              }
+              if (isCoralState(targetPosition)) {
+                targetPosition = PROCESSOR;
+                return goToStateWithStowAlt(PROCESSOR);
               }
               targetPosition = PROCESSOR;
               // Simultaneously move wrist and elevator
@@ -190,6 +200,10 @@ public class ElevatorAndWristCommands {
               if (isAlgaeState(targetPosition)) {
                 wrist.setToAlgaeSpeed();
                 elevator.setToAlgaeSpeed();
+              }
+              if (isCoralState(targetPosition)) {
+                targetPosition = L2_ALGAE;
+                return goToStateWithStowAlt(L2_ALGAE);
               }
               targetPosition = L2_ALGAE;
               return goToStateDirect(L2_ALGAE);
@@ -228,6 +242,10 @@ public class ElevatorAndWristCommands {
                 elevator.setToAlgaeSpeed();
               }
               // Otherwise set movement type to L3 algae based on old target
+              if (isCoralState(targetPosition)) {
+                targetPosition = L3_ALGAE;
+                return goToStateWithStowAlt(L3_ALGAE);
+              }
               targetPosition = L3_ALGAE;
               return goToStateDirect(L3_ALGAE);
             },
@@ -247,7 +265,11 @@ public class ElevatorAndWristCommands {
                 wrist.setToAlgaeSpeed();
                 elevator.setToAlgaeSpeed();
               }
-              // Otherwise set movement type to NET based on old targetw
+              // Otherwise set movement type to NET based on old target
+              if (isCoralState(targetPosition)) {
+                targetPosition = NET;
+                return goToStateWithStowAlt(NET);
+              }
               targetPosition = NET;
               return goToStateDirect(NET);
             },
@@ -264,7 +286,7 @@ public class ElevatorAndWristCommands {
                 return Commands.none();
               }
               // Otherwise move to L4 with stowing movement
-              return goToStateWithStowAlt(L4)
+              return goToStateWithPreStow(L4)
                   .alongWith(Commands.runOnce(() -> targetPosition = L4));
             },
             Set.of(elevator, wrist))
@@ -281,6 +303,10 @@ public class ElevatorAndWristCommands {
               if (isAlgaeState(targetPosition)) {
                 wrist.setToAlgaeSpeed();
                 elevator.setToAlgaeSpeed();
+              }
+              if (isCoralState(targetPosition)) {
+                targetPosition = ALGAE_STOW;
+                return goToStateWithStowAlt(ALGAE_STOW);
               }
               targetPosition = ALGAE_STOW;
               return goToStateDirect(ALGAE_STOW);

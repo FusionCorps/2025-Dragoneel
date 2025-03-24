@@ -64,6 +64,7 @@ import frc.robot.subsystems.wrist.Wrist;
 import frc.robot.subsystems.wrist.WristIO;
 import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSparkFlex;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
@@ -409,7 +410,7 @@ public class RobotContainer {
       controller.back().whileTrue(shooter.shootAlgaeCmd());
 
       // pulse shooter while at stow algae position
-      new Trigger(() -> elevator.getCurrentElevatorState() == ElevatorState.ALGAE_STOW)
+      new Trigger(() -> targetPosition == TargetState.ALGAE_STOW)
           .whileTrue(shooter.pulseShooterCmd())
           .onFalse(shooter.runOnce(() -> shooter.setState(ShooterState.IDLE)));
     }

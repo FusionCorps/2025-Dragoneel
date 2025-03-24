@@ -186,16 +186,16 @@ public class Autos {
     return Commands.sequence(
         AutoBuilder.followPath(CenterStart_H),
         elevatorAndWristCommands.goToL4(),
-        shooter.pulseShooterAutoCmd().withTimeout(SHOOT_TIMEOUT));
+        shooter.pulseShooterAutoCmd().withTimeout(SHOOT_TIMEOUT),
+        elevatorAndWristCommands.goToStation());
   }
 
   /* Helper commands for readability */
   private Command autoAlignAndScore(AutoAlignDirection direction) {
     return Commands.sequence(
         DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
-        // Commands.runOnce(() -> {}),
         elevatorAndWristCommands.goToL4(),
-        shooter.shootCoralInAutoCmd(wrist.isAtScoringState).withTimeout(SHOOT_TIMEOUT));
+        shooter.pulseShooterAutoCmd().withTimeout(SHOOT_TIMEOUT));
   }
 
   private Command resetOdometry(PathPlannerPath initialPath) {
@@ -204,17 +204,10 @@ public class Autos {
             initialPath.getPoint(0).position, initialPath.getIdealStartingState().rotation()));
   }
 
-  // private Command autoAlignAndScore(PathPlannerPath path, AutoAlignDirection direction) {
-  //   return Commands.sequence(
-  //       Commands.runOnce(() -> RobotContainer.isAutoAligning = false),
-  //       AutoBuilder.followPath(path),
-  //       autoAlignAndScore(direction));
-  // }
-
   private Command moveToStationAndPickup(PathPlannerPath path) {
     return Commands.sequence(
-        // Commands.runOnce(() -> RobotContainer.isAutoAligning = false),
-        // elevatorAndWristCommands.goToStation(),
-        AutoBuilder.followPath(path), Commands.waitTime(STATION_WAIT_TIME));
+        elevatorAndWristCommands.goToStation(),
+        AutoBuilder.followPath(path),
+        Commands.waitTime(STATION_WAIT_TIME));
   }
 }
