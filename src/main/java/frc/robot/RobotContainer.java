@@ -468,4 +468,8 @@ public class RobotContainer {
         .withTimeout(0.2)
         .finallyDo(() -> controller.setRumble(RumbleType.kBothRumble, 0.0));
   }
+
+  public static ScoringPieceType getCurrentScoringPieceType() {
+    return currentScoringPieceType;
+  }
 }

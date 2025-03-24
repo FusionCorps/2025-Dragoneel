@@ -376,7 +376,7 @@ public class Drive extends SubsystemBase implements VisionConsumer {
    * the red alliance, the pose is flipped across the x-axis.
    */
   public Command setPoseCmd(Pose2d pose) {
-    return runOnce(
+    return Commands.runOnce(
         () -> {
           if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red)
             setPose(FlippingUtil.flipFieldPose(pose));
@@ -430,18 +430,18 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   }
 
   public Command setMaxSpeed(DriveSpeedMode speedMode) {
-    return runOnce(() -> currentMaxSpeed = speedMode);
+    return Commands.runOnce(() -> currentMaxSpeed = speedMode);
   }
 
   public Command toggleSpeed(Supplier<ElevatorState> state) {
     return Commands.either(
-        runOnce(
+        Commands.runOnce(
             () ->
                 currentMaxSpeed =
                     currentMaxSpeed == DriveSpeedMode.DEFAULT
                         ? DriveSpeedMode.SLOW
                         : DriveSpeedMode.DEFAULT),
-        runOnce(
+        Commands.runOnce(
             () ->
                 currentMaxSpeed =
                     currentMaxSpeed == DriveSpeedMode.SLOW

@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
@@ -92,21 +91,18 @@ public class Elevator extends SubsystemBase {
 
     // failsafe command buttons for manually moving elevator to setpoints regardless of wrist
     // position
-    SmartDashboard.putData("Elevator/Processor", setTargetState(ElevatorState.PROCESSOR));
-    SmartDashboard.putData("Elevator/L1", setTargetState(ElevatorState.L1));
-    SmartDashboard.putData("Elevator/L2", setTargetState(ElevatorState.L2));
-    SmartDashboard.putData("Elevator/Station", setTargetState(ElevatorState.STATION));
-    SmartDashboard.putData("Elevator/L3", setTargetState(ElevatorState.L3));
-    SmartDashboard.putData("Elevator/L4", setTargetState(ElevatorState.L4));
-    SmartDashboard.putData("Elevator/Net", setTargetState(ElevatorState.NET));
+    // SmartDashboard.putData("Elevator/Processor", setTargetState(ElevatorState.PROCESSOR));
+    // SmartDashboard.putData("Elevator/L1", setTargetState(ElevatorState.L1));
+    // SmartDashboard.putData("Elevator/L2", setTargetState(ElevatorState.L2));
+    // SmartDashboard.putData("Elevator/Station", setTargetState(ElevatorState.STATION));
+    // SmartDashboard.putData("Elevator/L3", setTargetState(ElevatorState.L3));
+    // SmartDashboard.putData("Elevator/L4", setTargetState(ElevatorState.L4));
+    // SmartDashboard.putData("Elevator/Net", setTargetState(ElevatorState.NET));
   }
 
   /* Periodically running code */
   @Override
   public void periodic() {
-    if (!RobotModeTriggers.autonomous().getAsBoolean())
-      io.setTargetPosition(currentElevatorState.rotations);
-
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
 
@@ -177,8 +173,9 @@ public class Elevator extends SubsystemBase {
     //     maxAccel);
   }
 
-  public Command setTargetState(ElevatorState targetState) {
-    return runOnce(() -> currentElevatorState = targetState);
+  public Command runTargetState(ElevatorState targetState) {
+    return runOnce(() -> currentElevatorState = targetState)
+        .andThen(run(() -> io.setTargetPosition(targetState.rotations)));
   }
 
   public Command toggleElevatorSpeed() {

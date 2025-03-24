@@ -6,7 +6,6 @@ import static frc.robot.RobotContainer.targetPosition;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ScoringPieceType;
 import frc.robot.Constants.TargetState;
 import frc.robot.RobotContainer;
@@ -55,23 +54,19 @@ public class ElevatorAndWristCommands {
    * <p>- and when moving to the station.
    */
   private Command goToStateWithPreStow(TargetState targetState) {
-    return Commands.sequence(
-        wrist.setTargetState(WristState.STATION),
-        Commands.waitUntil(wrist.isAtStation),
-        elevator.setTargetState(targetState.elevatorState),
-        Commands.waitUntil(elevator.isAtL4),
-        wrist.setTargetState(targetState.wristState));
+    return wrist
+        .runTargetState(WristState.STATION)
+        .until(wrist.isAtStation)
+        .andThen(elevator.runTargetState(targetState.elevatorState).until(elevator.isAtTargetState))
+        .andThen(wrist.runTargetState(targetState.wristState));
   }
 
-  public Command goToStateWithStowAlt(TargetState targetState, Trigger elevatorAbove) {
-    return Commands.defer(
-        () ->
-            Commands.sequence(
-                elevator.setTargetState(targetState.elevatorState),
-                // Commands.waitUntil(elevatorAbove)
-                Commands.waitSeconds(0.2),
-                wrist.setTargetState(targetState.wristState)),
-        Set.of());
+  private Command goToStateWithStowAlt(TargetState targetState) {
+    return elevator
+        .runTargetState(targetState.elevatorState)
+        .alongWith(
+            Commands.waitUntil(elevator.isAboveL1Intermediate)
+                .andThen(wrist.runTargetState(targetState.wristState)));
   }
 
   /**
@@ -83,10 +78,9 @@ public class ElevatorAndWristCommands {
    * <p>- between algae and coral states on the same level (excluding L4/net)
    */
   private Command goToStateDirect(TargetState targetState) {
-    return Commands.sequence(
-        elevator.setTargetState(targetState.elevatorState),
-        // Commands.waitUntil(elevator.isAtTargetState),
-        wrist.setTargetState(targetState.wristState));
+    return elevator
+        .runTargetState(targetState.elevatorState)
+        .alongWith(wrist.runTargetState(targetState.wristState));
   }
 
   /* Move to station with coral state movement, setting the target position first. */
@@ -97,24 +91,22 @@ public class ElevatorAndWristCommands {
           if (targetPosition == STATION) {
             return Commands.none();
           }
-          // if at processor or L1, move up a little to safely stow wrist
+          // if at processor or L1, move up a little to safely stow wrist then move to station
           if (targetPosition == PROCESSOR || targetPosition == L1) {
-            return goToL1Intermediate()
-                .andThen(Commands.waitUntil(elevator.isAtTargetState))
-                .andThen(goToStation());
+            return goToL1Intermediate().until(elevator.isAtTargetState).andThen(goToStation());
           }
           wrist.setToCoralSpeed();
           elevator.setToCoralSpeed();
           // If at algae stow or L1_intermediate prestow the wrist before moving elevator back down
           if (targetPosition == ALGAE_STOW || targetPosition == L1_INTERMEDIATE) {
             targetPosition = STATION;
-            return goToStateWithPreStow(targetPosition);
+            return goToStateWithPreStow(STATION);
           }
           // otherwise simultaneously move wrist and elevator
           targetPosition = STATION;
-          return goToStateDirect(targetPosition);
+          return goToStateDirect(STATION);
         },
-        Set.of());
+        Set.of(elevator, wrist));
   }
 
   /* Move to L1 with appropriate state movement. */
@@ -128,24 +120,18 @@ public class ElevatorAndWristCommands {
 
           // if at station, move up a little bit first
           if (targetPosition == STATION) {
-            return goToL1Intermediate()
-                .andThen(Commands.waitUntil(elevator.isAtTargetState))
-                .andThen(goToL1());
+            return goToL1Intermediate().until(elevator.isAtTargetState).andThen(goToL1());
           }
+          // otherwise simultaneously move wrist and elevator
           targetPosition = L1;
-          // Simultaneously move wrist and elevator
-          return goToStateDirect(targetPosition);
+          return goToStateDirect(L1);
         },
-        Set.of());
+        Set.of(elevator, wrist));
   }
 
   private Command goToL1Intermediate() {
-    return Commands.defer(
-        () -> {
-          targetPosition = L1_INTERMEDIATE;
-          return elevator.setTargetState(L1_INTERMEDIATE.elevatorState);
-        },
-        Set.of());
+    return Commands.runOnce(() -> targetPosition = L1_INTERMEDIATE)
+        .andThen(elevator.runTargetState(L1_INTERMEDIATE.elevatorState));
   }
 
   /* Move to processor with appropriate state movement. */
@@ -158,19 +144,7 @@ public class ElevatorAndWristCommands {
           }
           // if at station, move a little bit up first
           if (targetPosition == STATION) {
-            return goToL1Intermediate()
-                .andThen(
-                    Commands.waitUntil(elevator.isAtTargetState)
-                        .andThen(
-                            Commands.defer(
-                                () -> {
-                                  targetPosition = PROCESSOR;
-                                  return wrist
-                                      .setTargetState(PROCESSOR.wristState)
-                                      .andThen(Commands.waitUntil(wrist.isAtScoringState))
-                                      .andThen(elevator.setTargetState(PROCESSOR.elevatorState));
-                                },
-                                Set.of())));
+            return goToL1Intermediate().until(elevator.isAtTargetState).andThen(goToProcessor());
           }
           // if moving from previous algae state, slow down wrist and elevator
           if (isAlgaeState(targetPosition)) {
@@ -181,7 +155,7 @@ public class ElevatorAndWristCommands {
           // Simultaneously move wrist and elevator
           return goToStateDirect(targetPosition);
         },
-        Set.of());
+        Set.of(elevator, wrist));
   }
 
   /* Move to L2_coral with appropriate state movement. */
@@ -193,9 +167,9 @@ public class ElevatorAndWristCommands {
             return Commands.none();
           }
           targetPosition = L2_CORAL;
-          return goToStateWithStowAlt(targetPosition, elevator.isAboveL1Intermediate);
+          return goToStateWithStowAlt(targetPosition);
         },
-        Set.of());
+        Set.of(elevator, wrist));
   }
 
   /* Move to L2_algae with appropriate state movement. */
@@ -213,7 +187,7 @@ public class ElevatorAndWristCommands {
           targetPosition = L2_ALGAE;
           return goToStateDirect(targetPosition);
         },
-        Set.of());
+        Set.of(elevator, wrist));
   }
 
   /* Move to L3_coral with appropriate state movement. */
@@ -227,9 +201,9 @@ public class ElevatorAndWristCommands {
 
           // Otherwise set movement method to L3 coral based on old target
           targetPosition = L3_CORAL;
-          return goToStateWithStowAlt(targetPosition, elevator.isAboveL1Intermediate);
+          return goToStateWithStowAlt(targetPosition);
         },
-        Set.of());
+        Set.of(elevator, wrist));
   }
 
   /* Move to L3_algae with appropriate state movement. */
@@ -248,7 +222,7 @@ public class ElevatorAndWristCommands {
           targetPosition = L3_ALGAE;
           return goToStateDirect(targetPosition);
         },
-        Set.of());
+        Set.of(elevator, wrist));
   }
 
   /* Move to net with appropriate state movement. */
@@ -267,7 +241,7 @@ public class ElevatorAndWristCommands {
           targetPosition = NET;
           return goToStateDirect(targetPosition);
         },
-        Set.of());
+        Set.of(elevator, wrist));
   }
 
   /* Move to L4 with coral state movement. */
@@ -283,7 +257,7 @@ public class ElevatorAndWristCommands {
           // return goToStateWithStowAlt(targetPosition, elevator.isAboveL1Intermediate);
           return goToStateWithPreStow(L4);
         },
-        Set.of());
+        Set.of(elevator, wrist));
   }
 
   /* Move to algae stow with algae state movement. */
@@ -300,13 +274,13 @@ public class ElevatorAndWristCommands {
           targetPosition = ALGAE_STOW;
           return goToStateDirect(targetPosition);
         },
-        Set.of());
+        Set.of(elevator, wrist));
   }
 
   public Command setNeutral() {
     return elevator
-        .setTargetState(ElevatorState.NEUTRAL)
-        .alongWith(wrist.setTargetState(WristState.NEUTRAL));
+        .runTargetState(ElevatorState.NEUTRAL)
+        .alongWith(wrist.runTargetState(WristState.NEUTRAL));
   }
 
   /**
@@ -318,19 +292,17 @@ public class ElevatorAndWristCommands {
   public Command setScoringPieceToAlgae() {
     return Commands.defer(
         () -> {
-          if (RobotContainer.currentScoringPieceType == ScoringPieceType.CORAL) {
-            RobotContainer.currentScoringPieceType = ScoringPieceType.ALGAE;
-            if (targetPosition == L1) {
-              return goToProcessor();
-            } else if (targetPosition == L2_CORAL) {
-              return goToL2Algae();
-            } else if (targetPosition == L3_CORAL) {
-              return goToL3Algae();
-            }
+          RobotContainer.currentScoringPieceType = ScoringPieceType.ALGAE;
+          if (targetPosition == L1) {
+            return goToProcessor();
+          } else if (targetPosition == L2_CORAL) {
+            return goToL2Algae();
+          } else if (targetPosition == L3_CORAL) {
+            return goToL3Algae();
           }
           return Commands.none();
         },
-        Set.of());
+        Set.of(elevator, wrist));
   }
 
   public Command setScoringPieceToCoral() {
@@ -352,10 +324,19 @@ public class ElevatorAndWristCommands {
   }
 
   public Command stowAllReset() {
-    return Commands.sequence(
-        Commands.runOnce(() -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL),
-        wrist.setTargetState(WristState.STATION),
-        Commands.waitSeconds(1.0),
-        elevator.setTargetState(ElevatorState.STATION));
+    // return Commands.sequence(
+    //     Commands.runOnce(() -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL),
+    //     wrist.runTargetState(WristState.STATION),
+    //     Commands.waitSeconds(1.0),
+    //     elevator.setTargetState(ElevatorState.STATION));
+    return Commands.runOnce(() -> RobotContainer.currentScoringPieceType = ScoringPieceType.CORAL)
+        .andThen(
+            wrist
+                .runTargetState(WristState.STATION)
+                .until(wrist.isAtStation)
+                .andThen(
+                    elevator
+                        .runTargetState(ElevatorState.STATION)
+                        .until(elevator.isAtTargetState)));
   }
 }
