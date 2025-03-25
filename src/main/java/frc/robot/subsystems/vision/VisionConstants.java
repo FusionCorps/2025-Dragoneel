@@ -1,5 +1,6 @@
 package frc.robot.subsystems.vision;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -42,13 +43,21 @@ public class VisionConstants {
 
   // Robot to camera transforms, measured empirically
   public static Transform3d ROBOT_TO_CAM_FL_TRANSFORM =
-      new Transform3d(0.306, 0.2785, 0.212, new Rotation3d(0.0, 0.0, Units.degreesToRadians(-27)));
+      new Transform3d(
+          Inches.of(11.75).in(Meters),
+          Inches.of(11.089).in(Meters),
+          Inches.of(8 + 15.0 / 32.0).in(Meters),
+          new Rotation3d(0.0, 0.0, Units.degreesToRadians(-30)));
   public static Transform3d ROBOT_TO_CAM_FR_TRANSFORM =
-      new Transform3d(0.306, -0.2785, 0.212, new Rotation3d(0.0, 0.0, Units.degreesToRadians(28)));
+      new Transform3d(
+          Inches.of(11.75).in(Meters),
+          Inches.of(-11.571).in(Meters),
+          Inches.of(8 + 15.0 / 32.0).in(Meters),
+          new Rotation3d(0.0, 0.0, Units.degreesToRadians(30)));
   // Basic filtering thresholds
   public static double maxSingleTagAmbiguity = 0.4;
   public static Distance maxZError = Meters.of(0.1);
-  public static Distance maxSingleTagDistance = Meters.of(1.5);
+  public static Distance maxSingleTagDistance = Meters.of(1.25);
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)

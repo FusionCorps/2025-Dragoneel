@@ -122,7 +122,7 @@ public class Autos {
         driveBlindAndScore());
   }
 
-  /* ========== Top autos JKLA ========== */
+  /* ========== Top autos JLKA ========== */
   public Command onePieceFromTop() {
     return Commands.sequence(resetOdometry(TStart_J), autoAlignAndScore(RIGHT));
   }
@@ -134,7 +134,7 @@ public class Autos {
 
   public Command threePieceFromTop() {
     return Commands.sequence(
-        twoPieceFromTop(), moveToStationAndPickup(K_TCor)
+        twoPieceFromTop(), moveToStationAndPickup(L_TCor)
         // autoAlignAndScore(LEFTIGHT)
         );
   }
