@@ -58,6 +58,12 @@ public class Elevator extends SubsystemBase {
   public Trigger isAboveL3 =
       new Trigger(() -> getCurrentElevatorPosition().gte(ElevatorState.L3.rotations));
 
+  public Trigger isAtStation =
+      new Trigger(
+          () ->
+              getCurrentElevatorPosition()
+                  .isNear(ElevatorState.STATION.rotations, Rotations.of(0.25)));
+
   LoggedTunableNumber elevatorProcessorPosition =
       new LoggedTunableNumber(
           "/Elevator/ProcessorPosition", ElevatorState.PROCESSOR.rotations.in(Rotations));
@@ -98,6 +104,8 @@ public class Elevator extends SubsystemBase {
     // SmartDashboard.putData("Elevator/L3", setTargetState(ElevatorState.L3));
     // SmartDashboard.putData("Elevator/L4", setTargetState(ElevatorState.L4));
     // SmartDashboard.putData("Elevator/Net", setTargetState(ElevatorState.NET));
+
+    SmartDashboard.putData(this);
   }
 
   /* Periodically running code */
