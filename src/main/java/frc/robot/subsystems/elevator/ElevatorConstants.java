@@ -20,6 +20,7 @@ public class ElevatorConstants {
     L1_INTERMEDIATE(Rotations.of(4)),
     L2(Rotations.of(10)),
     L3(Rotations.of(16.8)),
+    L3_INTERMEDIATE(Rotations.of(12)),
     L4(Rotations.of(26)),
     NET(Rotations.of(26)),
     NEUTRAL(Rotations.of(0));
@@ -40,7 +41,7 @@ public class ElevatorConstants {
   public static final double ELEVATOR_kA = 0;
 
   public static final double ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY = 100;
-  public static final double ELEVATOR_MOTION_MAGIC_ACCELERATION = 125;
+  public static final double ELEVATOR_MOTION_MAGIC_ACCELERATION = 175;
 
   public static final CurrentLimitsConfigs ELEVATOR_CURRENT_LIMITS_CONFIGS =
       new CurrentLimitsConfigs()

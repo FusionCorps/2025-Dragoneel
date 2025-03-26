@@ -6,6 +6,7 @@ import static frc.robot.RobotContainer.targetPosition;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ScoringPieceType;
 import frc.robot.Constants.TargetState;
 import frc.robot.RobotContainer;
@@ -65,20 +66,11 @@ public class ElevatorAndWristCommands {
         .andThen(wrist.runTargetState(targetState.wristState));
   }
 
-  private Command goToStateWithPreStowL4() {
-    return wrist
-        .runTargetState(WristState.STATION)
-        .until(wrist.isAtStation)
-        .andThen(elevator.runTargetState(ElevatorState.L4).until(elevator.isAtTargetState))
-        .andThen(wrist.runTargetState(WristState.L4));
-  }
-
-  private Command goToStateWithLateUnstow(TargetState targetState) {
+  private Command goToStateWithLateUnstow(TargetState targetState, Trigger aboveState) {
     return elevator
         .runTargetState(targetState.elevatorState)
         .alongWith(
-            Commands.waitUntil(elevator.isAboveL1Intermediate)
-                .andThen(wrist.runTargetState(targetState.wristState)));
+            Commands.waitUntil(aboveState).andThen(wrist.runTargetState(targetState.wristState)));
   }
 
   /**
@@ -241,7 +233,7 @@ public class ElevatorAndWristCommands {
                 return goToStateDirect(targetState);
               } else if (isCoralState(targetPosition)) {
                 targetPosition = targetState;
-                return goToStateWithLateUnstow(targetState);
+                return goToStateWithLateUnstow(targetState, elevator.isAboveL1Intermediate);
               } else {
                 targetPosition = targetState;
                 return goToStateDirect(targetState);
@@ -266,10 +258,10 @@ public class ElevatorAndWristCommands {
 
               if (prestowL4) {
                 targetPosition = targetState;
-                return goToStateWithPreStowL4();
+                return goToStateWithLateUnstow(targetState, elevator.isAboveL3Intermediate);
               } else {
                 targetPosition = targetState;
-                return goToStateWithLateUnstow(targetState);
+                return goToStateWithLateUnstow(targetState, elevator.isAboveL1Intermediate);
               }
             },
             Set.of(elevator, wrist))
