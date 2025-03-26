@@ -13,6 +13,7 @@
 
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.MathUtil;
@@ -45,13 +46,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
-  private static final double AUTO_DRIVE_MAX_SPEED = 2.0;
-  private static final double AUTO_DRIVE_MAX_ROT = Units.rotationsToRadians(1.00);
+  private static final double AUTO_DRIVE_MAX_SPEED =
+      DriveConstants.SPEED_AT_12V.in(MetersPerSecond);
+  private static final double AUTO_DRIVE_MAX_ROT = Units.rotationsToRadians(0.75);
   private static final double DEADBAND = 0.1;
-  private static final double ANGLE_KP = 2.0;
+  private static final double ANGLE_KP = 1.0;
   private static final double ANGLE_KD = 0.0;
   private static final double ANGLE_MAX_VELOCITY = Units.rotationsToRadians(1.25);
   private static final double ANGLE_MAX_ACCELERATION = Units.rotationsToRadians(1.0);
@@ -61,6 +64,14 @@ public class DriveCommands {
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
   public static DriveSpeedMode speedMode = DriveSpeedMode.DEFAULT;
+
+  @AutoLogOutput(key = "AutoAlign/targetAutoAlignPose")
+  public static Pose2d autoAlignTarget = new Pose2d();
+
+  @AutoLogOutput(key = "AutoAlign/autoAlignDirection")
+  public static AutoAlignDirection autoAlignDirection = AutoAlignDirection.LEFT;
+
+  public static boolean isAutoAligning = false;
 
   private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
     // Apply deadband
@@ -127,9 +138,9 @@ public class DriveCommands {
     angleController.enableContinuousInput(-Math.PI, Math.PI);
     angleController.setTolerance(Units.degreesToRadians(1.0));
 
-    PIDController xController = new PIDController(11.0, 0.0, 0.0);
+    PIDController xController = new PIDController(0.8, 0.0, 0.0);
     xController.setTolerance(0.02);
-    PIDController yController = new PIDController(11.0, 0.0, 0.0);
+    PIDController yController = new PIDController(0.8, 0.0, 0.0);
     yController.setTolerance(0.02);
 
     // Construct command
@@ -152,7 +163,10 @@ public class DriveCommands {
 
           // Convert to field relative speeds & send command
           ChassisSpeeds speeds =
-              new ChassisSpeeds(xVel * 0.3, yVel * 0.3, omega * Units.rotationsToRadians(0.75));
+              new ChassisSpeeds(
+                  xVel * AUTO_DRIVE_MAX_SPEED,
+                  yVel * AUTO_DRIVE_MAX_SPEED,
+                  omega * AUTO_DRIVE_MAX_ROT);
           drive.driveRobotCentric(
               ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
         },
@@ -206,14 +220,17 @@ public class DriveCommands {
         };
 
     return driveToPose(drive, tagPoseSupplierIn2DWOffset)
-        // return Commands.runOnce(() -> {})
         .deadlineFor(
             Commands.run(
                 () -> {
                   Logger.recordOutput(
                       "AutoAlign/targetAutoAlignPose", tagPoseSupplierIn2DWOffset.get());
                   Logger.recordOutput("AutoAlign/autoAlignDirection", autoAlignDirection);
-                }));
+                  DriveCommands.autoAlignTarget = tagPoseSupplierIn2DWOffset.get();
+                  DriveCommands.autoAlignDirection = autoAlignDirection;
+                  isAutoAligning = true;
+                }))
+        .finallyDo(() -> isAutoAligning = false);
   }
 
   /**

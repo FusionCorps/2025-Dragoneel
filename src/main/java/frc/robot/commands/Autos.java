@@ -134,17 +134,15 @@ public class Autos {
 
   public Command threePieceFromTop() {
     return Commands.sequence(
-        twoPieceFromTop(), moveToStationAndPickup(L_TCor)
-        // autoAlignAndScore(LEFTIGHT)
-        );
+        twoPieceFromTop(), moveToStationAndPickup(L_TCor), autoAlignAndScore(LEFT));
   }
 
   public Command fourPieceFromTop() {
     return Commands.sequence(
-        threePieceFromTop(),
-        moveToStationAndPickup(L_TCor),
-        AutoBuilder.followPath(TCor_A),
-        autoAlignAndScore(LEFT));
+        threePieceFromTop(), moveToStationAndPickup(K_TCor)
+        // AutoBuilder.followPath(TCor_A),
+        // autoAlignAndScore(LEFT)
+        );
   }
 
   /* ========== Bottom autos EDCB ========== */
@@ -192,10 +190,18 @@ public class Autos {
 
   /* Helper commands for readability */
   private Command autoAlignAndScore(AutoAlignDirection direction) {
-    return Commands.sequence(
-        DriveCommands.autoAlignToNearestBranch(drive, direction).withTimeout(AUTO_ALIGN_TIMEOUT),
-        elevatorAndWristCommands.goToL4(),
-        shooter.pulseShooterAutoCmd().withTimeout(SHOOT_TIMEOUT));
+    return Commands.parallel(
+            DriveCommands.autoAlignToNearestBranch(drive, direction)
+                .withTimeout(AUTO_ALIGN_TIMEOUT),
+            Commands.waitUntil(
+                    () ->
+                        drive
+                                .getPose()
+                                .getTranslation()
+                                .getDistance(DriveCommands.autoAlignTarget.getTranslation())
+                            < 0.5)
+                .andThen(elevatorAndWristCommands.goToL4()))
+        .andThen(shooter.pulseShooterAutoCmd().withTimeout(SHOOT_TIMEOUT));
   }
 
   private Command resetOdometry(PathPlannerPath initialPath) {
@@ -205,9 +211,7 @@ public class Autos {
   }
 
   private Command moveToStationAndPickup(PathPlannerPath path) {
-    return Commands.sequence(
-        elevatorAndWristCommands.goToStation(),
-        AutoBuilder.followPath(path),
-        Commands.waitTime(STATION_WAIT_TIME));
+    return Commands.parallel(elevatorAndWristCommands.goToStation(), AutoBuilder.followPath(path))
+        .andThen(Commands.waitTime(STATION_WAIT_TIME));
   }
 }
