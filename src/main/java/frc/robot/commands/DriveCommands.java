@@ -213,7 +213,7 @@ public class DriveCommands {
             } else if (autoAlignDirection == AutoAlignDirection.ALGAE) { // AutoAlignDirection.ALGAE
               // TODO: add custom offsets for algae if necessary
               outOffset = DriveConstants.autoAlignOutwardRight.get();
-              sideOffset = -0.02;
+              sideOffset = -0.03;
             } else {
               outOffset = 0;
               sideOffset = 0;
