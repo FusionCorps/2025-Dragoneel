@@ -210,7 +210,7 @@ public class ElevatorAndWristCommands {
   /* Helper function for setting elevator and wrist to move at algae speeds */
   private void setToAlgaeSpeeds() {
     wrist.setToAlgaeSpeed();
-    elevator.setToAlgaeSpeed();
+    // elevator.setToAlgaeSpeed();
   }
 
   private Command goToAlgae(TargetState targetState, boolean directExplicit) {
