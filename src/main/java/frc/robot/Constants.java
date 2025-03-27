@@ -53,7 +53,7 @@ public final class Constants {
     L1(ElevatorState.L1, WristState.L1),
     L1_INTERMEDIATE(ElevatorState.L1_INTERMEDIATE, WristState.STATION),
     L2_CORAL(ElevatorState.L2, WristState.L2_CORAL),
-    L2_ALGAE(ElevatorState.L2, WristState.L3_ALGAE),
+    L2_ALGAE(ElevatorState.L2, WristState.L2_ALGAE),
     L3_CORAL(ElevatorState.L3, WristState.L3_CORAL),
     L3_ALGAE(ElevatorState.L3, WristState.L3_ALGAE),
     L4(ElevatorState.L4, WristState.L4),

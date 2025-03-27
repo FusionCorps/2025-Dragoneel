@@ -223,6 +223,8 @@ public class ElevatorAndWristCommands {
               // if the previous state was algae, ensure wrist and elevator move here at algae speed
               if (isAlgaeState(targetPosition)) {
                 setToAlgaeSpeeds();
+              } else {
+                wrist.setToCoralSpeed();
               }
 
               // if the previous state was coral, move the wrist and elevator with late unstow
