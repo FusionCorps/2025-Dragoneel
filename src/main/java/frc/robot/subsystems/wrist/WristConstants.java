@@ -52,9 +52,9 @@ public class WristConstants {
     ALGAE_STOW(Rotations.of(0.30)),
     L1(Rotations.of(0.24)),
     L2_CORAL(Rotations.of(0.18)),
-    L2_ALGAE(Rotations.of(0.125)),
+    L2_ALGAE(Rotations.of(0.138)),
     L3_CORAL(Rotations.of(0.185)),
-    L3_ALGAE(Rotations.of(0.125)),
+    L3_ALGAE(Rotations.of(0.138)),
     L4(Rotations.of(0.195)),
     NET(Rotations.of(0.35)),
     NEUTRAL(Rotations.of(0));
