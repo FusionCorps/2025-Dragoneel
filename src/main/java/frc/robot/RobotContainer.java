@@ -293,7 +293,7 @@ public class RobotContainer {
       controller
           .povLeft()
           .whileTrue(
-            DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.LEFT)
+              DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.LEFT)
                   .finallyDo(
                       interrupted -> {
                         if (!interrupted) {
@@ -303,7 +303,7 @@ public class RobotContainer {
       controller
           .povRight()
           .whileTrue(
-            DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.RIGHT)
+              DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.RIGHT)
                   .finallyDo(
                       interrupted -> {
                         if (!interrupted) {
@@ -311,26 +311,29 @@ public class RobotContainer {
                         }
                       }));
 
+      // auto align to pick up algae from reef
+      controller
+          .leftStick()
+          .whileTrue(
+              DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.ALGAE)
+                  .finallyDo(
+                      interrupted -> {
+                        if (!interrupted) {
+                          rumbleCommand().schedule();
+                        }
+                      }));
 
-        // auto align to pick up algae from reef
-        controller.leftStick().whileTrue(
-            DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.ALGAE).finallyDo(
-                interrupted -> {
-                  if (!interrupted) {
-                    rumbleCommand().schedule();
-                  }
-                })
-        );
-
-        // auto align to barge
-        controller.rightStick().whileTrue(
-            DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.BARGE).finallyDo(
-                interrupted -> {
-                  if (!interrupted) {
-                    rumbleCommand().schedule();
-                  }
-                })
-        );
+      // auto align to barge
+      controller
+          .rightStick()
+          .whileTrue(
+              DriveCommands.autoAlignToNearest(drive, AutoAlignDirection.BARGE)
+                  .finallyDo(
+                      interrupted -> {
+                        if (!interrupted) {
+                          rumbleCommand().schedule();
+                        }
+                      }));
 
       // Toggle drive max speed
       // #1 If the elevator is at station/algae stow, toggle between DEFAULT and SLOW.

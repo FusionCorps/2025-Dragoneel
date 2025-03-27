@@ -16,7 +16,6 @@ package frc.robot.commands;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -262,17 +261,18 @@ public class DriveCommands {
                             : blueReefTagPoses)),
         autoAlignDirection);
   }
-  public static Command autoAlignToBarge(
-    Drive drive) {
-  return autoAlignTo(
-      drive,
-      () ->
-          new Pose3d(
+
+  public static Command autoAlignToBarge(Drive drive) {
+    return autoAlignTo(
+        drive,
+        () ->
+            new Pose3d(
                 DriverStation.getAlliance().isPresent()
-                              && DriverStation.getAlliance().get() == Alliance.Red
-                          ? aprilTagLayout.getTagPose(5).get().toPose2d()
-                          : aprilTagLayout.getTagPose(14).get().toPose2d()), AutoAlignDirection.BARGE);
-}
+                        && DriverStation.getAlliance().get() == Alliance.Red
+                    ? aprilTagLayout.getTagPose(5).get().toPose2d()
+                    : aprilTagLayout.getTagPose(14).get().toPose2d()),
+        AutoAlignDirection.BARGE);
+  }
   /**
    * Field relative drive command using joystick for linear control and PID for angular control.
    * Possible use cases include snapping to an angle, aiming at a vision target, or controlling
