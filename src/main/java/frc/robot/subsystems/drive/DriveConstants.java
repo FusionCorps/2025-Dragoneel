@@ -308,7 +308,8 @@ public class DriveConstants {
   public static enum AutoAlignDirection {
     LEFT,
     RIGHT,
-    ALGAE
+    ALGAE,
+    BARGE
   }
 
   // more negative is CLOSER to the reef

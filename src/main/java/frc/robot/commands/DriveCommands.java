@@ -16,6 +16,7 @@ package frc.robot.commands;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -210,10 +211,13 @@ public class DriveCommands {
             } else if (autoAlignDirection == AutoAlignDirection.RIGHT) {
               outOffset = DriveConstants.autoAlignOutwardRight.get();
               sideOffset = DriveConstants.autoAlignSidewaysRight.get();
-            } else { // AutoAlignDirection.ALGAE
+            } else if (autoAlignDirection == AutoAlignDirection.ALGAE) { // AutoAlignDirection.ALGAE
               // TODO: add custom offsets for algae if necessary
               outOffset = DriveConstants.autoAlignOutwardRight.get();
               sideOffset = DriveConstants.autoAlignSidewaysRight.get();
+            } else {
+              outOffset = 0;
+              sideOffset = 0;
             }
 
             return tagPoseSupplierNoOffset
@@ -258,7 +262,17 @@ public class DriveCommands {
                             : blueReefTagPoses)),
         autoAlignDirection);
   }
-
+  public static Command autoAlignToBarge(
+    Drive drive) {
+  return autoAlignTo(
+      drive,
+      () ->
+          new Pose3d(
+                DriverStation.getAlliance().isPresent()
+                              && DriverStation.getAlliance().get() == Alliance.Red
+                          ? aprilTagLayout.getTagPose(5).get().toPose2d()
+                          : aprilTagLayout.getTagPose(14).get().toPose2d()), AutoAlignDirection.BARGE);
+}
   /**
    * Field relative drive command using joystick for linear control and PID for angular control.
    * Possible use cases include snapping to an angle, aiming at a vision target, or controlling
