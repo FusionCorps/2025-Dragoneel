@@ -224,6 +224,7 @@ public class ElevatorAndWristCommands {
               if (isAlgaeState(targetPosition)) {
                 setToAlgaeSpeeds();
               } else {
+                System.out.println("Setting to coral speed");
                 wrist.setToCoralSpeed();
               }
 
