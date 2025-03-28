@@ -48,9 +48,9 @@ public class Autos {
   private PathPlannerPath LEFT_PUSH;
   private PathPlannerPath RIGHT_PUSH;
 
-  private final Time STATION_WAIT_TIME = Seconds.of(0.75);
+  private final Time STATION_WAIT_TIME = Seconds.of(0.4);
   private final Time AUTO_ALIGN_TIMEOUT = Seconds.of(4.0);
-  private final Time SHOOT_TIMEOUT = Seconds.of(1.25);
+  private final Time SHOOT_TIMEOUT = Seconds.of(0.6);
 
   public Autos(Drive drive, Elevator elevator, Wrist wrist, Shooter shooter) {
     this.drive = drive;
@@ -139,9 +139,9 @@ public class Autos {
 
   public Command fourPieceFromLeft() {
     return Commands.sequence(
-        threePieceFromLeft(), moveToStationAndPickup(K_TCor)
-        // AutoBuilder.followPath(TCor_A),
-        // autoAlignAndScore(LEFT)
+        threePieceFromLeft(), moveToStationAndPickup(K_TCor),
+        AutoBuilder.followPath(TCor_A),
+        autoAlignAndScore(LEFT)
         );
   }
 
@@ -199,7 +199,7 @@ public class Autos {
                                 .getPose()
                                 .getTranslation()
                                 .getDistance(DriveCommands.autoAlignTarget.getTranslation())
-                            < 0.5)
+                            < 1.5)
                 .andThen(elevatorAndWristCommands.goToL4()))
         .andThen(shooter.pulseShooterAutoCmd().withTimeout(SHOOT_TIMEOUT));
   }
