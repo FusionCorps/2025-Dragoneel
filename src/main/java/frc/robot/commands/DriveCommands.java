@@ -204,19 +204,26 @@ public class DriveCommands {
           } else {
             double outOffset;
             double sideOffset;
-            if (autoAlignDirection == AutoAlignDirection.LEFT) {
-              outOffset = DriveConstants.autoAlignOutwardLeft.get();
-              sideOffset = DriveConstants.autoAlignSidewaysLeft.get();
-            } else if (autoAlignDirection == AutoAlignDirection.RIGHT) {
-              outOffset = DriveConstants.autoAlignOutwardRight.get();
-              sideOffset = DriveConstants.autoAlignSidewaysRight.get();
-            } else if (autoAlignDirection == AutoAlignDirection.ALGAE) { // AutoAlignDirection.ALGAE
-              // TODO: add custom offsets for algae if necessary
-              outOffset = DriveConstants.autoAlignOutwardRight.get();
-              sideOffset = -0.03;
-            } else {
-              outOffset = 0;
-              sideOffset = 0;
+            switch (autoAlignDirection) {
+              case LEFT:
+                outOffset = DriveConstants.autoAlignOutCoralLeft.get();
+                sideOffset = DriveConstants.autoAlignSideCoralLeft.get();
+                break;
+              case RIGHT:
+                outOffset = DriveConstants.autoAlignOutCoralRight.get();
+                sideOffset = DriveConstants.autoAlignSideCoralRight.get();
+                break;
+              case ALGAE:
+                outOffset = DriveConstants.autoAlignOutAlgae.get();
+                sideOffset = DriveConstants.autoAlignSideAlgae.get();
+                break;
+              case BARGE:
+                outOffset = DriveConstants.autoAlignOutBarge.get();
+                sideOffset = DriveConstants.autoAlignSideBarge.get();
+                break;
+              default:
+                outOffset = 0;
+                sideOffset = 0;
             }
 
             return tagPoseSupplierNoOffset

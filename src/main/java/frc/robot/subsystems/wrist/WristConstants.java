@@ -10,6 +10,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.RobotController;
+import frc.robot.util.LoggedTunableNumber;
 
 public class WristConstants {
   public static final int WRIST_MOTOR_ID = 15;
@@ -59,10 +60,10 @@ public class WristConstants {
     NET(Rotations.of(0.35)),
     NEUTRAL(Rotations.of(0));
 
-    public Angle rotations;
+    public LoggedTunableNumber rotations;
 
     private WristState(Angle rotations) {
-      this.rotations = rotations;
+      this.rotations = new LoggedTunableNumber("/Wrist/" + this.name(), rotations.in(Rotations));
     }
   }
 }

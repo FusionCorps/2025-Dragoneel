@@ -42,47 +42,32 @@ public class Elevator extends SubsystemBase {
       new Trigger(
           () ->
               getCurrentElevatorPosition()
-                  .isNear(currentElevatorState.rotations, Rotations.of(0.5)));
+                  .isNear(Rotations.of(currentElevatorState.rotations.get()), Rotations.of(0.5)));
 
   public Trigger isAtL4 =
       new Trigger(
-          () -> getCurrentElevatorPosition().isNear(ElevatorState.L4.rotations, Rotations.of(1.5)));
+          () ->
+              getCurrentElevatorPosition()
+                  .isNear(Rotations.of(currentElevatorState.rotations.get()), Rotations.of(1.5)));
 
   @AutoLogOutput
   public Trigger isAboveL1Intermediate =
-      new Trigger(() -> getCurrentElevatorPosition().gte(ElevatorState.L1_INTERMEDIATE.rotations));
-
-  public Trigger isAboveL2 =
-      new Trigger(() -> getCurrentElevatorPosition().gte(ElevatorState.L2.rotations));
-
-  public Trigger isAboveL3 =
-      new Trigger(() -> getCurrentElevatorPosition().gte(ElevatorState.L3.rotations));
+      new Trigger(
+          () ->
+              getCurrentElevatorPosition()
+                  .gte(Rotations.of(ElevatorState.L1_INTERMEDIATE.rotations.get())));
 
   public Trigger isAboveL3Intermediate =
-      new Trigger(() -> getCurrentElevatorPosition().gte(ElevatorState.L3_INTERMEDIATE.rotations));
+      new Trigger(
+          () ->
+              getCurrentElevatorPosition()
+                  .gte(Rotations.of(ElevatorState.L3_INTERMEDIATE.rotations.get())));
 
   public Trigger isAtStation =
       new Trigger(
           () ->
               getCurrentElevatorPosition()
-                  .isNear(ElevatorState.STATION.rotations, Rotations.of(0.25)));
-
-  LoggedTunableNumber elevatorProcessorPosition =
-      new LoggedTunableNumber(
-          "/Elevator/ProcessorPosition", ElevatorState.PROCESSOR.rotations.in(Rotations));
-  LoggedTunableNumber elevatorL1Position =
-      new LoggedTunableNumber("/Elevator/L1Position", ElevatorState.L1.rotations.in(Rotations));
-  LoggedTunableNumber elevatorL2Position =
-      new LoggedTunableNumber("/Elevator/L2Position", ElevatorState.L2.rotations.in(Rotations));
-  LoggedTunableNumber elevatorStationPosition =
-      new LoggedTunableNumber(
-          "/Elevator/StationPosition", ElevatorState.STATION.rotations.in(Rotations));
-  LoggedTunableNumber elevatorL3Position =
-      new LoggedTunableNumber("/Elevator/L3Position", ElevatorState.L3.rotations.in(Rotations));
-  LoggedTunableNumber elevatorL4Position =
-      new LoggedTunableNumber("/Elevator/L4Position", ElevatorState.L4.rotations.in(Rotations));
-  LoggedTunableNumber elevatorNetPosition =
-      new LoggedTunableNumber("/Elevator/NetPosition", ElevatorState.NET.rotations.in(Rotations));
+                  .isNear(Rotations.of(ElevatorState.STATION.rotations.get()), Rotations.of(0.25)));
 
   LoggedTunableNumber kP = new LoggedTunableNumber("/Elevator/kP", ELEVATOR_kP);
   LoggedTunableNumber kS = new LoggedTunableNumber("/Elevator/kS", ELEVATOR_kS);
@@ -187,7 +172,7 @@ public class Elevator extends SubsystemBase {
   public Command runTargetState(ElevatorState targetState) {
     return run(
         () -> {
-          io.setTargetPosition(targetState.rotations);
+          io.setTargetPosition(Rotations.of(targetState.rotations.get()));
           currentElevatorState = targetState;
         });
   }
