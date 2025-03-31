@@ -23,7 +23,7 @@ public class Autos {
   private Shooter shooter;
   private ElevatorAndWristCommands elevatorAndWristCommands;
 
-  // end goal: T2-JKLA and B2-EDCB (flipped version of T2-JKLA across the x-axis)
+  // end goal: TStart-JLKA and BStart-ECDB
   // All other routines are subsets of these
 
   // All the paths we use
@@ -45,8 +45,8 @@ public class Autos {
   private PathPlannerPath C_BCor;
   private PathPlannerPath BCor_B;
 
-  private PathPlannerPath TOP_PUSH;
-  private PathPlannerPath BOTTOM_PUSH;
+  private PathPlannerPath LEFT_PUSH;
+  private PathPlannerPath RIGHT_PUSH;
 
   private final Time STATION_WAIT_TIME = Seconds.of(0.75);
   private final Time AUTO_ALIGN_TIMEOUT = Seconds.of(4.0);
@@ -83,8 +83,8 @@ public class Autos {
       BCor_B = PathPlannerPath.fromChoreoTrajectory("BCor-B");
 
       // Pushes
-      TOP_PUSH = PathPlannerPath.fromChoreoTrajectory("TopPush");
-      BOTTOM_PUSH = PathPlannerPath.fromChoreoTrajectory("BottomPush");
+      LEFT_PUSH = PathPlannerPath.fromChoreoTrajectory("TopPush");
+      RIGHT_PUSH = PathPlannerPath.fromChoreoTrajectory("BottomPush");
 
     } catch (Exception e) {
       System.out.println("Failed to load paths. DO NOT RUN AUTO");
@@ -123,61 +123,62 @@ public class Autos {
   }
 
   /* ========== Top autos JLKA ========== */
-  public Command onePieceFromTop() {
+  public Command onePieceFromLeft() {
     return Commands.sequence(resetOdometry(TStart_J), autoAlignAndScore(RIGHT));
   }
 
-  public Command twoPieceFromTop() {
+  public Command twoPieceFromLeft() {
     return Commands.sequence(
-        onePieceFromTop(), moveToStationAndPickup(J_TCor), autoAlignAndScore(RIGHT));
+        onePieceFromLeft(), moveToStationAndPickup(J_TCor), autoAlignAndScore(RIGHT));
   }
 
-  public Command threePieceFromTop() {
+  public Command threePieceFromLeft() {
     return Commands.sequence(
-        twoPieceFromTop(), moveToStationAndPickup(L_TCor), autoAlignAndScore(LEFT));
+        twoPieceFromLeft(), moveToStationAndPickup(L_TCor), autoAlignAndScore(LEFT));
   }
 
-  public Command fourPieceFromTop() {
+  public Command fourPieceFromLeft() {
     return Commands.sequence(
-        threePieceFromTop(), moveToStationAndPickup(K_TCor)
+        threePieceFromLeft(), moveToStationAndPickup(K_TCor)
         // AutoBuilder.followPath(TCor_A),
         // autoAlignAndScore(LEFT)
         );
   }
 
-  /* ========== Bottom autos EDCB ========== */
+  /* ========== Bottom autos ECDB ========== */
   public Command onePieceFromBottom() {
     return Commands.sequence(resetOdometry(BStart_E), autoAlignAndScore(LEFT));
   }
 
   public Command twoPieceFromBottom() {
     return Commands.sequence(
-        onePieceFromBottom(), moveToStationAndPickup(E_BCor), autoAlignAndScore(RIGHT));
+        onePieceFromBottom(), moveToStationAndPickup(E_BCor), autoAlignAndScore(LEFT));
   }
 
   public Command threePieceFromBottom() {
     return Commands.sequence(
-        twoPieceFromBottom(), moveToStationAndPickup(D_BCor), autoAlignAndScore(LEFT));
+        twoPieceFromBottom(), moveToStationAndPickup(C_BCor), autoAlignAndScore(RIGHT));
   }
 
   public Command fourPieceFromBottom() {
     return Commands.sequence(
         threePieceFromBottom(),
-        moveToStationAndPickup(C_BCor),
-        AutoBuilder.followPath(BCor_B),
-        autoAlignAndScore(RIGHT));
+        moveToStationAndPickup(D_BCor)
+        // AutoBuilder.followPath(BCor_B),
+        // autoAlignAndScore(RIGHT)
+        );
   }
 
   public Command doNothing() {
     return Commands.none();
   }
 
-  public Command pushAndOnePieceFromTop() {
-    return Commands.sequence(resetOdometry(TOP_PUSH), autoAlignAndScore(RIGHT));
+  public Command pushAndOnePieceFromLeft() {
+    return Commands.sequence(resetOdometry(LEFT_PUSH), AutoBuilder.followPath(LEFT_PUSH), autoAlignAndScore(RIGHT));
   }
 
-  public Command pushAndOnePieceFromBottom() {
-    return Commands.sequence(resetOdometry(BOTTOM_PUSH), autoAlignAndScore(LEFT));
+  public Command pushAndOnePieceFromRight() {
+    return Commands.sequence(resetOdometry(RIGHT_PUSH), AutoBuilder.followPath(RIGHT_PUSH), autoAlignAndScore(LEFT));
   }
 
   private Command driveBlindAndScore() {

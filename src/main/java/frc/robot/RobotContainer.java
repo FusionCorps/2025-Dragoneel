@@ -190,18 +190,18 @@ public class RobotContainer {
       autoChooser.addDefaultOption("Do Nothing", autos.doNothing());
       autoChooser.addOption("Move Forward for 2 sec", autos.moveStraight());
       autoChooser.addOption("1 Piece Center", autos.onePieceFromCenter());
-      autoChooser.addOption("1 Piece Top", autos.onePieceFromTop());
-      autoChooser.addOption("1 Piece Bottom", autos.onePieceFromBottom());
+      autoChooser.addOption("1 Piece Left", autos.onePieceFromLeft());
+      autoChooser.addOption("1 Piece Right", autos.onePieceFromBottom());
       autoChooser.addOption("1 Piece Center Blind", autos.onePieceFromCenterBlind());
-      autoChooser.addOption("2 Piece Top", autos.twoPieceFromTop());
-      autoChooser.addOption("2 Piece Bottom", autos.twoPieceFromBottom());
-      autoChooser.addOption("3 Piece Top", autos.threePieceFromTop());
-      autoChooser.addOption("3 Piece Bottom", autos.threePieceFromBottom());
-      autoChooser.addOption("4 Piece Top", autos.fourPieceFromTop());
-      autoChooser.addOption("4 Piece Bottom", autos.fourPieceFromBottom());
-      autoChooser.addOption("Push + 1 Piece Center, Start at Top", autos.pushAndOnePieceFromTop());
+      autoChooser.addOption("2 Piece Left", autos.twoPieceFromLeft());
+      autoChooser.addOption("2 Piece Right", autos.twoPieceFromBottom());
+      autoChooser.addOption("3 Piece Left", autos.threePieceFromLeft());
+      autoChooser.addOption("3 Piece Right", autos.threePieceFromBottom());
+      autoChooser.addOption("4 Piece Left", autos.fourPieceFromLeft());
+      autoChooser.addOption("4 Piece Right", autos.fourPieceFromBottom());
+      autoChooser.addOption("Push + 1 Piece Center, Start at Left", autos.pushAndOnePieceFromLeft());
       autoChooser.addOption(
-          "Push + 1 Piece Center, Start at Bottom", autos.pushAndOnePieceFromBottom());
+          "Push + 1 Piece Center, Start at Right", autos.pushAndOnePieceFromRight());
     }
 
     if (drive != null) {
@@ -346,27 +346,6 @@ public class RobotContainer {
 
     /* elevator and wrist movement commands */
     if (elevatorAndWristCommands != null) {
-      // When elevator changes scoring piece type, rumble controller
-      //   new Trigger(() -> currentScoringPieceType ==
-      // ScoringPieceType.ALGAE).onTrue(rumbleCommand());
-
-      // switch between coral and algae scoring
-      //   controller
-      //       .leftBumper()
-      //       .onTrue(
-      //           Commands.defer(
-      //                   () ->
-      //                       Commands.runOnce(
-      //                           () -> {
-      //                             if (isCoralMode.getAsBoolean())
-      //                               RobotContainer.currentScoringPieceType =
-      // ScoringPieceType.ALGAE;
-      //                             else
-      //                               RobotContainer.currentScoringPieceType =
-      // ScoringPieceType.CORAL;
-      //                           }),
-      //                   Set.of())
-      //               .alongWith(rumbleCommand()));
       controller
           .leftBumper()
           .onTrue(
