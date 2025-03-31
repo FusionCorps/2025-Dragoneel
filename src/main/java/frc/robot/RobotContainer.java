@@ -191,15 +191,16 @@ public class RobotContainer {
       autoChooser.addOption("Move Forward for 2 sec", autos.moveStraight());
       autoChooser.addOption("1 Piece Center", autos.onePieceFromCenter());
       autoChooser.addOption("1 Piece Left", autos.onePieceFromLeft());
-      autoChooser.addOption("1 Piece Right", autos.onePieceFromBottom());
+      autoChooser.addOption("1 Piece Right", autos.onePieceFromRight());
       autoChooser.addOption("1 Piece Center Blind", autos.onePieceFromCenterBlind());
       autoChooser.addOption("2 Piece Left", autos.twoPieceFromLeft());
-      autoChooser.addOption("2 Piece Right", autos.twoPieceFromBottom());
+      autoChooser.addOption("2 Piece Right", autos.twoPieceFromRight());
       autoChooser.addOption("3 Piece Left", autos.threePieceFromLeft());
-      autoChooser.addOption("3 Piece Right", autos.threePieceFromBottom());
+      autoChooser.addOption("3 Piece Right", autos.threePieceFromRight());
       autoChooser.addOption("4 Piece Left", autos.fourPieceFromLeft());
-      autoChooser.addOption("4 Piece Right", autos.fourPieceFromBottom());
-      autoChooser.addOption("Push + 1 Piece Center, Start at Left", autos.pushAndOnePieceFromLeft());
+      autoChooser.addOption("4 Piece Right", autos.fourPieceFromRight());
+      autoChooser.addOption(
+          "Push + 1 Piece Center, Start at Left", autos.pushAndOnePieceFromLeft());
       autoChooser.addOption(
           "Push + 1 Piece Center, Start at Right", autos.pushAndOnePieceFromRight());
     }

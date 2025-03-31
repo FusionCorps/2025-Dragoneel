@@ -83,8 +83,8 @@ public class Autos {
       BCor_B = PathPlannerPath.fromChoreoTrajectory("BCor-B");
 
       // Pushes
-      LEFT_PUSH = PathPlannerPath.fromChoreoTrajectory("TopPush");
-      RIGHT_PUSH = PathPlannerPath.fromChoreoTrajectory("BottomPush");
+      LEFT_PUSH = PathPlannerPath.fromChoreoTrajectory("LeftPush");
+      RIGHT_PUSH = PathPlannerPath.fromChoreoTrajectory("RightPush");
 
     } catch (Exception e) {
       System.out.println("Failed to load paths. DO NOT RUN AUTO");
@@ -139,34 +139,33 @@ public class Autos {
 
   public Command fourPieceFromLeft() {
     return Commands.sequence(
-        threePieceFromLeft(), moveToStationAndPickup(K_TCor),
+        threePieceFromLeft(),
+        moveToStationAndPickup(K_TCor),
         AutoBuilder.followPath(TCor_A),
-        autoAlignAndScore(LEFT)
-        );
+        autoAlignAndScore(LEFT));
   }
 
   /* ========== Bottom autos ECDB ========== */
-  public Command onePieceFromBottom() {
+  public Command onePieceFromRight() {
     return Commands.sequence(resetOdometry(BStart_E), autoAlignAndScore(LEFT));
   }
 
-  public Command twoPieceFromBottom() {
+  public Command twoPieceFromRight() {
     return Commands.sequence(
-        onePieceFromBottom(), moveToStationAndPickup(E_BCor), autoAlignAndScore(LEFT));
+        onePieceFromRight(), moveToStationAndPickup(E_BCor), autoAlignAndScore(LEFT));
   }
 
-  public Command threePieceFromBottom() {
+  public Command threePieceFromRight() {
     return Commands.sequence(
-        twoPieceFromBottom(), moveToStationAndPickup(C_BCor), autoAlignAndScore(RIGHT));
+        twoPieceFromRight(), moveToStationAndPickup(C_BCor), autoAlignAndScore(RIGHT));
   }
 
-  public Command fourPieceFromBottom() {
+  public Command fourPieceFromRight() {
     return Commands.sequence(
-        threePieceFromBottom(),
-        moveToStationAndPickup(D_BCor)
-        // AutoBuilder.followPath(BCor_B),
-        // autoAlignAndScore(RIGHT)
-        );
+        threePieceFromRight(),
+        moveToStationAndPickup(D_BCor),
+        AutoBuilder.followPath(BCor_B),
+        autoAlignAndScore(RIGHT));
   }
 
   public Command doNothing() {
@@ -174,11 +173,13 @@ public class Autos {
   }
 
   public Command pushAndOnePieceFromLeft() {
-    return Commands.sequence(resetOdometry(LEFT_PUSH), AutoBuilder.followPath(LEFT_PUSH), autoAlignAndScore(RIGHT));
+    return Commands.sequence(
+        resetOdometry(LEFT_PUSH), AutoBuilder.followPath(LEFT_PUSH), autoAlignAndScore(RIGHT));
   }
 
   public Command pushAndOnePieceFromRight() {
-    return Commands.sequence(resetOdometry(RIGHT_PUSH), AutoBuilder.followPath(RIGHT_PUSH), autoAlignAndScore(LEFT));
+    return Commands.sequence(
+        resetOdometry(RIGHT_PUSH), AutoBuilder.followPath(RIGHT_PUSH), autoAlignAndScore(LEFT));
   }
 
   private Command driveBlindAndScore() {
