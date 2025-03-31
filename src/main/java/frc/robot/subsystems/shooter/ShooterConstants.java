@@ -32,7 +32,7 @@ public class ShooterConstants {
     public LoggedTunableNumber volts;
 
     private ShooterState(Voltage volts) {
-      this.volts = new LoggedTunableNumber("/Shooter/" + this.name(), volts.in(Volts) / 12.0);
+      this.volts = new LoggedTunableNumber("/Shooter/" + this.name(), volts.in(Volts));
     }
   }
 }

@@ -315,16 +315,16 @@ public class DriveConstants {
   // more negative is CLOSER to the reef
   // more positive is FURTHER AWAY from the reef
   public static LoggedTunableNumber autoAlignOutCoralLeft =
-      new LoggedTunableNumber("AutoAlign/outLeft", 0.585);
+      new LoggedTunableNumber("AutoAlign/outLeft", 0.575);
   public static LoggedTunableNumber autoAlignOutCoralRight =
-      new LoggedTunableNumber("AutoAlign/outRight", 0.585);
+      new LoggedTunableNumber("AutoAlign/outRight", 0.604);
 
   // more negative is to the left OF THE ROBOT
   // more positive is to the right OF THE ROBOT
   public static LoggedTunableNumber autoAlignSideCoralLeft =
-      new LoggedTunableNumber("AutoAlign/sideLeft", -0.37);
+      new LoggedTunableNumber("AutoAlign/sideLeft", -0.312);
   public static LoggedTunableNumber autoAlignSideCoralRight =
-      new LoggedTunableNumber("AutoAlign/sideRight", -0.01);
+      new LoggedTunableNumber("AutoAlign/sideRight", 0.006);
 
   public static LoggedTunableNumber autoAlignOutAlgae =
       new LoggedTunableNumber("AutoAlign/outAlgae", 0.585);
