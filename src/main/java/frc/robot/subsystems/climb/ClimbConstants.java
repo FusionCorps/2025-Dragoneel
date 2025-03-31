@@ -1,12 +1,14 @@
 package frc.robot.subsystems.climb;
 
-import static edu.wpi.first.units.Units.Volts;
-
-import edu.wpi.first.units.measure.Voltage;
+import frc.robot.util.LoggedTunableNumber;
 
 public class ClimbConstants {
   public static final int CLIMB_MOTOR_ID = 17;
-  public static final Voltage CLIMB_RUNOUT_VOLTS = Volts.of(1.0 * 12.0);
-  public static final Voltage CLIMB_RETRACT_VOLTS = Volts.of(-0.50 * 12.0);
-  public static final Voltage CLIMB_HOLD_VOLTS = Volts.of(-0.06 * 12.0);
+  public static final LoggedTunableNumber CLIMB_RUNOUT_PCT =
+      new LoggedTunableNumber("/Climb/CLIMB_RUNOUT_VOLTS", 1.0);
+  public static final LoggedTunableNumber CLIMB_RETRACT_PCT =
+      new LoggedTunableNumber("/Climb/CLIMB_RETRACT_VOLTS", -0.50);
+  public static final LoggedTunableNumber CLIMB_HOLD_PCT =
+      new LoggedTunableNumber("/Climb/CLIMB_HOLD_VOLTS", -0.03);
+  public static final LoggedTunableNumber holdPosition = new LoggedTunableNumber("holdPos", 145);
 }

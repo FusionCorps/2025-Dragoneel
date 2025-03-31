@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
+import frc.robot.util.LoggedTunableNumber;
 
 public class ElevatorConstants {
   public static final int MAIN_ELEVATOR_MOTOR_ID = 13;
@@ -25,10 +26,10 @@ public class ElevatorConstants {
     NET(Rotations.of(26)),
     NEUTRAL(Rotations.of(0));
 
-    public Angle rotations;
+    public LoggedTunableNumber rotations;
 
     private ElevatorState(Angle rotations) {
-      this.rotations = rotations;
+      this.rotations = new LoggedTunableNumber("/Elevator/" + this.name(), rotations.in(Rotations));
     }
   }
 

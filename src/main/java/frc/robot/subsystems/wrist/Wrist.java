@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.wrist.WristConstants.WristState;
-import frc.robot.util.LoggedTunableNumber;
 import java.util.Set;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -29,31 +28,21 @@ public class Wrist extends SubsystemBase {
 
   @AutoLogOutput
   public Trigger isAtStation =
-      new Trigger(() -> WristState.STATION.rotations.isNear(getCurrentAngle(), Degrees.of(15)));
+      new Trigger(
+          () ->
+              Rotations.of(WristState.STATION.rotations.get())
+                  .isNear(getCurrentAngle(), Degrees.of(15)));
 
   @AutoLogOutput
   public Trigger isAtScoringState =
       new Trigger(
           () ->
-              currentWristState.rotations.isNear(getCurrentAngle(), Degrees.of(5))
+              Rotations.of(currentWristState.rotations.get())
+                      .isNear(getCurrentAngle(), Degrees.of(5))
                   && currentWristState != WristState.STATION);
 
   private final Alert wristMotorDisconnectedAlert =
       new Alert("Wrist Motor Disconnected.", AlertType.kError);
-
-  LoggedTunableNumber wristProcessorPosition =
-      new LoggedTunableNumber(
-          "/Wrist/ProcessorPosition", WristState.PROCESSOR.rotations.in(Rotations));
-  LoggedTunableNumber wristL1Position =
-      new LoggedTunableNumber("/Wrist/L1Position", WristState.L1.rotations.in(Rotations));
-  LoggedTunableNumber wristL2Position =
-      new LoggedTunableNumber("/Wrist/L2Position", WristState.L2_CORAL.rotations.in(Rotations));
-  LoggedTunableNumber wristL3Position =
-      new LoggedTunableNumber("/Wrist/L3Position", WristState.L3_CORAL.rotations.in(Rotations));
-  LoggedTunableNumber wristL4Position =
-      new LoggedTunableNumber("/Wrist/L4Position", WristState.L4.rotations.in(Rotations));
-  LoggedTunableNumber wristNetPosition =
-      new LoggedTunableNumber("/Wrist/NetPosition", WristState.NET.rotations.in(Rotations));
 
   public Wrist(WristIO io) {
     this.io = io;
@@ -72,29 +61,14 @@ public class Wrist extends SubsystemBase {
 
     Logger.processInputs("Wrist", inputs);
     wristMotorDisconnectedAlert.set(!inputs.connected);
-
-    LoggedTunableNumber.ifChanged(
-        hashCode(),
-        nums -> {
-          WristState.PROCESSOR.rotations = Rotations.of(nums[0]);
-          WristState.L1.rotations = Rotations.of(nums[1]);
-          WristState.L2_CORAL.rotations = Rotations.of(nums[2]);
-          WristState.L3_CORAL.rotations = Rotations.of(nums[3]);
-          WristState.L4.rotations = Rotations.of(nums[4]);
-          WristState.NET.rotations = Rotations.of(nums[5]);
-        },
-        wristProcessorPosition,
-        wristL1Position,
-        wristL2Position,
-        wristL3Position,
-        wristL4Position,
-        wristNetPosition);
   }
 
   public Command runTargetState(WristState targetState) {
     return run(
         () -> {
-          io.setTargetPosition(targetState.rotations, RobotContainer::getCurrentScoringPieceType);
+          io.setTargetPosition(
+              Rotations.of(targetState.rotations.get()),
+              RobotContainer::getCurrentScoringPieceType);
           currentWristState = targetState;
         });
   }

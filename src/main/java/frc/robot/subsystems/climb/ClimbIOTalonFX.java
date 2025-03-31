@@ -5,7 +5,7 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_MOTOR_ID;
-import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_RETRACT_VOLTS;
+import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_RETRACT_PCT;
 import static frc.robot.util.PhoenixUtil.tryUntilOk;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -90,9 +90,12 @@ public class ClimbIOTalonFX implements ClimbIO {
   public void retract() {
     climbMotor.setControl(
         voltageOut
-            .withOutput(CLIMB_RETRACT_VOLTS)
+            .withOutput(Volts.of(12).times(CLIMB_RETRACT_PCT.get()))
             .withLimitReverseMotion(
-                MathUtil.isNear(54, climbPosition.refresh().getValueAsDouble(), 1))
+                MathUtil.isNear(
+                    ClimbConstants.holdPosition.get(),
+                    climbPosition.refresh().getValueAsDouble(),
+                    3))
             .withLimitForwardMotion(false));
   }
 

@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.subsystems.shooter.ShooterConstants.ShooterState;
 import frc.robot.subsystems.wrist.WristConstants.WristState;
-import frc.robot.util.LoggedTunableNumber;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.Arena2025Reefscape;
@@ -32,16 +31,6 @@ public class Shooter extends SubsystemBase {
 
   @AutoLogOutput private ShooterState currentShooterState = ShooterState.IDLE;
 
-  LoggedTunableNumber shooterL4Volts =
-      new LoggedTunableNumber("/Shooter/L4Volts", ShooterState.SHOOT_CORAL_L4.volts.in(Volts));
-  LoggedTunableNumber shooterL1Volts =
-      new LoggedTunableNumber("/Shooter/L1Volts", ShooterState.SHOOT_CORAL_L1.volts.in(Volts));
-  LoggedTunableNumber shooterDefaultVolts =
-      new LoggedTunableNumber(
-          "/Shooter/DefaultVolts", ShooterState.SHOOT_CORAL_DEFAULT.volts.in(Volts));
-  LoggedTunableNumber shooterAlgaeVolts =
-      new LoggedTunableNumber("/Shooter/AlgaeVolts", ShooterState.SHOOT_ALGAE.volts.in(Volts));
-
   /* Construction method  */
   public Shooter(ShooterIO io) {
     this.io = io;
@@ -50,13 +39,11 @@ public class Shooter extends SubsystemBase {
   /* Periodic method */
   @Override
   public void periodic() {
-    io.setVoltage(currentShooterState.volts);
+    io.setVoltage(Volts.of(currentShooterState.volts.get()));
 
     io.updateInputs(inputs);
     Logger.processInputs("Shooter", inputs);
     motorDisconnectedAlert.set(!inputs.connected);
-
-    // LoggedTunableNumber.ifChanged(hashCode(), nums -> {});
   }
 
   public void setState(ShooterState state) {

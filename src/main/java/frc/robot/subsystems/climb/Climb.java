@@ -1,8 +1,8 @@
 package frc.robot.subsystems.climb;
 
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_HOLD_VOLTS;
-import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_RUNOUT_VOLTS;
+import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_HOLD_PCT;
+import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_RUNOUT_PCT;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -56,11 +56,14 @@ public class Climb extends SubsystemBase {
   public Command extendClimbCmd() {
     // Note that the end runnable sets the voltage to 0V, but the neutral mode configuration is set
     // to brake mode.
-    return runEnd(() -> io.setVoltage(CLIMB_RUNOUT_VOLTS), () -> io.setVoltage(Volts.zero()));
+    return runEnd(
+        () -> io.setVoltage(Volts.of(12).times(CLIMB_RUNOUT_PCT.get())),
+        () -> io.setVoltage(Volts.zero()));
   }
 
   public Command retractClimbCmd() {
     // Note that the end runnable sets a little voltage to hold the climb position.
-    return runEnd(() -> io.retract(), () -> io.setVoltage(CLIMB_HOLD_VOLTS));
+    return runEnd(
+        () -> io.retract(), () -> io.setVoltage(Volts.of(12).times(CLIMB_HOLD_PCT.get())));
   }
 }
