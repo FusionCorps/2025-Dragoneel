@@ -6,6 +6,8 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_MOTOR_ID;
 import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_RETRACT_PCT;
+import static frc.robot.subsystems.climb.ClimbConstants.CLIMB_RUNOUT_PCT;
+import static frc.robot.subsystems.climb.ClimbConstants.bottomPos;
 import static frc.robot.util.PhoenixUtil.tryUntilOk;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -21,6 +23,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 public class ClimbIOTalonFX implements ClimbIO {
   public final TalonFX climbMotor;
@@ -85,6 +88,18 @@ public class ClimbIOTalonFX implements ClimbIO {
     climbMotor.setControl(
         voltageOut.withOutput(voltage).withLimitForwardMotion(false).withLimitReverseMotion(false));
   }
+  
+  @Override
+  public void extend() {
+    climbMotor.setControl(
+        voltageOut
+            .withOutput(Volts.of(12).times(CLIMB_RUNOUT_PCT.get()))
+            .withLimitReverseMotion(false)
+            .withLimitForwardMotion(MathUtil.isNear(
+              ClimbConstants.bottomPos.get(),
+              climbPosition.refresh().getValueAsDouble(),
+              3)));
+  }
 
   @Override
   public void retract() {
@@ -118,7 +133,7 @@ public class ClimbIOTalonFX implements ClimbIO {
 
   @Override
   public void zeroPosition() {
-    climbMotor.setPosition(0);
+    tryUntilOk(5, ()  -> climbMotor.setPosition(0));
     System.out.println("zeroing climb");
   }
 }

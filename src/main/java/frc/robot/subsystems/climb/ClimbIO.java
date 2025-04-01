@@ -19,6 +19,8 @@ public interface ClimbIO {
 
   default void retract() {}
 
+  default void extend() {}
+
   default void zero() {}
 
   default void setBrake() {}
