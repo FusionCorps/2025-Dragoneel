@@ -70,6 +70,10 @@ public class LoggedTunableNumber implements DoubleSupplier {
     }
   }
 
+  public void set(double value) {
+    dashboardNumber.set(value);
+  }
+
   /**
    * Checks whether the number has changed since our last check
    *

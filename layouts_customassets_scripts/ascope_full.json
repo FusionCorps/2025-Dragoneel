@@ -7,16 +7,18 @@
       "height": 664,
       "state": {
         "sidebar": {
-          "width": 350,
+          "width": 214,
           "expanded": [
             "/NetworkInputs/SmartDashboard",
             "/RealOutputs",
-            "/RealOutputs/Odometry",
             "/RealOutputs/Vision/Camera0",
             "/Vision/Camera0",
             "/RealOutputs/Vision/Summary",
             "/ReplayOutputs",
-            "/ReplayOutputs/Odometry"
+            "/ReplayOutputs/Odometry",
+            "/RealOutputs/AutoAlign",
+            "/RealOutputs/Elevator",
+            "/RealOutputs/Wrist"
           ]
         },
         "tabs": {
@@ -32,7 +34,7 @@
             },
             {
               "type": 2,
-              "title": "Odometry",
+              "title": "2D Field",
               "controller": {
                 "sources": [
                   {
@@ -99,13 +101,22 @@
                     "options": {
                       "color": "#ff8c00"
                     }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "/RealOutputs/AutoAlign/targetAutoAlignPose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "color": "#ffff00"
+                    }
                   }
                 ],
                 "game": "2025 Field (Welded)",
                 "bumpers": "auto",
                 "origin": "blue",
                 "orientation": 0,
-                "size": 30
+                "size": 27
               },
               "controllerUUID": "yrokeknwiz49yx6vsjz6vpbyt1a40kjf",
               "renderer": null,
@@ -113,7 +124,7 @@
             },
             {
               "type": 3,
-              "title": "Field",
+              "title": "3D Field",
               "controller": {
                 "sources": [
                   {
@@ -191,17 +202,17 @@
                   },
                   {
                     "type": "ghost",
-                    "logKey": "/ReplayOutputs/Odometry/Robot",
+                    "logKey": "/RealOutputs/AutoAlign/targetAutoAlignPose",
                     "logType": "Pose2d",
                     "visible": true,
                     "options": {
                       "model": "Robor",
-                      "color": "#00ff00"
+                      "color": "#ffff00"
                     }
                   },
                   {
                     "type": "component",
-                    "logKey": "/ReplayOutputs/ComponentPoses",
+                    "logKey": "/RealOutputs/ComponentPoses",
                     "logType": "Pose3d[]",
                     "visible": true,
                     "options": {}
@@ -215,14 +226,14 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -2.091175440377377,
-                  9.07278207101566,
-                  -5.647005731033714
+                  -7.556613906869827,
+                  5.21990135095229,
+                  -3.430675020918882
                 ],
                 "cameraTarget": [
-                  0.19878035849166606,
-                  5.477978052065573,
-                  -3.668188302048753
+                  -2.8823341957077915,
+                  2.057568602886876,
+                  -1.6521647916922544
                 ]
               },
               "controlsHeight": 200
@@ -234,6 +245,85 @@
                 "leftSources": [],
                 "rightSources": [],
                 "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "rightUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "nyksbujd89lb8vyan171ekhl1874bjxk",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 1,
+              "title": "States",
+              "controller": {
+                "leftSources": [],
+                "rightSources": [],
+                "discreteSources": [
+                  {
+                    "type": "stripes",
+                    "logKey": "/RealOutputs/RobotContainer/CurrentScoringPieceType",
+                    "logType": "String",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "/RealOutputs/RobotContainer/TargetPosition",
+                    "logType": "String",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "/RealOutputs/Elevator/CurrentElevatorState",
+                    "logType": "String",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "/RealOutputs/Elevator/IsAtTargetState",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#80588e"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "/RealOutputs/Wrist/CurrentWristState",
+                    "logType": "String",
+                    "visible": true,
+                    "options": {
+                      "color": "#e48b32"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "/RealOutputs/Wrist/IsAtScoringState",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#c0b487"
+                    }
+                  }
+                ],
                 "leftLockedRange": null,
                 "rightLockedRange": null,
                 "leftUnitConversion": {
@@ -342,5 +432,5 @@
     }
   ],
   "satellites": [],
-  "version": "4.1.2"
+  "version": "4.1.6"
 }

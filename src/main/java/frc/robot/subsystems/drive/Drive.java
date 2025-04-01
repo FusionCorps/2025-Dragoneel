@@ -15,6 +15,12 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.drive.DriveConstants.SPEED_AT_12V;
+import static frc.robot.subsystems.drive.DriveConstants.autoAlignOutAlgae;
+import static frc.robot.subsystems.drive.DriveConstants.autoAlignOutCoralLeft;
+import static frc.robot.subsystems.drive.DriveConstants.autoAlignOutCoralRight;
+import static frc.robot.subsystems.drive.DriveConstants.autoAlignSideAlgae;
+import static frc.robot.subsystems.drive.DriveConstants.autoAlignSideCoralLeft;
+import static frc.robot.subsystems.drive.DriveConstants.autoAlignSideCoralRight;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -44,6 +50,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -178,10 +185,49 @@ public class Drive extends SubsystemBase implements VisionConsumer {
                 voltage -> runCharacterization(voltage.in(Volts)), null, this));
     setPose(new Pose2d());
 
-    // SmartDashboard.putData("Coast", setNeutralMode(true));
-    // SmartDashboard.putData("Brake", setNeutralMode(false));
+    // add dashboard buttons to increment/decrement auto align tunables
+    SmartDashboard.putData(
+        "AutoAlign/1 cm OUT, CoralLEFT",
+        Commands.runOnce(() -> autoAlignOutCoralLeft.set(autoAlignOutCoralLeft.get() + 1)));
+    SmartDashboard.putData(
+        "AutoAlign/1 cm IN, CoralLEFT",
+        Commands.runOnce(() -> autoAlignOutCoralLeft.set(autoAlignOutCoralLeft.get() - 1)));
 
-    // LoggedTunableNumber.ifChanged(hashCode(), null, null);
+    SmartDashboard.putData(
+        "AutoAlign/1 cm OUT, CoralRIGHT",
+        Commands.runOnce(() -> autoAlignOutCoralRight.set(autoAlignOutCoralRight.get() + 1)));
+    SmartDashboard.putData(
+        "AutoAlign/1 cm IN, CoralRIGHT",
+        Commands.runOnce(() -> autoAlignOutCoralRight.set(autoAlignOutCoralRight.get() - 1)));
+
+    SmartDashboard.putData(
+        "AutoAlign/1 cm OUT, ALGAE",
+        Commands.runOnce(() -> autoAlignOutAlgae.set(autoAlignOutAlgae.get() + 1)));
+    SmartDashboard.putData(
+        "AutoAlign/1 cm IN, ALGAE",
+        Commands.runOnce(() -> autoAlignOutAlgae.set(autoAlignOutAlgae.get() - 1)));
+
+    // sideways
+    SmartDashboard.putData(
+        "AutoAlign/1 cm LEFT, CoralLEFT",
+        Commands.runOnce(() -> autoAlignSideCoralLeft.set(autoAlignSideCoralLeft.get() - 1)));
+    SmartDashboard.putData(
+        "AutoAlign/1 cm RIGHT, CoralLEFT",
+        Commands.runOnce(() -> autoAlignSideCoralLeft.set(autoAlignSideCoralLeft.get() + 1)));
+
+    SmartDashboard.putData(
+        "AutoAlign/1 cm LEFT, CoralRIGHT",
+        Commands.runOnce(() -> autoAlignSideCoralRight.set(autoAlignSideCoralRight.get() - 1)));
+    SmartDashboard.putData(
+        "AutoAlign/1 cm RIGHT, CoralRIGHT",
+        Commands.runOnce(() -> autoAlignSideCoralRight.set(autoAlignSideCoralRight.get() + 1)));
+
+    SmartDashboard.putData(
+        "AutoAlign/1 cm LEFT, ALGAE",
+        Commands.runOnce(() -> autoAlignSideAlgae.set(autoAlignSideAlgae.get() - 1)));
+    SmartDashboard.putData(
+        "AutoAlign/1 cm RIGHT, ALGAE",
+        Commands.runOnce(() -> autoAlignSideAlgae.set(autoAlignSideAlgae.get() + 1)));
   }
 
   @Override

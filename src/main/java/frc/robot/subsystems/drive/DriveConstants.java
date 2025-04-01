@@ -314,25 +314,37 @@ public class DriveConstants {
 
   // more negative is CLOSER to the reef
   // more positive is FURTHER AWAY from the reef
+  public static double autoAlignOutCoralLeftBaseline = 0.575;
+  public static double autoAlignOutCoralRightBaseline = 0.604;
+
+  public static double autoAlignSideCoralLeftBaseline = -0.312;
+  public static double autoAlignSideCoralRightBaseline = 0.006;
+
+  public static double autoAlignOutAlgaeBaseline = 0.585;
+  public static double autoAlignSideAlgaeBaseline = -0.03;
+
+  public static double autoAlignOutBargeBaseline = 0.585;
+  public static double autoAlignSideBargeBaseline = 0.00;
+
   public static LoggedTunableNumber autoAlignOutCoralLeft =
-      new LoggedTunableNumber("AutoAlign/outLeft", 0.575);
+      new LoggedTunableNumber("AutoAlign/outLeft", 0);
   public static LoggedTunableNumber autoAlignOutCoralRight =
-      new LoggedTunableNumber("AutoAlign/outRight", 0.604);
+      new LoggedTunableNumber("AutoAlign/outRight", 0);
 
   // more negative is to the left OF THE ROBOT
   // more positive is to the right OF THE ROBOT
   public static LoggedTunableNumber autoAlignSideCoralLeft =
-      new LoggedTunableNumber("AutoAlign/sideLeft", -0.312);
+      new LoggedTunableNumber("AutoAlign/sideLeft", 0);
   public static LoggedTunableNumber autoAlignSideCoralRight =
-      new LoggedTunableNumber("AutoAlign/sideRight", 0.006);
+      new LoggedTunableNumber("AutoAlign/sideRight", 0);
 
   public static LoggedTunableNumber autoAlignOutAlgae =
-      new LoggedTunableNumber("AutoAlign/outAlgae", 0.585);
+      new LoggedTunableNumber("AutoAlign/outAlgae", 0);
   public static LoggedTunableNumber autoAlignSideAlgae =
-      new LoggedTunableNumber("AutoAlign/sideAlgae", -0.03);
+      new LoggedTunableNumber("AutoAlign/sideAlgae", 0);
 
   public static LoggedTunableNumber autoAlignOutBarge =
-      new LoggedTunableNumber("AutoAlign/outBarge", 0.585);
+      new LoggedTunableNumber("AutoAlign/outBarge", 0);
   public static LoggedTunableNumber autoAlignSideBarge =
-      new LoggedTunableNumber("AutoAlign/sideBarge", 0.00);
+      new LoggedTunableNumber("AutoAlign/sideBarge", 0);
 }

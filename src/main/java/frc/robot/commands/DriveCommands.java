@@ -14,6 +14,7 @@
 package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static frc.robot.subsystems.drive.DriveConstants.*;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.MathUtil;
@@ -37,9 +38,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.DriveConstants;
-import frc.robot.subsystems.drive.DriveConstants.AutoAlignDirection;
-import frc.robot.subsystems.drive.DriveConstants.DriveSpeedMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -50,8 +48,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
-  private static final double AUTO_DRIVE_MAX_SPEED =
-      DriveConstants.SPEED_AT_12V.in(MetersPerSecond);
+  private static final double AUTO_DRIVE_MAX_SPEED = SPEED_AT_12V.in(MetersPerSecond);
   private static final double AUTO_DRIVE_MAX_ROT = Units.rotationsToRadians(0.75);
   private static final double DEADBAND = 0.1;
   private static final double ANGLE_KP = 1.0;
@@ -206,20 +203,20 @@ public class DriveCommands {
             double sideOffset;
             switch (autoAlignDirection) {
               case LEFT:
-                outOffset = DriveConstants.autoAlignOutCoralLeft.get();
-                sideOffset = DriveConstants.autoAlignSideCoralLeft.get();
+                outOffset = autoAlignOutCoralLeft.get() * 0.01 + autoAlignOutCoralLeftBaseline;
+                sideOffset = autoAlignSideCoralLeft.get() * 0.01 + autoAlignSideCoralLeftBaseline;
                 break;
               case RIGHT:
-                outOffset = DriveConstants.autoAlignOutCoralRight.get();
-                sideOffset = DriveConstants.autoAlignSideCoralRight.get();
+                outOffset = autoAlignOutCoralRight.get() * 0.01 + autoAlignOutCoralRightBaseline;
+                sideOffset = autoAlignSideCoralRight.get() * 0.01 + autoAlignSideCoralRightBaseline;
                 break;
               case ALGAE:
-                outOffset = DriveConstants.autoAlignOutAlgae.get();
-                sideOffset = DriveConstants.autoAlignSideAlgae.get();
+                outOffset = autoAlignOutAlgae.get() * 0.01 + autoAlignOutAlgaeBaseline;
+                sideOffset = autoAlignSideAlgae.get() * 0.01 + autoAlignSideAlgaeBaseline;
                 break;
               case BARGE:
-                outOffset = DriveConstants.autoAlignOutBarge.get();
-                sideOffset = DriveConstants.autoAlignSideBarge.get();
+                outOffset = autoAlignOutBarge.get() * 0.01 + autoAlignOutBargeBaseline;
+                sideOffset = autoAlignSideBarge.get() * 0.01 + autoAlignSideBargeBaseline;
                 break;
               default:
                 outOffset = 0;
@@ -253,8 +250,7 @@ public class DriveCommands {
    * (doesn't have to be seen). Separate commands should be created for aligning to left and right
    * branches.
    */
-  public static Command autoAlignToNearest(
-      Drive drive, DriveConstants.AutoAlignDirection autoAlignDirection) {
+  public static Command autoAlignToNearest(Drive drive, AutoAlignDirection autoAlignDirection) {
     return autoAlignTo(
         drive,
         () ->
@@ -468,8 +464,7 @@ public class DriveCommands {
                       for (int i = 0; i < 4; i++) {
                         wheelDelta += Math.abs(positions[i] - state.positions[i]) / 4.0;
                       }
-                      double wheelRadius =
-                          (state.gyroDelta * DriveConstants.DRIVE_BASE_RADIUS) / wheelDelta;
+                      double wheelRadius = (state.gyroDelta * DRIVE_BASE_RADIUS) / wheelDelta;
 
                       NumberFormat formatter = new DecimalFormat("#0.000");
                       System.out.println(
