@@ -81,11 +81,9 @@ public class Module {
 
   /** Runs the module with the specified setpoint state. */
   public void runSetpoint(SwerveModuleState state) {
-    // if (DriverStation.isAutonomousEnabled()) {
     // Optimize velocity setpoint
     state.optimize(getAngle());
     state.cosineScale(inputs.turnPosition);
-    // }
     // Apply setpoints
     io.setDriveVelocity(RadiansPerSecond.of(state.speedMetersPerSecond / constants.WheelRadius));
     io.setTurnPosition(state.angle);
