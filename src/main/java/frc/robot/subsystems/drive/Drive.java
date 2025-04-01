@@ -187,46 +187,46 @@ public class Drive extends SubsystemBase implements VisionConsumer {
 
     // add dashboard buttons to increment/decrement auto align tunables
     SmartDashboard.putData(
-        "AutoAlign/1 cm OUT, CoralLEFT",
+        "AutoAlign/OUT, CoralLEFT",
         Commands.runOnce(() -> autoAlignOutCoralLeft.set(autoAlignOutCoralLeft.get() + 1)));
     SmartDashboard.putData(
-        "AutoAlign/1 cm IN, CoralLEFT",
+        "AutoAlign/IN, CoralLEFT",
         Commands.runOnce(() -> autoAlignOutCoralLeft.set(autoAlignOutCoralLeft.get() - 1)));
 
     SmartDashboard.putData(
-        "AutoAlign/1 cm OUT, CoralRIGHT",
+        "AutoAlign/OUT, CoralRIGHT",
         Commands.runOnce(() -> autoAlignOutCoralRight.set(autoAlignOutCoralRight.get() + 1)));
     SmartDashboard.putData(
-        "AutoAlign/1 cm IN, CoralRIGHT",
+        "AutoAlign/IN, CoralRIGHT",
         Commands.runOnce(() -> autoAlignOutCoralRight.set(autoAlignOutCoralRight.get() - 1)));
 
     SmartDashboard.putData(
-        "AutoAlign/1 cm OUT, ALGAE",
+        "AutoAlign/OUT, ALGAE",
         Commands.runOnce(() -> autoAlignOutAlgae.set(autoAlignOutAlgae.get() + 1)));
     SmartDashboard.putData(
-        "AutoAlign/1 cm IN, ALGAE",
+        "AutoAlign/IN, ALGAE",
         Commands.runOnce(() -> autoAlignOutAlgae.set(autoAlignOutAlgae.get() - 1)));
 
     // sideways
     SmartDashboard.putData(
-        "AutoAlign/1 cm LEFT, CoralLEFT",
+        "AutoAlign/LEFT, CoralLEFT",
         Commands.runOnce(() -> autoAlignSideCoralLeft.set(autoAlignSideCoralLeft.get() - 1)));
     SmartDashboard.putData(
-        "AutoAlign/1 cm RIGHT, CoralLEFT",
+        "AutoAlign/RIGHT, CoralLEFT",
         Commands.runOnce(() -> autoAlignSideCoralLeft.set(autoAlignSideCoralLeft.get() + 1)));
 
     SmartDashboard.putData(
-        "AutoAlign/1 cm LEFT, CoralRIGHT",
+        "AutoAlign/LEFT, CoralRIGHT",
         Commands.runOnce(() -> autoAlignSideCoralRight.set(autoAlignSideCoralRight.get() - 1)));
     SmartDashboard.putData(
-        "AutoAlign/1 cm RIGHT, CoralRIGHT",
+        "AutoAlign/RIGHT, CoralRIGHT",
         Commands.runOnce(() -> autoAlignSideCoralRight.set(autoAlignSideCoralRight.get() + 1)));
 
     SmartDashboard.putData(
-        "AutoAlign/1 cm LEFT, ALGAE",
+        "AutoAlign/LEFT, ALGAE",
         Commands.runOnce(() -> autoAlignSideAlgae.set(autoAlignSideAlgae.get() - 1)));
     SmartDashboard.putData(
-        "AutoAlign/1 cm RIGHT, ALGAE",
+        "AutoAlign/RIGHT, ALGAE",
         Commands.runOnce(() -> autoAlignSideAlgae.set(autoAlignSideAlgae.get() + 1)));
   }
 
