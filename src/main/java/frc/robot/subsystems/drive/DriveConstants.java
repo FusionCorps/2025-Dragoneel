@@ -318,7 +318,7 @@ public class DriveConstants {
   public static double autoAlignOutCoralRightBaseline = 0.604;
 
   public static double autoAlignSideCoralLeftBaseline = -0.342;
-  public static double autoAlignSideCoralRightBaseline = 0.006;
+  public static double autoAlignSideCoralRightBaseline = -0.046;
 
   public static double autoAlignOutAlgaeBaseline = 0.585;
   public static double autoAlignSideAlgaeBaseline = -0.03;
