@@ -11,5 +11,5 @@ public class ClimbConstants {
   public static final LoggedTunableNumber CLIMB_HOLD_PCT =
       new LoggedTunableNumber("/Climb/CLIMB_HOLD_VOLTS", -0.03);
   public static final LoggedTunableNumber holdPosition = new LoggedTunableNumber("holdPos", 145);
-  public static final LoggedTunableNumber bottomPos = new LoggedTunableNumber("bottomPos", 300);
+  public static final LoggedTunableNumber bottomPos = new LoggedTunableNumber("bottomPos", 420);
 }
