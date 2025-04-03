@@ -57,7 +57,7 @@ public class Climb extends SubsystemBase {
     // Note that the end runnable sets the voltage to 0V, but the neutral mode configuration is set
     // to brake mode.
     return runEnd(
-        () -> io.setVoltage(Volts.of(12).times(CLIMB_RUNOUT_PCT.get())),
+        () -> io.extend(),
         () -> io.setVoltage(Volts.zero()));
   }
 
