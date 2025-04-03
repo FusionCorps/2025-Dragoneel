@@ -2,36 +2,42 @@ package frc.robot.subsystems.climb;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
-public class ClimbIOSim implements ClimbIO {
-  private final DCMotorSim climbMotorSim;
+public class ClimbIOSim extends ClimbIOTalonFX {
+  TalonFXSimState climbMotorSim = climbMotor.getSimState();
+  private final DCMotorSim climbSim;
   private final DCMotor climbMotorGearbox = DCMotor.getKrakenX60(1);
-  private Voltage appliedVolts = Volts.of(0.0);
 
   public ClimbIOSim() {
-    climbMotorSim =
+    climbSim =
         new DCMotorSim(
             LinearSystemId.createDCMotorSystem(climbMotorGearbox, 0.0001, 1.0), climbMotorGearbox);
   }
 
   @Override
   public void updateInputs(ClimbIOInputs inputs) {
-    climbMotorSim.setInputVoltage(appliedVolts.in(Volts));
-    climbMotorSim.update(0.02);
+    climbMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
-    inputs.connected = true;
-    inputs.positionRad = climbMotorSim.getAngularPositionRad();
-    inputs.velocityRadPerSec = climbMotorSim.getAngularVelocityRadPerSec();
-    inputs.appliedVolts = appliedVolts.in(Volts);
-    inputs.currentAmps = climbMotorSim.getCurrentDrawAmps();
-  }
+    // get the motor voltage of the TalonFX
+    Voltage motorVoltage = climbMotorSim.getMotorVoltageMeasure();
 
-  @Override
-  public void setVoltage(Voltage voltage) {
-    appliedVolts = voltage;
+    // use the motor voltage to calculate new position and velocity
+    // using WPILib's DCMotorSim class for physics simulation
+    climbSim.setInputVoltage(motorVoltage.in(Volts));
+    climbSim.update(0.02); // assume 20 ms loop time
+
+    // apply the new rotor position and velocity to the TalonFX;
+    // note that this is rotor position/velocity (before gear ratio), but
+    // DCMotorSim returns mechanism position/velocity (after gear ratio)
+    climbMotorSim.setRawRotorPosition(climbSim.getAngularPosition());
+    climbMotorSim.setRotorVelocity(climbSim.getAngularVelocity());
+
+    super.updateInputs(inputs);
   }
 }

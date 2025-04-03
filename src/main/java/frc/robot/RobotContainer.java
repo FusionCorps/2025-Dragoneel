@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -258,14 +257,6 @@ public class RobotContainer {
         .whileFalse(Commands.runOnce(() -> controllerDisconnectedAlert.set(true)))
         .whileTrue(Commands.runOnce(() -> controllerDisconnectedAlert.set(false)));
 
-    // Log white color to dashboard when in coral mode, blue color otherwise
-    new Trigger(() -> currentScoringPieceType == ScoringPieceType.CORAL)
-        .whileTrue(
-            Commands.runOnce(
-                () ->
-                    Logger.recordOutput("RobotContainer/Scoring Mode", Color.kWhite.toHexString())))
-        .whileFalse(
-            Commands.runOnce(() -> Logger.recordOutput("RobotContainer/Scoring Mode", "#29ac9c")));
     // if (elevatorAndWristCommands != null)
     //   RobotModeTriggers.teleop().onTrue(elevatorAndWristCommands.setNeutral());
 
@@ -325,14 +316,26 @@ public class RobotContainer {
 
       controller
           .rightStick()
-          .whileTrue(
-              DriveCommands.autoAlignToBarge(drive)
+          .onTrue(
+              DriveCommands.joystickDrive(drive, () -> 0.35, () -> 0, () -> 0)
+                  .withTimeout(0.3)
                   .finallyDo(
                       interrupted -> {
                         if (!interrupted) {
                           rumbleCommand().schedule();
                         }
                       }));
+
+      // controller
+      //     .rightStick()
+      //     .whileTrue(
+      //         DriveCommands.autoAlignToBarge(drive)
+      //             .finallyDo(
+      //                 interrupted -> {
+      //                   if (!interrupted) {
+      //                     rumbleCommand().schedule();
+      //                   }
+      //                 }));
 
       // Toggle drive max speed
       // #1 If the elevator is at station/algae stow, toggle between DEFAULT and SLOW.
@@ -409,6 +412,10 @@ public class RobotContainer {
     if (shooter != null && elevator != null) {
       // Shoots coral
       controller.rightTrigger().whileTrue(shooter.shootCoralCmd(wrist::getCurrentWristState));
+      controller
+          .rightTrigger()
+          .onFalse(
+              Commands.either(shooter.pulseShooterCmd(), Commands.none(), isCoralMode.negate()));
 
       // Shoots algae; alternatively, pulls coral back into shooter
       controller.back().whileTrue(shooter.shootAlgaeCmd());

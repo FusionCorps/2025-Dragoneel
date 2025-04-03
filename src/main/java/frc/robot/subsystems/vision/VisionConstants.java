@@ -16,8 +16,9 @@ public class VisionConstants {
   // AprilTag layout
   public static AprilTagFieldLayout aprilTagLayout =
       AprilTagFieldLayout.loadField(
-          //   AprilTagFields.k2025ReefscapeAndyMark
-          AprilTagFields.k2025ReefscapeWelded); // TODO: change the field type at comp
+          AprilTagFields.k2025ReefscapeAndyMark
+          //   AprilTagFields.k2025ReefscapeWelded
+          ); // TODO: change the field type at comp
 
   public static List<Pose2d> blueReefTagPoses =
       List.of(

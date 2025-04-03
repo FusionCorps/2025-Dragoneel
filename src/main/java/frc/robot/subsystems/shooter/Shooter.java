@@ -31,6 +31,8 @@ public class Shooter extends SubsystemBase {
 
   @AutoLogOutput private ShooterState currentShooterState = ShooterState.IDLE;
 
+  boolean pulsing = false;
+
   /* Construction method  */
   public Shooter(ShooterIO io) {
     this.io = io;
@@ -118,9 +120,16 @@ public class Shooter extends SubsystemBase {
 
   public Command pulseShooterCmd() {
     // turn shooter on and off quickly repeatedly
-    return (startEnd(
-                () -> setState(ShooterState.SHOOT_CORAL_DEFAULT), () -> setState(ShooterState.IDLE))
-            .withTimeout(0.75))
+    // return (startEnd(
+    //             () -> setState(ShooterState.SHOOT_CORAL_DEFAULT), () ->
+    // setState(ShooterState.IDLE))
+    //         .withTimeout(0.75))
+    //     .repeatedly();
+    return Commands.sequence(
+            runOnce(() -> setState(ShooterState.SHOOT_CORAL_DEFAULT)),
+            Commands.waitSeconds(0.6),
+            runOnce(() -> setState(ShooterState.IDLE)),
+            Commands.waitSeconds(0.2))
         .repeatedly();
   }
 

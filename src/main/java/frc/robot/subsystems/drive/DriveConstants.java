@@ -83,7 +83,7 @@ public class DriveConstants {
 
   // The stator current at which the wheels start to slip
   // TODO: drive stator limit needs to be tuned
-  private static final Current kSlipCurrent = Amps.of(80.0);
+  private static final Current kSlipCurrent = Amps.of(120.0);
 
   // Initial configs for the drive and steer motors and the azimuth encoder; these cannot be null.
   // Some configs will be overwritten; check the `with*InitialConfigs()` API documentation.
@@ -169,7 +169,7 @@ public class DriveConstants {
   private static final int kFrontLeftDriveMotorId = 1;
   private static final int kFrontLeftSteerMotorId = 2;
   private static final int kFrontLeftEncoderId = 3;
-  private static final Angle kFrontLeftEncoderOffset = Rotations.of(-0.486328125);
+  private static final Angle kFrontLeftEncoderOffset = Rotations.of(-0.48291015625);
   private static final boolean kFrontLeftSteerMotorInverted = true;
   private static final boolean kFrontLeftEncoderInverted = false;
 
@@ -180,7 +180,7 @@ public class DriveConstants {
   private static final int kFrontRightDriveMotorId = 4;
   private static final int kFrontRightSteerMotorId = 5;
   private static final int kFrontRightEncoderId = 6;
-  private static final Angle kFrontRightEncoderOffset = Rotations.of(0.370361328125);
+  private static final Angle kFrontRightEncoderOffset = Rotations.of(0.3681640625);
   private static final boolean kFrontRightSteerMotorInverted = true;
   private static final boolean kFrontRightEncoderInverted = false;
 
@@ -191,7 +191,7 @@ public class DriveConstants {
   private static final int kBackLeftDriveMotorId = 7;
   private static final int kBackLeftSteerMotorId = 8;
   private static final int kBackLeftEncoderId = 9;
-  private static final Angle kBackLeftEncoderOffset = Rotations.of(0.076416015625);
+  private static final Angle kBackLeftEncoderOffset = Rotations.of(0.07763671875);
   private static final boolean kBackLeftSteerMotorInverted = true;
   private static final boolean kBackLeftEncoderInverted = false;
 
@@ -202,7 +202,7 @@ public class DriveConstants {
   private static final int kBackRightDriveMotorId = 10;
   private static final int kBackRightSteerMotorId = 11;
   private static final int kBackRightEncoderId = 12;
-  private static final Angle kBackRightEncoderOffset = Rotations.of(0.08251953125);
+  private static final Angle kBackRightEncoderOffset = Rotations.of(0.07958984375);
   private static final boolean kBackRightSteerMotorInverted = true;
   private static final boolean kBackRightEncoderInverted = false;
 
@@ -314,14 +314,14 @@ public class DriveConstants {
 
   // more negative is CLOSER to the reef
   // more positive is FURTHER AWAY from the reef
-  public static double autoAlignOutCoralLeftBaseline = 0.575;
+  public static double autoAlignOutCoralLeftBaseline = 0.585;
   public static double autoAlignOutCoralRightBaseline = 0.604;
 
-  public static double autoAlignSideCoralLeftBaseline = -0.312;
-  public static double autoAlignSideCoralRightBaseline = 0.006;
+  public static double autoAlignSideCoralLeftBaseline = -0.362;
+  public static double autoAlignSideCoralRightBaseline = -0.056;
 
   public static double autoAlignOutAlgaeBaseline = 0.585;
-  public static double autoAlignSideAlgaeBaseline = -0.03;
+  public static double autoAlignSideAlgaeBaseline = -0.08;
 
   public static double autoAlignOutBargeBaseline = 0.585;
   public static double autoAlignSideBargeBaseline = 0.00;

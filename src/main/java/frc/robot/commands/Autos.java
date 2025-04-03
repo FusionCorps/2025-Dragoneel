@@ -47,10 +47,11 @@ public class Autos {
 
   private PathPlannerPath LEFT_PUSH;
   private PathPlannerPath RIGHT_PUSH;
+  private PathPlannerPath CenterAlgae_Barge;
 
-  private final Time STATION_WAIT_TIME = Seconds.of(0.4);
+  private final Time STATION_WAIT_TIME = Seconds.of(0.7);
   private final Time AUTO_ALIGN_TIMEOUT = Seconds.of(4.0);
-  private final Time SHOOT_TIMEOUT = Seconds.of(0.6);
+  private final Time SHOOT_TIMEOUT = Seconds.of(1.1);
 
   public Autos(Drive drive, Elevator elevator, Wrist wrist, Shooter shooter) {
     this.drive = drive;
@@ -85,6 +86,7 @@ public class Autos {
       // Pushes
       LEFT_PUSH = PathPlannerPath.fromChoreoTrajectory("LeftPush");
       RIGHT_PUSH = PathPlannerPath.fromChoreoTrajectory("RightPush");
+      CenterAlgae_Barge = PathPlannerPath.fromChoreoTrajectory("CenterAlgae-Barge");
 
     } catch (Exception e) {
       System.out.println("Failed to load paths. DO NOT RUN AUTO");
@@ -94,7 +96,7 @@ public class Autos {
 
   // Move straight for 2 seconds
   public Command moveStraight() {
-    return DriveCommands.joystickDrive(drive, () -> -0.5, () -> 0, () -> 0).withTimeout(2.0);
+    return DriveCommands.joystickDrive(drive, () -> 0.5, () -> 0, () -> 0).withTimeout(2.0);
   }
 
   /*
@@ -180,6 +182,15 @@ public class Autos {
   public Command pushAndOnePieceFromRight() {
     return Commands.sequence(
         resetOdometry(RIGHT_PUSH), AutoBuilder.followPath(RIGHT_PUSH), autoAlignAndScore(LEFT));
+  }
+
+  public Command onePieceCenterWithAlgae() {
+    return Commands.sequence(
+        onePieceFromCenter(),
+        DriveCommands.joystickDrive(drive, () -> -0.5, () -> 0, () -> 0).withTimeout(2.0),
+        autoAlignAndScore(ALGAE),
+        AutoBuilder.followPath(CenterAlgae_Barge),
+        shooter.shootAlgaeCmd().withTimeout(3.0));
   }
 
   private Command driveBlindAndScore() {
