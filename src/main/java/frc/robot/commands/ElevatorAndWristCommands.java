@@ -187,6 +187,10 @@ public class ElevatorAndWristCommands {
     return goToAlgae(L2_ALGAE, false);
   }
 
+  public Command goToL2Algae(boolean directExplicit) {
+    return goToAlgae(L2_ALGAE, directExplicit);
+  }
+
   /* Move to L3_coral with appropriate state movement. */
   public Command goToL3Coral() {
     return goToCoral(L3_CORAL, false);
@@ -195,6 +199,10 @@ public class ElevatorAndWristCommands {
   /* Move to L3_algae with appropriate state movement. */
   public Command goToL3Algae() {
     return goToAlgae(L3_ALGAE, false);
+  }
+
+  public Command goToL3Algae(boolean directExplicit) {
+    return goToAlgae(L3_ALGAE, directExplicit);
   }
 
   /* Move to net with appropriate state movement. */
@@ -281,9 +289,9 @@ public class ElevatorAndWristCommands {
         () -> {
           RobotContainer.currentScoringPieceType = ScoringPieceType.ALGAE;
           if (targetPosition == L2_CORAL) {
-            return goToL2Algae();
+            return goToL2Algae(true);
           } else if (targetPosition == L3_CORAL) {
-            return goToL3Algae();
+            return goToL3Algae(true);
           }
           return Commands.none();
         },

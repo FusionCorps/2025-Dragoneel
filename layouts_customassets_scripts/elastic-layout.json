@@ -3,7 +3,7 @@
   "grid_size": 128,
   "tabs": [
     {
-      "name": "Teleoperated",
+      "name": "DRIVING",
       "grid_layout": {
         "layouts": [
           {
@@ -116,7 +116,7 @@
             "title": "Auto Chooser",
             "x": 768.0,
             "y": 128.0,
-            "width": 384.0,
+            "width": 512.0,
             "height": 128.0,
             "type": "ComboBox Chooser",
             "properties": {
@@ -152,23 +152,10 @@
             }
           },
           {
-            "title": "Current Scoring Type",
-            "x": 0.0,
-            "y": 128.0,
-            "width": 512.0,
-            "height": 384.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/Current Scoring Type",
-              "period": 0.06,
-              "data_type": "string"
-            }
-          },
-          {
             "title": "Alerts",
-            "x": 1152.0,
+            "x": 1280.0,
             "y": 0.0,
-            "width": 384.0,
+            "width": 256.0,
             "height": 512.0,
             "type": "Alerts",
             "properties": {
@@ -180,7 +167,7 @@
             "title": "FMS",
             "x": 768.0,
             "y": 0.0,
-            "width": 384.0,
+            "width": 512.0,
             "height": 128.0,
             "type": "FMSInfo",
             "properties": {
@@ -191,12 +178,25 @@
           {
             "title": "CurrentMaxSpeed",
             "x": 768.0,
-            "y": 256.0,
-            "width": 384.0,
+            "y": 384.0,
+            "width": 512.0,
             "height": 128.0,
             "type": "Large Text Display",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/Drive/CurrentMaxSpeed",
+              "period": 0.06,
+              "data_type": "string"
+            }
+          },
+          {
+            "title": "Scoring Mode",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 512.0,
+            "height": 256.0,
+            "type": "Single Color View",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/RobotContainer/Scoring Mode",
               "period": 0.06,
               "data_type": "string"
             }
@@ -205,10 +205,303 @@
       }
     },
     {
-      "name": "Autonomous",
+      "name": "CONVENIENCE/TUNING",
       "grid_layout": {
         "layouts": [],
-        "containers": []
+        "containers": [
+          {
+            "title": "sideLeft",
+            "x": 256.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/Tuning/AutoAlign/sideLeft",
+              "period": 0.06,
+              "data_type": "double"
+            }
+          },
+          {
+            "title": "sideRight",
+            "x": 256.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/Tuning/AutoAlign/sideRight",
+              "period": 0.06,
+              "data_type": "double"
+            }
+          },
+          {
+            "title": "Climb holdPos_Rotations",
+            "x": 0.0,
+            "y": 384.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/Tuning/holdPos",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 100.0,
+              "max_value": 150.0,
+              "divisions": 5,
+              "update_continuously": false
+            }
+          },
+          {
+            "title": "SHOOT_CORAL_DEFAULT_Volts",
+            "x": 640.0,
+            "y": 384.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/Tuning//Shooter/SHOOT_CORAL_DEFAULT",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "sideAlgae",
+            "x": 256.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/Tuning/AutoAlign/sideAlgae",
+              "period": 0.06,
+              "data_type": "double"
+            }
+          },
+          {
+            "title": "CLIMB_RETRACT_VOLTS",
+            "x": 896.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/Tuning//Climb/CLIMB_RETRACT_VOLTS",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Zero",
+            "x": 1152.0,
+            "y": 384.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/Climb/Zero",
+              "period": 0.06,
+              "show_type": true
+            }
+          },
+          {
+            "title": " ",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/AutoAlign/LEFT, ALGAE",
+              "period": 0.06,
+              "show_type": false
+            }
+          },
+          {
+            "title": " ",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/AutoAlign/LEFT, CoralLEFT",
+              "period": 0.06,
+              "show_type": false
+            }
+          },
+          {
+            "title": " ",
+            "x": 0.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/AutoAlign/LEFT, CoralRIGHT",
+              "period": 0.06,
+              "show_type": false
+            }
+          },
+          {
+            "title": " ",
+            "x": 384.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/AutoAlign/RIGHT, ALGAE",
+              "period": 0.06,
+              "show_type": false
+            }
+          },
+          {
+            "title": " ",
+            "x": 384.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/AutoAlign/RIGHT, CoralLEFT",
+              "period": 0.06,
+              "show_type": false
+            }
+          },
+          {
+            "title": " ",
+            "x": 384.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/AutoAlign/RIGHT, CoralRIGHT",
+              "period": 0.06,
+              "show_type": false
+            }
+          },
+          {
+            "title": "outAlgae",
+            "x": 1152.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/Tuning/AutoAlign/outAlgae",
+              "period": 0.06,
+              "data_type": "double"
+            }
+          },
+          {
+            "title": "outLeft",
+            "x": 1152.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/Tuning/AutoAlign/outLeft",
+              "period": 0.06,
+              "data_type": "double"
+            }
+          },
+          {
+            "title": "outRight",
+            "x": 1152.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/Tuning/AutoAlign/outRight",
+              "period": 0.06,
+              "data_type": "double"
+            }
+          },
+          {
+            "title": " ",
+            "x": 896.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/AutoAlign/IN, CoralLEFT",
+              "period": 0.06,
+              "show_type": true
+            }
+          },
+          {
+            "title": " ",
+            "x": 896.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/AutoAlign/IN, ALGAE",
+              "period": 0.06,
+              "show_type": false
+            }
+          },
+          {
+            "title": " ",
+            "x": 896.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/AutoAlign/IN, CoralRIGHT",
+              "period": 0.06,
+              "show_type": false
+            }
+          },
+          {
+            "title": " ",
+            "x": 1280.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/AutoAlign/OUT, ALGAE",
+              "period": 0.06,
+              "show_type": false
+            }
+          },
+          {
+            "title": " ",
+            "x": 1280.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/AutoAlign/OUT, CoralLEFT",
+              "period": 0.06,
+              "show_type": false
+            }
+          },
+          {
+            "title": " ",
+            "x": 1280.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Command",
+            "properties": {
+              "topic": "/SmartDashboard/AutoAlign/OUT, CoralRIGHT",
+              "period": 0.06,
+              "show_type": false
+            }
+          }
+        ]
       }
     }
   ]
