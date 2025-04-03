@@ -50,7 +50,7 @@ public class Autos {
 
   private final Time STATION_WAIT_TIME = Seconds.of(0.4);
   private final Time AUTO_ALIGN_TIMEOUT = Seconds.of(4.0);
-  private final Time SHOOT_TIMEOUT = Seconds.of(0.6);
+  private final Time SHOOT_TIMEOUT = Seconds.of(1.25);
 
   public Autos(Drive drive, Elevator elevator, Wrist wrist, Shooter shooter) {
     this.drive = drive;
