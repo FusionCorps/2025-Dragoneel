@@ -42,6 +42,7 @@ public final class PhoenixUtil {
     }
   }
 
+  /* for maple-sim swerve drive */
   public static class TalonFXMotorControllerSim implements SimulatedMotorController {
     private static int instances = 0;
     public final int id;

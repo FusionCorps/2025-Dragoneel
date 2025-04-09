@@ -33,7 +33,6 @@ public class WristIOSparkFlex implements WristIO {
 
   private final SparkClosedLoopController pidController;
 
-  private boolean isAlgaeMode = false;
   private boolean isCoralMode = false;
 
   private double setpoint = 0.0;
@@ -101,7 +100,6 @@ public class WristIOSparkFlex implements WristIO {
 
   @Override
   public void setToAlgaeSpeed() {
-    isAlgaeMode = true;
     isCoralMode = false;
     wristMotor.configure(
         new SparkFlexConfig().apply(new ClosedLoopConfig().p(2.0)),
@@ -112,7 +110,6 @@ public class WristIOSparkFlex implements WristIO {
   @Override
   public void setToCoralSpeed() {
     isCoralMode = true;
-    isAlgaeMode = false;
     wristMotor.configure(
         new SparkFlexConfig().apply(new ClosedLoopConfig().p(6.0)),
         ResetMode.kNoResetSafeParameters,

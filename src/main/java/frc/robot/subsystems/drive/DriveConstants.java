@@ -82,7 +82,6 @@ public class DriveConstants {
   private static final SteerFeedbackType kSteerFeedbackType = SteerFeedbackType.FusedCANcoder;
 
   // The stator current at which the wheels start to slip
-  // TODO: drive stator limit needs to be tuned
   private static final Current kSlipCurrent = Amps.of(120.0);
 
   // Initial configs for the drive and steer motors and the azimuth encoder; these cannot be null.
@@ -107,7 +106,6 @@ public class DriveConstants {
   public static final CANBus kCANBus = new CANBus("canivore");
 
   // Theoretical free speed (m/s) at 12 V applied output
-  // TODO: max speed needs to be tuned
   public static LinearVelocity SPEED_AT_12V = MetersPerSecond.of(4.32816);
   public static AngularVelocity MODULE_ANGULAR_VEL_AT_12V = RotationsPerSecond.of(60);
 
@@ -270,6 +268,7 @@ public class DriveConstants {
         new Translation2d(BACK_RIGHT.LocationX, BACK_RIGHT.LocationY)
       };
 
+  // wheel coefficient of friction (guesstimate) for GripLock V2 wheels
   public static final double WHEEL_COF = 1.5;
 
   // TunerConstants doesn't include these constants, so they are declared locally
@@ -285,6 +284,7 @@ public class DriveConstants {
               Math.hypot(BACK_LEFT.LocationX, BACK_LEFT.LocationY),
               Math.hypot(BACK_RIGHT.LocationX, BACK_RIGHT.LocationY)));
 
+  // maple-sim config
   public static DriveTrainSimulationConfig DRIVE_SIMULATION_CONFIG =
       DriveTrainSimulationConfig.Default()
           .withGyro(COTS.ofPigeon2())
@@ -292,6 +292,7 @@ public class DriveConstants {
           .withSwerveModule(
               COTS.ofMark4n(DCMotor.getKrakenX60Foc(1), DCMotor.getFalcon500Foc(1), 1.9, 1));
 
+  // max speeds enums
   public static enum DriveSpeedMode {
     DEFAULT(List.of(SPEED_AT_12V.in(MetersPerSecond), Units.rotationsToRadians(1.0))),
     SLOW(List.of(1.0, Units.rotationsToRadians(0.5))),
@@ -312,6 +313,7 @@ public class DriveConstants {
     BARGE
   }
 
+  // auto-align offset baselines
   // more negative is CLOSER to the reef
   // more positive is FURTHER AWAY from the reef
   public static double autoAlignOutCoralLeftBaseline = 0.585;

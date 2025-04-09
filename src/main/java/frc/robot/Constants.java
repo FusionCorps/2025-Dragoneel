@@ -1,16 +1,3 @@
-// Copyright 2021-2025 FRC 6328
-// http://github.com/Mechanical-Advantage
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
@@ -46,6 +33,7 @@ public final class Constants {
     REPLAY
   }
 
+  // Elevator and wrist movement states
   public static enum TargetState {
     STATION(ElevatorState.STATION, WristState.STATION),
     PROCESSOR(ElevatorState.PROCESSOR, WristState.PROCESSOR),
@@ -69,18 +57,18 @@ public final class Constants {
     }
   }
 
+  // Scoring piece types
   public static enum ScoringPieceType {
     CORAL,
     ALGAE
   }
 
-  // TODO: Update these values in PathPlanner and Choreo and here
+  // estimated mass of robot, for path following and maple-sim drive simulation
   public static final Mass ROBOT_MASS = Pounds.of(112 + 16.0 + 15.0);
-  public static final double ROBOT_MOI =
-      //   ROBOT_MASS.in(Kilograms) * DriveConstants.FRONT_LEFT.LocationX * (0.011992 /
-      // DriveConstants.driveGains.kA);
-      5.0; // round number on the higher/safer side, higher MOI means slower path rotation which is
-  // OK
+
+  // round number on the higher/safer side, higher MOI means slower path rotation which is OK
+  public static final double ROBOT_MOI = 5.0;
+
   // default PathPlanner configuration for path following
   public static final RobotConfig PP_ROBOT_CONFIG_DEFAULT =
       new RobotConfig(

@@ -27,11 +27,8 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
-import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.FlippingUtil;
 import com.pathplanner.lib.util.PathPlannerLogging;
-import com.pathplanner.lib.util.swerve.SwerveSetpoint;
-import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
@@ -66,7 +63,6 @@ import frc.robot.subsystems.elevator.ElevatorConstants.ElevatorState;
 import frc.robot.subsystems.vision.Vision.VisionConsumer;
 import frc.robot.util.LocalADStarAK;
 import java.io.IOException;
-import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -87,7 +83,6 @@ public class Drive extends SubsystemBase implements VisionConsumer {
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
   private final Alert pathPlannerSettingsLoadAlert =
       new Alert("PathPlanner could not load from GUI, using default settings", AlertType.kWarning);
-  private final Alert wheelsInCoastAlert = new Alert("Drive in coast mode", AlertType.kWarning);
 
   private SwerveDriveKinematics kinematics =
       new SwerveDriveKinematics(DriveConstants.MODULE_TRANSLATIONS);
@@ -102,10 +97,9 @@ public class Drive extends SubsystemBase implements VisionConsumer {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
-  private final SwerveSetpointGenerator setpointGenerator;
-  private SwerveSetpoint previousSetpoint;
-
   private final Consumer<Pose2d> resetSimulationPose;
+
+  // max speed of drivetrain
   @AutoLogOutput private DriveSpeedMode currentMaxSpeed = DriveSpeedMode.DEFAULT;
 
   public Drive(
@@ -164,14 +158,6 @@ public class Drive extends SubsystemBase implements VisionConsumer {
         (targetPose) -> {
           Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
         });
-
-    // Configure setpoint generator and start with zero setpoint
-    setpointGenerator =
-        new SwerveSetpointGenerator(
-            PP_CONFIG, DriveConstants.MODULE_ANGULAR_VEL_AT_12V.in(RadiansPerSecond));
-    previousSetpoint =
-        new SwerveSetpoint(
-            getChassisSpeeds(), getModuleStates(), DriveFeedforwards.zeros(PP_CONFIG.numModules));
 
     // Configure SysId
     sysId =
@@ -294,29 +280,17 @@ public class Drive extends SubsystemBase implements VisionConsumer {
    * @param speeds Robot-centric speeds in m/s and rad/s.
    */
   public void driveRobotCentric(ChassisSpeeds speeds) {
-    // Calculate module setpoints from robot-centric speeds
-    // Applies angle optimization, cosine compensation, wheel slip reduction, and converts to
-    // field-centric
+    // Calculate module setpoints from robot-centric speeds and desaturate wheel speeds
     ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
     SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, SPEED_AT_12V);
+
     // Log setpoints and setpoint speeds
     for (int i = 0; i < 4; i++) {
       modules[i].runSetpoint(setpointStates[i]);
     }
     Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
     Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
-    // } else {
-    //   previousSetpoint = setpointGenerator.generateSetpoint(previousSetpoint, speeds, 0.02);
-    //   // Log setpoints and setpoint speeds
-    //   Logger.recordOutput("SwerveStates/Setpoints", previousSetpoint.moduleStates());
-    //   Logger.recordOutput("SwerveChassisSpeeds/Setpoints",
-    // previousSetpoint.robotRelativeSpeeds());
-    //   // Send setpoints to modules
-    //   for (int i = 0; i < 4; i++) {
-    //     modules[i].runSetpoint(previousSetpoint.moduleStates()[i]);
-    //   }
-    // }
   }
 
   /** Runs the drive in a straight line with the specified drive output. */
@@ -456,28 +430,26 @@ public class Drive extends SubsystemBase implements VisionConsumer {
     setPose(new Pose2d(getPose().getTranslation(), new Rotation2d()));
   }
 
-  public Command setNeutralMode(boolean coast) {
-    return Commands.defer(
-            () ->
-                Commands.runOnce(
-                    () -> {
-                      if (coast) {
-                        wheelsInCoastAlert.set(true);
-                        for (var module : modules) module.setNeutral(true);
-                      } else {
-                        wheelsInCoastAlert.set(false);
-                        for (var module : modules) module.setNeutral(false);
-                      }
-                      ;
-                    }),
-            Set.of(this))
-        .ignoringDisable(true);
-  }
-
+  /**
+   * Sets the maximum speed of the drive. This is used to limit the speed of the robot when
+   * teleoperating.
+   */
   public Command setMaxSpeed(DriveSpeedMode speedMode) {
     return Commands.runOnce(() -> currentMaxSpeed = speedMode);
   }
 
+  /**
+   * #1 If the elevator is at station/algae stow, toggle between DEFAULT and SLOW.
+   *
+   * <p>#2 Otherwise, toggle between SLOW and PRECISION.
+   *
+   * <p>(#2 is a scenario where the robot is moving to a scoring position.) In hindsight, this
+   * implementation should have been revised as elevator states were added; however, it worked well
+   * enough for the driver.
+   *
+   * @param state
+   * @return
+   */
   public Command toggleSpeed(Supplier<ElevatorState> state) {
     return Commands.either(
         Commands.runOnce(

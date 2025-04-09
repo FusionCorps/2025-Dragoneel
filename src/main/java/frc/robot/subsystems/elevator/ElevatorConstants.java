@@ -13,6 +13,7 @@ public class ElevatorConstants {
   public static final int MAIN_ELEVATOR_MOTOR_ID = 13;
   public static final int FOLLOWER_ELEVATOR_MOTOR_ID = 14;
 
+  /* All desired elevator states */
   public static enum ElevatorState {
     PROCESSOR(Rotations.of(0.0)),
     ALGAE_STOW(Rotations.of(3)),
@@ -61,7 +62,7 @@ public class ElevatorConstants {
           .withReverseSoftLimitThreshold(Rotations.of(0));
 
   public static final double ELEVATOR_GEAR_RATIO =
-      62.0 / 14.0; // 14 shaft rotations for 60 motor rotations
+      62.0 / 14.0; // 14 shaft rotations for 62 motor rotations
   public static final Distance ELEVATOR_SPOOL_DIAMETER =
       Inches.of(1.625); // 1.625" spool around which rope is wound
 }

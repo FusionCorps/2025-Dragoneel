@@ -182,7 +182,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
       posRequest.Acceleration = ELEVATOR_MOTION_MAGIC_ACCELERATION;
       posRequest.Velocity = ELEVATOR_MOTION_MAGIC_CRUISE_VELOCITY;
     } else {
-      posRequest.Acceleration = 60.0; // TODO: change these as needed
+      posRequest.Acceleration = 60.0;
       posRequest.Velocity = 30.0;
     }
   }
