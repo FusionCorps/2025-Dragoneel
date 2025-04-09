@@ -21,11 +21,14 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Wrist extends SubsystemBase {
-  public final WristIO io;
+  private final WristIO io;
   private final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
+  /* State tracker for current angle of the wrist */
   @AutoLogOutput public WristState currentWristState = WristState.STATION;
 
+
+  /* Triggers which track when certain states are reached. */
   @AutoLogOutput
   public Trigger isAtStation =
       new Trigger(
@@ -52,6 +55,7 @@ public class Wrist extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
 
+    // Visualization of the wrist position
     Robot.componentPoses[2] =
         new Pose3d(
             0.135,
@@ -63,6 +67,7 @@ public class Wrist extends SubsystemBase {
     wristMotorDisconnectedAlert.set(!inputs.connected);
   }
 
+  /** Set the target state (angle) of the wrist. */
   public Command runTargetState(WristState targetState) {
     return run(
         () -> {
@@ -73,23 +78,21 @@ public class Wrist extends SubsystemBase {
         });
   }
 
-  public Command toggleWristSpeed() {
-    return Commands.defer(() -> runOnce(() -> io.toggleSpeed()), Set.of(this));
-  }
-
+  /** Set the wrist motor to move in "algae speed" mode. */
   public void setToAlgaeSpeed() {
     io.setToAlgaeSpeed();
   }
 
+  /** Set the wrist motor to move in "coral speed" mode. */
   public void setToCoralSpeed() {
     io.setToCoralSpeed();
   }
 
-  public Angle getCurrentAngle() {
-    return Radians.of(inputs.absolutePositionRad);
-  }
-
   public WristState getCurrentWristState() {
     return currentWristState;
+  }
+
+  private Angle getCurrentAngle() {
+    return Radians.of(inputs.absolutePositionRad);
   }
 }

@@ -18,30 +18,24 @@ import frc.robot.subsystems.wrist.Wrist;
 
 public class Autos {
   private Drive drive;
-  private Elevator elevator;
-  private Wrist wrist;
   private Shooter shooter;
   private ElevatorAndWristCommands elevatorAndWristCommands;
 
-  // end goal: TStart-JLKA and BStart-ECDB
-  // All other routines are subsets of these
+  // routines: TStart-JLKA and BStart-ECDB, LeftPush and RightPush, CenterStart-H, CenterAlgae-Barge
+  // All routines are subsets of these
 
-  // All the paths we use
+  // the paths we use
   private PathPlannerPath CenterStart_H;
 
   private PathPlannerPath TStart_J;
   private PathPlannerPath J_TCor;
-  private PathPlannerPath TCor_K;
   private PathPlannerPath K_TCor;
-  private PathPlannerPath TCor_L;
   private PathPlannerPath L_TCor;
   private PathPlannerPath TCor_A;
 
   private PathPlannerPath BStart_E;
   private PathPlannerPath E_BCor;
-  private PathPlannerPath BCor_D;
   private PathPlannerPath D_BCor;
-  private PathPlannerPath BCor_C;
   private PathPlannerPath C_BCor;
   private PathPlannerPath BCor_B;
 
@@ -55,8 +49,6 @@ public class Autos {
 
   public Autos(Drive drive, Elevator elevator, Wrist wrist, Shooter shooter) {
     this.drive = drive;
-    this.elevator = elevator;
-    this.wrist = wrist;
     this.shooter = shooter;
     this.elevatorAndWristCommands = new ElevatorAndWristCommands(elevator, wrist);
 
@@ -68,18 +60,14 @@ public class Autos {
       // Top
       TStart_J = PathPlannerPath.fromChoreoTrajectory("TStart-J");
       J_TCor = PathPlannerPath.fromChoreoTrajectory("J-TCor");
-      TCor_K = PathPlannerPath.fromChoreoTrajectory("TCor-K");
       K_TCor = PathPlannerPath.fromChoreoTrajectory("K-TCor");
-      TCor_L = PathPlannerPath.fromChoreoTrajectory("TCor-L");
       L_TCor = PathPlannerPath.fromChoreoTrajectory("L-TCor");
       TCor_A = PathPlannerPath.fromChoreoTrajectory("TCor-A");
 
       // Bottom
       BStart_E = PathPlannerPath.fromChoreoTrajectory("BStart-E");
       E_BCor = PathPlannerPath.fromChoreoTrajectory("E-BCor");
-      BCor_D = PathPlannerPath.fromChoreoTrajectory("BCor-D");
-      D_BCor = PathPlannerPath.fromChoreoTrajectory("D-BCor");
-      BCor_C = PathPlannerPath.fromChoreoTrajectory("BCor-C");
+      D_BCor =PathPlannerPath.fromChoreoTrajectory("D-BCor");
       C_BCor = PathPlannerPath.fromChoreoTrajectory("C-BCor");
       BCor_B = PathPlannerPath.fromChoreoTrajectory("BCor-B");
 
@@ -174,16 +162,19 @@ public class Autos {
     return Commands.none();
   }
 
+  // never tested
   public Command pushAndOnePieceFromLeft() {
     return Commands.sequence(
         resetOdometry(LEFT_PUSH), AutoBuilder.followPath(LEFT_PUSH), autoAlignAndScore(RIGHT));
   }
 
+  // never tested
   public Command pushAndOnePieceFromRight() {
     return Commands.sequence(
         resetOdometry(RIGHT_PUSH), AutoBuilder.followPath(RIGHT_PUSH), autoAlignAndScore(LEFT));
   }
 
+  // never tested
   public Command onePieceCenterWithAlgae() {
     return Commands.sequence(
         onePieceFromCenter(),

@@ -7,43 +7,23 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
 public class Climb extends SubsystemBase {
-  /* I/O */
   private final ClimbIO io;
-
-  /* Inputs */
   private final ClimbIOInputsAutoLogged inputs = new ClimbIOInputsAutoLogged();
 
-  /* Motor alert */
   private final Alert motorDisconnectedAlert =
       new Alert("Climb Motor Disconnected", AlertType.kError);
 
-  /* Constructor */
   public Climb(ClimbIO io) {
     this.io = io;
 
-    SmartDashboard.putData(
-        "Climb/Coast",
-        runOnce(() -> io.setCoast())
-            .alongWith(Commands.print("climb coast"))
-            .ignoringDisable(true));
-    SmartDashboard.putData(
-        "Climb/Brake",
-        runOnce(() -> io.setBrake())
-            .alongWith(Commands.print("climb brake"))
-            .ignoringDisable(true));
-    SmartDashboard.putData(
-        "Climb/Zero",
-        runOnce(() -> io.zeroPosition())
-            .alongWith(Commands.print("climb zero"))
-            .ignoringDisable(true));
+    // Dashboard button to rezero the climb mechanism
+    SmartDashboard.putData("Climb/Zero", runOnce(() -> io.zeroPosition()).ignoringDisable(true));
   }
 
-  /* Periodic */
   @Override
   public void periodic() {
     io.updateInputs(inputs);
@@ -51,13 +31,14 @@ public class Climb extends SubsystemBase {
     motorDisconnectedAlert.set(!inputs.connected);
   }
 
-  /* Run the climb motor and hold position in brake mode when stopped. */
+  /** Extend the climb mechanism outward and hold position in brake mode when stopped. */
   public Command extendClimbCmd() {
-    // Note that the end runnable sets the voltage to 0V, but the neutral mode configuration is set
-    // to brake mode.
+    // Note that the end runnable sets the voltage to 0V,
+    // but the neutral mode config is brake so the motor will hold position.
     return runEnd(() -> io.extend(), () -> io.setVoltage(Volts.zero()));
   }
 
+  /** Retract the climb mechanism inward and hold position in brake mode when stopped. */
   public Command retractClimbCmd() {
     // Note that the end runnable sets a little voltage to hold the climb position.
     return runEnd(
