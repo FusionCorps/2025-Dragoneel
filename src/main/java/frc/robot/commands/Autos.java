@@ -67,7 +67,7 @@ public class Autos {
       // Bottom
       BStart_E = PathPlannerPath.fromChoreoTrajectory("BStart-E");
       E_BCor = PathPlannerPath.fromChoreoTrajectory("E-BCor");
-      D_BCor =PathPlannerPath.fromChoreoTrajectory("D-BCor");
+      D_BCor = PathPlannerPath.fromChoreoTrajectory("D-BCor");
       C_BCor = PathPlannerPath.fromChoreoTrajectory("C-BCor");
       BCor_B = PathPlannerPath.fromChoreoTrajectory("BCor-B");
 

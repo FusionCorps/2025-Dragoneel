@@ -25,7 +25,6 @@ public class Wrist extends SubsystemBase {
   /* State tracker for current angle of the wrist */
   @AutoLogOutput public WristState currentWristState = WristState.STATION;
 
-
   /* Triggers which track when certain states are reached. */
   @AutoLogOutput
   public Trigger isAtStation =
